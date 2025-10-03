@@ -1,0 +1,19 @@
+body {
+    background-color: #f8f9fa;
+}
+.login-box {
+    max-width: 400px;
+    margin: 80px auto;
+    padding: 20px;
+    background: #f1f3f6;
+    border-radius: 8px;
+    box-shadow: 0px 3px 6px rgba(0,0,0,0.2);
+}
+.login-box h4 {
+    margin-bottom: 20px;
+}
+.logo {
+    display: block;
+    margin: 0 auto 15px;
+    width: 60px;
+}
