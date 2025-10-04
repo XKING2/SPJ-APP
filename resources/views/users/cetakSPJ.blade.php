@@ -19,9 +19,10 @@
                     <input type="text" name="search" class="form-control form-control-sm mr-2" placeholder="Cari...">
                     <button type="submit" class="btn btn-sm btn-secondary">Cari</button>
                 </form>
-                <a href="#" target="_blank" class="btn btn-info btn-sm">
+                <a href="{{ route('spj.preview', $spj->id) }}" target="_blank" class="btn btn-info btn-sm">
                     <i class="fas fa-print"></i> Cetak
                 </a>
+
             </div>
 
             <!-- Table -->
