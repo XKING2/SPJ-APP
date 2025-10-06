@@ -21,27 +21,33 @@ Route::get('/Serahterima', [sidebarcontrol::class, 'showserahterima'])->name('se
 Route::get('/Penerimaan', [sidebarcontrol::class, 'showpenerimaan'])->name('penerimaan');
 Route::get('/Pemeriksaan', [sidebarcontrol::class, 'showpemeriksaan'])->name('pemeriksaan');
 Route::get('/Serahbarang', [sidebarcontrol::class, 'showserahbarang'])->name('serahbarang');
-Route::get('/ReviewSPJ', [SPJController::class, 'showreviewSPJ'])->name('reviewSPJ');
+Route::get('/ReviewSPJ', [SPJController::class, 'index'])->name('reviewSPJ');
 Route::get('/CetakSPJ', [sidebarcontrol::class, 'showcetakSPJ'])->name('cetakSPJ');
 
-Route::get('/kwitansi/create', [kwitansicontrol::class, 'create'])->name('kwitansi.create');
-Route::get('/pesanan/create', [pesanancontrol::class, 'create'])->name('pesanan.create');
+
+
+
+Route::get('/spj', [SPJController::class, 'index'])->name('spj.index');
+Route::get('/spj/create', [SPJController::class, 'create'])->name('spj.create');
+Route::get('spj/review/{spj_id}', [SPJController::class, 'review'])->name('spj.review');
+Route::get('/spj/preview/{spj_id}', [SPJController::class, 'preview'])->name('spj.preview');
+
+// ========== KWITANSI ==========
+Route::get('/kwitansi/create/{spj_id}', [KwitansiControl::class, 'create'])->name('kwitansi.create');
+
+Route::post('/kwitansi/store', [KwitansiControl::class, 'store'])->name('kwitansis.store');
+
+// ========== PESANAN ==========
+Route::get('/pesanan/create', [PesananControl::class, 'create'])->name('pesanan.create');
+Route::post('/pesanan/store', [PesananControl::class, 'store'])->name('pesanan.store');
+
+// ========== PEMERIKSAAN ==========
 Route::get('/pemeriksaan/create', [PemeriksaanControl::class, 'create'])->name('pemeriksaan.create');
+Route::post('/pemeriksaan/store', [PemeriksaanControl::class, 'store'])->name('pemeriksaan.store');
 
+// ========== PENERIMAAN ==========
 Route::get('/penerimaan/create', [PenerimaanControl::class, 'create'])->name('penerimaan.create');
-Route::post('/penerimaan', [PenerimaanControl::class, 'store'])->name('penerimaan.store');
-Route::get('/serahterima/create', [serahterimacontrol::class, 'create'])->name('serahterima.create');
-
-Route::resource('kwitansis', kwitansicontrol::class);
-Route::resource('pesanans', pesanancontrol::class);
-Route::resource('pemeriksaan', pemeriksaancontrol::class);
-
-Route::get('/spj/review/{id}', [SPJController::class, 'review'])->name('spj.review');
-Route::get('/spj/preview/{id}', [SPJController::class, 'preview'])->name('spj.preview');
-Route::get('/spj/download/{id}', [SPJController::class, 'download'])->name('spj.download');
-
-Route::get('/spj/{id}', [SPJController::class, 'show'])->name('spj.show');
-Route::get('/spj/{id}/preview', [SPJController::class, 'preview'])->name('spj.preview');
+Route::post('/penerimaan/store', [PenerimaanControl::class, 'store'])->name('penerimaan.store');
 
 
 // Dashboard untuk Superuser

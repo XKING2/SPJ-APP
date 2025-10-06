@@ -3,88 +3,58 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\pesanan;
-use App\Models\pesananitem;
+use App\Models\Pesanan;
+use App\Models\PesananItem;
+use App\Models\SPJ;
+use App\Models\Kwitansi;
 
-class pesanancontrol extends Controller
+class PesananControl extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function create(Request $request)
     {
-        return view('users.create.createpesanan');
+        $spj = SPJ::findOrFail($request->spj_id);
+        $kwitansi = Kwitansi::findOrFail($request->kwitansi_id);
+        return view('users.create.createpesanan', compact('spj', 'kwitansi'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        $request->validate([
-            'no_surat' => 'required',
-            'nama_pt' => 'required',
-            'alamat_pt' => 'required',
-            'nomor_tlp_pt' => 'required',
+        $validated = $request->validate([
+            'spj_id' => 'required|exists:spjs,id',
+            'kwitansi_id' => 'required|exists:kwitansis,id',
+            'no_surat' => 'required|string|max:255',
+            'nama_pt' => 'required|string|max:255',
+            'nomor_tlp_pt' => 'required|numeric',
+            'surat_dibuat' => 'required|date',
+            'tanggal_diterima' => 'required|date',
+            'alamat_pt' => 'required|string|max:255',
+            'items.*.nama_barang' => 'required|string',
+            'items.*.jumlah' => 'required|numeric',
         ]);
 
-        $pesanan = Pesanan::create($request->only([
-            'no_surat','nama_pt','alamat_pt','tanggal_diterima','surat_dibuat','nomor_tlp_pt'
-        ]));
+        $pesanan = Pesanan::create([
+            'spj_id' => $validated['spj_id'],
+            'kwitansi_id' => $validated['kwitansi_id'],
+            'no_surat' => $validated['no_surat'],
+            'nama_pt' => $validated['nama_pt'],
+            'alamat_pt' => $validated['alamat_pt'],
+            'nomor_tlp_pt' => $validated['nomor_tlp_pt'],
+            'tanggal_diterima' => $validated['tanggal_diterima'],
+            'surat_dibuat' => $validated['surat_dibuat'],
+        ]);
+        $spj = SPJ::findOrFail($validated['spj_id']);
+        $spj->update(['pesanan_id' => $pesanan->id]);
 
-        // simpan items
-        if ($request->has('items')) {
-            foreach ($request->items as $item) {
-                PesananItem::create([
-                    'pesanan_id' => $pesanan->id,
-                    'nama_barang' => $item['nama_barang'],
-                    'jumlah' => $item['jumlah'],
-                ]);
-            }
+        foreach ($validated['items'] as $item) {
+            PesananItem::create([
+                'pesanan_id' => $pesanan->id,
+                'nama_barang' => $item['nama_barang'],
+                'jumlah' => $item['jumlah'],
+            ]);
         }
 
-        // redirect ke pemeriksaan/create dengan pesanan_id
-        return redirect()->route('pemeriksaan.create', ['pesanan_id' => $pesanan->id]);
-    }
-
-
-
-
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return redirect()
+            ->route('pemeriksaan.create', ['spj_id' => $validated['spj_id'], 'pesanan_id' => $pesanan->id])
+            ->with('success', 'Pesanan berhasil disimpan. Lanjut ke pemeriksaan.');
     }
 }

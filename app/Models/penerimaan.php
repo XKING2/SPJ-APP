@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class penerimaan extends Model
 {
     protected $fillable = [
-        'pemeriksaan_id', 'pesanan_id', 'pekerjaan', 'no_surat', 'surat_dibuat',
+        'spj_id','pemeriksaan_id', 'pesanan_id', 'pekerjaan', 'no_surat', 'surat_dibuat',
         'nama_pihak_kedua', 'jabatan_pihak_kedua',
         'subtotal', 'ppn', 'grandtotal', 'dibulatkan', 'terbilang'
     ];

@@ -4,28 +4,20 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Kwitansi;
+use App\Models\SPJ;
 
-class kwitansicontrol extends Controller
+class KwitansiControl extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function create($spj_id)
     {
-        return view('users.create.createkwitansi');
+        $spj = SPJ::findOrFail($spj_id);
+        return view('users.create.createkwitansi', compact('spj'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        // Validasi input
         $validated = $request->validate([
+            'spj_id' => 'required|exists:spjs,id',
             'no_rekening' => 'required|string|max:255',
             'no_rekening_tujuan' => 'required|string|max:255',
             'nama_bank' => 'required|string|max:255',
@@ -40,44 +32,15 @@ class kwitansicontrol extends Controller
             'pembayaran' => 'required|string',
         ]);
 
-        // Simpan data
-        Kwitansi::create($validated);
+        $kwitansi = Kwitansi::create($validated);
 
-        // Redirect ke form create lagi, bawa pesan sukses
+        // Update relasi ke SPJ
+        $spj = SPJ::findOrFail($validated['spj_id']);
+        $spj->update(['kwitansi_id' => $kwitansi->id]);
+
+
         return redirect()
-            ->route('pesanan.create')
-            ->with('success', 'Data kwitansi berhasil disimpan! Silakan input data berikutnya.');
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+            ->route('pesanan.create', ['spj_id' => $validated['spj_id'], 'kwitansi_id' => $kwitansi->id])
+            ->with('success', 'Kwitansi berhasil disimpan. Lanjut ke pesanan.');
     }
 }

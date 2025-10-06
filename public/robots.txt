@@ -2,4 +2,14 @@ User-agent: *
 Disallow:
 
 
-                    
+    <div class="d-flex gap-2">
+        {{-- Tombol Preview PDF --}}
+        <a href="{{ route('spj.preview', $spj->id) }}" target="_blank" class="btn btn-primary">
+            <i class="fas fa-file-pdf"></i> Preview PDF
+        </a>
+
+        {{-- Tombol Download Word --}}
+        <a href="#" class="btn btn-success">
+            <i class="fas fa-file-word"></i> Download Word
+        </a>
+    </div>

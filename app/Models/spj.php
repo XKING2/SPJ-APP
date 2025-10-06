@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class SPJ extends Model
 {
     use HasFactory;
+    protected $table = 'spjs';
 
     protected $fillable = [
         'pesanan_id',
@@ -29,23 +30,10 @@ class SPJ extends Model
     ];
 
     // Relasi ke tabel lain
-    public function pesanan()
-    {
-        return $this->belongsTo(Pesanan::class);
-    }
+// SPJ.php
+public function pesanan() { return $this->hasOne(Pesanan::class, 'spj_id'); }
+public function pemeriksaan() { return $this->hasOne(Pemeriksaan::class, 'spj_id'); }
+public function penerimaan() { return $this->hasOne(Penerimaan::class, 'spj_id'); }
+public function kwitansi() { return $this->hasOne(Kwitansi::class, 'spj_id'); }
 
-    public function pemeriksaan()
-    {
-        return $this->belongsTo(Pemeriksaan::class);
-    }
-
-    public function penerimaan()
-    {
-        return $this->belongsTo(Penerimaan::class);
-    }
-
-    public function kwitansi()
-    {
-        return $this->belongsTo(Kwitansi::class);
-    }
 }

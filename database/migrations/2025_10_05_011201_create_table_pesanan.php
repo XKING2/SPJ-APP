@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('pesanans', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('spj_id');
             $table->string('no_surat');
             $table->string('nama_pt');
             $table->string('alamat_pt');
@@ -20,6 +21,7 @@ return new class extends Migration
             $table->date('surat_dibuat')->nullable();
             $table->string('nomor_tlp_pt');
             $table->timestamps();
+            $table->foreign('spj_id')->references('id')->on('spjs')->onDelete('set null');
         });
     }
 
@@ -28,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('pesanans');
+        Schema::dropIfExists('table_pesanan');
     }
 };

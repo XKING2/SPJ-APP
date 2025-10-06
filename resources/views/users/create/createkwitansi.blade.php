@@ -11,6 +11,7 @@
     <div class="card shadow-sm rounded-3">
         <div class="card-body">
             <form action="{{ route('kwitansis.store') }}" method="POST">
+                <input type="hidden" name="spj_id" value="{{ $spj->id }}">
                 @csrf
                 <div class="row">
                     <!-- Kiri -->
@@ -83,3 +84,4 @@
     </div>
 </div>
 @endsection
+

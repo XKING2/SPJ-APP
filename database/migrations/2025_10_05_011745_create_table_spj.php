@@ -21,7 +21,7 @@ return new class extends Migration
             $table->unsignedBigInteger('kwitansi_id')->nullable();
 
             // Informasi dokumen SPJ
-            $table->string('nomor_spj')->unique();
+            $table->string('nomor_spj')->nullable();
             $table->date('tanggal_spj')->nullable();
             $table->string('status')->default('draft'); // draft / final / approved
             $table->string('file_path')->nullable(); // jika hasil word disimpan
@@ -46,8 +46,11 @@ return new class extends Migration
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
-        Schema::dropIfExists('tb_spj');
+        Schema::dropIfExists('spjs');
     }
 };

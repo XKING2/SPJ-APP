@@ -13,6 +13,7 @@
             <form action="{{ route('pemeriksaan.store') }}" method="POST">
                 @csrf
                 <input type="hidden" name="pesanan_id" value="{{ $pesanan->id }}">
+                <input type="hidden" name="spj_id" value="{{ $spj->id }}">
                 <div class="row">
                     <!-- Kiri -->
                     <div class="col-md-6">

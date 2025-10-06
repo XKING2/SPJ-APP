@@ -11,6 +11,8 @@
     <div class="card shadow-sm rounded-3">
         <div class="card-body">
             <form action="{{ route('penerimaan.store') }}" method="POST">
+                <input type="hidden" name="pemeriksaan_id" value="{{ $pemeriksaan->id }}">
+                <input type="hidden" name="spj_id" value="{{ $spj->id }}">
                 @csrf
                 <div class="row">
                     <!-- Kiri -->

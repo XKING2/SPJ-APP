@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 class Pesanan extends Model {
-    protected $fillable = ['no_surat','nama_pt','alamat_pt','tanggal_diterima','surat_dibuat','nomor_tlp_pt'];
+    protected $fillable = ['spj_id','no_surat','nama_pt','alamat_pt','tanggal_diterima','surat_dibuat','nomor_tlp_pt'];
 
     public function items() {
         return $this->hasMany(PesananItem::class);

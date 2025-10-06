@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('kwitansis', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('spj_id');
             $table->string('no_rekening');
             $table->string('no_rekening_tujuan');
             $table->string('nama_bank');
@@ -26,6 +27,7 @@ return new class extends Migration
             $table->string('nama_pt');
             $table->text('pembayaran');
             $table->timestamps();
+            $table->foreign('spj_id')->references('id')->on('spjs')->onDelete('set null');
         });
     }
 
@@ -34,6 +36,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('kwitansis');
+        Schema::dropIfExists('table_kwitansi');
     }
 };

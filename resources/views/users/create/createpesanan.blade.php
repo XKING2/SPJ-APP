@@ -10,9 +10,10 @@
 <div class="container">
     <div class="card shadow-sm rounded-3">
         <div class="card-body">
-            <form action="{{ route('pesanans.store') }}" method="POST">
+            <form action="{{ route('pesanan.store') }}" method="POST">
+                <input type="hidden" name="spj_id" value="{{ $spj->id }}">
+                <input type="hidden" name="kwitansi_id" value="{{ $kwitansi->id }}">
                 @csrf
-
                 <div class="row">
                     <!-- Kiri -->
                     <div class="col-md-6">

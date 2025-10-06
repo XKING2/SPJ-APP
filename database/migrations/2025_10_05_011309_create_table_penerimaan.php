@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('pemeriksaan_id');
             $table->unsignedBigInteger('pesanan_id');
             $table->unsignedBigInteger('pesanan_item_id')->nullable();
+            $table->unsignedBigInteger('spj_id');
             $table->string('pekerjaan');
             $table->string('no_surat');
             $table->date('surat_dibuat')->nullable();
@@ -28,12 +29,11 @@ return new class extends Migration
             $table->string('terbilang');
             $table->timestamps();
 
-
+            $table->foreign('spj_id')->references('id')->on('spjs')->onDelete('cascade');
             $table->foreign('pemeriksaan_id')->references('id')->on('pemeriksaans')->onDelete('cascade');
             $table->foreign('pesanan_id')->references('id')->on('pesanans')->onDelete('cascade');
             $table->foreign('pesanan_item_id')->references('id')->on('pesanan_items')->onDelete('cascade');
         });
-
     }
 
     /**

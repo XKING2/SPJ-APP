@@ -1,6 +1,9 @@
 @extends('layouts.main')
-
+    <link href="../css/sb-admin-2.min.css" rel="stylesheet">
+    <link href="../css/page.css" rel="stylesheet">
+    
 @section('pageheads')
+    
     <h1 class="h3 mb-4 text-gray-800">Kelola Data Kwitansi</h1>
 @endsection
 

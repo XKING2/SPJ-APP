@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('pemeriksaans', function (Blueprint $table) {
             $table->id();
             $table->string('hari_diterima');
+            $table->unsignedBigInteger('spj_id');
             $table->unsignedBigInteger('pesanan_id');
             $table->string('tanggal_diterima');
             $table->string('bulan_diterima');
@@ -24,6 +25,7 @@ return new class extends Migration
             $table->string('pekerjaan');
             $table->timestamps();
             $table->foreign('pesanan_id')->references('id')->on('pesanans')->onDelete('cascade');
+            $table->foreign('spj_id')->references('id')->on('spjs')->onDelete('cascade');
         });
     }
 
@@ -32,6 +34,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('pemeriksaans');
+        Schema::dropIfExists('table_pemeriksaan');
     }
 };

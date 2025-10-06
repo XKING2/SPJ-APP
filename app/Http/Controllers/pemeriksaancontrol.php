@@ -3,83 +3,42 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\pemeriksaan;
+use App\Models\Pemeriksaan;
+use App\Models\SPJ;
 use App\Models\Pesanan;
-use App\Http\Controllers\PenerimaanControl;
 
-
-class pemeriksaancontrol extends Controller
+class PemeriksaanControl extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create(Request $request)
     {
+        $spj = SPJ::findOrFail($request->spj_id);
         $pesanan = Pesanan::findOrFail($request->pesanan_id);
-        return view('users.create.createpemeriksaan', compact('pesanan'));
+        return view('users.create.createpemeriksaan', compact('spj', 'pesanan'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
+            'spj_id' => 'required|exists:spjs,id',
             'pesanan_id' => 'required|exists:pesanans,id',
             'hari_diterima' => 'required',
             'tanggal_diterima' => 'required',
             'bulan_diterima' => 'required',
             'tahun_diterima' => 'required',
-            'nama_pihak_kedua' => 'required',
-            'jabatan_pihak_kedua' => 'required',
+            'hari_diterima' => 'required|string|max:50',
+            'nama_pihak_kedua' => 'required|string|max:255',
+            'jabatan_pihak_kedua' => 'required|string|max:255',
             'alamat_pihak_kedua' => 'required',
             'pekerjaan' => 'required',
         ]);
 
-        $pemeriksaan = Pemeriksaan::create($request->all());
+        $pemeriksaan = Pemeriksaan::create($validated);
+
+        $spj = SPJ::findOrFail($validated['spj_id']);
+        $spj->update(['pemeriksaan_id' => $pemeriksaan->id]);
+
         return redirect()
-            ->route('penerimaan.create', ['pemeriksaan' => $pemeriksaan->id])
-            ->with('success', 'Pemeriksaan & Penerimaan berhasil dibuat otomatis, silakan lengkapi data di form penerimaan.');
-    }
-
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+            ->route('penerimaan.create', ['spj_id' => $validated['spj_id'], 'pemeriksaan_id' => $pemeriksaan->id])
+            ->with('success', 'Pemeriksaan berhasil. Lanjut ke penerimaan.');
     }
 }
