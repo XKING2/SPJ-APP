@@ -15,6 +15,7 @@ class SPJ extends Model
         'pemeriksaan_id',
         'penerimaan_id',
         'kwitansi_id',
+        'user_id',
         'nomor_spj',
         'tanggal_spj',
         'status',
@@ -35,5 +36,6 @@ public function pesanan() { return $this->hasOne(Pesanan::class, 'spj_id'); }
 public function pemeriksaan() { return $this->hasOne(Pemeriksaan::class, 'spj_id'); }
 public function penerimaan() { return $this->hasOne(Penerimaan::class, 'spj_id'); }
 public function kwitansi() { return $this->hasOne(Kwitansi::class, 'spj_id'); }
+public function user() { return $this->belongsTo(User::class, 'user_id'); }
 
 }

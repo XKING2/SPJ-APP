@@ -19,20 +19,22 @@ class AuthController extends Controller
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
 
-            if ($user->role === 'superadmin') {
-                return redirect()->route('super.dashboard');
-            } elseif ($user->role === 'admin') {
-                return redirect()->route('admin.dashboard');
-            } elseif ($user->role === 'user') {
-                return redirect()->route('user.dashboard');
-            }
+            // Simpan user_id di session
+            session(['user_id' => $user->id]);
+
+            // Arahkan ke dashboard sesuai role
+            return match ($user->role) {
+                'superadmin' => redirect()->route('superadmins.dashboard'),
+                'admin'      => redirect()->route('admin.dashboard'),
+                'user'       => redirect()->route('users.dashboard'),
+                default      => redirect()->route('login'),
+            };
         }
 
         return back()->withErrors([
             'NIP' => 'Nama atau password salah.',
         ]);
     }
-
 
     public function logout()
     {

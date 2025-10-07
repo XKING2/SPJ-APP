@@ -18,7 +18,7 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'nama', 'NIP', 'password', 'jabatan', 'Alamat', 'nomor_tlp', 'role'
+        'nama','spj_id', 'NIP', 'password', 'jabatan', 'Alamat', 'nomor_tlp', 'role'
     ];
 
     
@@ -35,7 +35,7 @@ class User extends Authenticatable
 
     public function getAuthIdentifierName()
     {
-        return 'nama';
+        return 'id';
     }
 
     /**
@@ -49,5 +49,10 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function spjs()
+    {
+        return $this->hasMany(Spj::class, 'user_id');
     }
 }

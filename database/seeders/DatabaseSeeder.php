@@ -11,36 +11,16 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // Super User
-        User::create([
-            'nama' => 'Wahyu2',
-            'NIP' => '342242345',
-            'password' => Hash::make('12345678'),
-            'jabatan' => 'Junior Developers',
-            'Alamat' => 'Jln.Batuyang Gang.pipit5b',
-            'nomor_tlp' => '0812312412',
-            'role' => 'superadmin',
-        ]);
 
-        // Admin Biasa
-        User::create([
-            'nama' => 'AriNindya',
-            'NIP' => '3422423453',
-            'password' => Hash::make('12345678'),
-            'jabatan' => 'Junior Developers',
-            'Alamat' => 'Jln.Batuyang Gang.pipit5b',
-            'nomor_tlp' => '081234356',
-            'role' => 'admin',
-        ]);
-
-        User::create([
-            'nama' => 'Ade',
-            'NIP' => '34224234534',
-            'password' => Hash::make('12345678'),
-            'jabatan' => 'Junior Developers',
-            'Alamat' => 'Jln.Batuyang Gang.pipit5b',
-            'nomor_tlp' => '081234356',
-            'role' => 'user',
+         User::create([
+            'nama'      => 'User Biasa2',
+            'spj_id'    => null,
+            'NIP'       => '1004',
+            'password'  => Hash::make('password123'),
+            'jabatan'   => 'Staff',
+            'Alamat'    => 'Jl. Mawar No.3',
+            'nomor_tlp' => '0812777',
+            'role'      => 'user',
         ]);
     }
 

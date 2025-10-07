@@ -45,7 +45,7 @@
 
             <!-- Dashboard -->
             <li class="nav-item active">
-                <a class="nav-link" href="{{ route('userdashboard') }}">
+                <a class="nav-link" href="{{ route('superdashboard') }}">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>Dashboard</span>
                 </a>
@@ -53,63 +53,12 @@
 
             <!-- Kwitansi -->
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('kwitansi') }}">
+                <a class="nav-link" href="{{ route('Validasi') }}">
                     <i class="fas fa-fw fa-receipt"></i>
-                    <span>Kwitansi</span>
+                    <span>Validasi SPJ</span>
                 </a>
             </li>
-
-            <!-- Pesanan -->
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('pesanan') }}">
-                    <i class="fas fa-fw fa-wrench"></i>
-                    <span>Pesanan</span>
-                </a>
-            </li>
-
-            <!-- Serah Terima -->
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('serahterima') }}">
-                    <i class="fas fa-fw fa-folder"></i>
-                    <span>Serah Terima</span>
-                </a>
-            </li>
-
-            <!-- Berita Acara -->
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseBeritaAcara"
-                    aria-expanded="false" aria-controls="collapseBeritaAcara">
-                    <i class="fas fa-fw fa-file-alt"></i>
-                    <span>Berita Acara</span>
-                </a>
-                <div id="collapseBeritaAcara" class="collapse" aria-labelledby="headingBeritaAcara" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item" href="{{ route('pemeriksaan') }}">Pemeriksaan</a>
-                        <a class="collapse-item" href="{{ route('penerimaan') }}">Penerimaan</a>
-                        <a class="collapse-item" href="{{ route('serahbarang') }}">Serah Barang</a>
-                    </div>
-                </div>
-            </li>
-
-            <!-- Review -->
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('reviewSPJ') }}">
-                    <i class="fas fa-fw fa-chart-area"></i>
-                    <span>Review Data SPJ</span>
-                </a>
-            </li>
-
-            <!-- Cetak -->
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('cetakSPJ') }}">
-                    <i class="fas fa-fw fa-print"></i>
-                    <span>Cetak Data SPJ</span>
-                </a>
-            </li>
-
-            <!-- Divider -->
-            <hr class="sidebar-divider d-none d-md-block">
-
+            
             <!-- Sidebar Toggler -->
             <div class="text-center d-none d-md-inline">
                 <button class="rounded-circle border-0" id="sidebarToggle"></button>
@@ -117,7 +66,7 @@
 
         </ul>
 
-        <!-- End of Sidebar -->
+
 
         <!-- Content Wrapper -->
         <div id="content-wrapper" class="d-flex flex-column min-vh-100">

@@ -3,11 +3,13 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Spj;
 use App\Models\Pesanan;
 use App\Models\Pemeriksaan;
 use App\Models\Penerimaan;
 use App\Models\Kwitansi;
+use App\Models\User;
 use PhpOffice\PhpWord\TemplateProcessor;
 use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
@@ -24,42 +26,41 @@ class SPJController extends Controller
 
     public function create(Request $request)
     {
-        // 1️⃣ Buat SPJ
+        $userId = Auth::id() ?? session('user_id'); // backup kalau Auth hilang
+
+        if (!$userId) {
+            return back()->withErrors(['auth' => 'User belum login']);
+        }
+
         $spj = Spj::create([
             'status'         => 'draft',
             'pesanan_id'     => $request->pesanan_id,
             'kwitansi_id'    => $request->kwitansi_id,
             'penerimaan_id'  => $request->penerimaan_id,
             'pemeriksaan_id' => $request->pemeriksaan_id,
+            'user_id'        => $userId, // ✅ integer ID user login
         ]);
 
-        // 2️⃣ Update relasi agar sinkron
         if ($request->pesanan_id) {
-            Pesanan::where('id', $request->pesanan_id)
-                ->update(['spj_id' => $spj->id]);
+            Pesanan::where('id', $request->pesanan_id)->update(['spj_id' => $spj->id]);
         }
-
         if ($request->kwitansi_id) {
-            Kwitansi::where('id', $request->kwitansi_id)
-                ->update(['spj_id' => $spj->id]);
+            Kwitansi::where('id', $request->kwitansi_id)->update(['spj_id' => $spj->id]);
         }
-
         if ($request->penerimaan_id) {
-            Penerimaan::where('id', $request->penerimaan_id)
-                ->update(['spj_id' => $spj->id]);
+            Penerimaan::where('id', $request->penerimaan_id)->update(['spj_id' => $spj->id]);
         }
-
         if ($request->pemeriksaan_id) {
-            Pemeriksaan::where('id', $request->pemeriksaan_id)
-                ->update(['spj_id' => $spj->id]);
+            Pemeriksaan::where('id', $request->pemeriksaan_id)->update(['spj_id' => $spj->id]);
         }
 
-        // 3️⃣ Simpan ID SPJ di session
         session(['current_spj_id' => $spj->id]);
 
-        // 4️⃣ Redirect ke halaman selanjutnya, misal ke form Kwitansi
-        return redirect()->route('kwitansi.create', ['spj_id' => $spj->id]);
+        return redirect()
+            ->route('kwitansi.create', ['spj_id' => $spj->id])
+            ->with('success', "SPJ berhasil dibuat untuk user ID: {$userId}");
     }
+
 
     public function review($spj_id)
     {

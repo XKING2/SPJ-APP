@@ -8,14 +8,12 @@ use App\Http\Controllers\pemeriksaancontrol;
 use App\Http\Controllers\penerimaancontrol;
 use App\Http\Controllers\pesanancontrol;
 use App\Http\Controllers\serahterimacontrol;
+use App\Http\Controllers\sidebarcontrol3;
 use App\Http\Controllers\SPJController;
 
 
-Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-Route::get('/Dashboard', [sidebarcontrol::class, 'showdashboard'])->name('admindashboard');
+Route::get('/User/Dashboard', [sidebarcontrol::class, 'showdashboard1'])->name('userdashboard');
 Route::get('/Kwitansi', [sidebarcontrol::class, 'showkwitansi'])->name('kwitansi');
 Route::get('/Pesanan', [sidebarcontrol::class, 'showpesanan'])->name('pesanan');
 Route::get('/Serahterima', [sidebarcontrol::class, 'showserahterima'])->name('serahterima');
@@ -25,6 +23,8 @@ Route::get('/Serahbarang', [sidebarcontrol::class, 'showserahbarang'])->name('se
 Route::get('/ReviewSPJ', [sidebarcontrol::class, 'showreviewSPJ'])->name('reviewSPJ');
 Route::get('/CetakSPJ', [sidebarcontrol::class, 'showcetakSPJ'])->name('cetakSPJ');
 
+Route::get('/Superadmin/Dashboard', [sidebarcontrol3::class, 'showdashboard3'])->name('superdashboard');
+Route::get('/Superadmin/Validasi', [sidebarcontrol3::class, 'showvalidasi'])->name('Validasi');
 
 
 
@@ -54,15 +54,25 @@ Route::get('/penerimaan/create', [PenerimaanControl::class, 'create'])->name('pe
 Route::post('/penerimaan/store', [PenerimaanControl::class, 'store'])->name('penerimaan.store');
 
 
-// Dashboard untuk Superuser
-Route::get('/super/dashboard', function () {
-    return "Halo Superuser!";
-})->middleware('role:superadmin')->name('super.dashboard');
+Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
+Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 
-Route::get('/admin/dashboard', function () {
-    return view('admin.dashboard');
-})->middleware('role:admin')->name('admin.dashboard');
+// ===== Dashboard Routes =====
+Route::middleware(['auth', 'role:superadmin'])->group(function () {
+    Route::get('/super/dashboard', function () {
+        return view('superadmins.dashboard'); // disarankan pakai view
+    })->name('superadmins.dashboard');
+});
 
-Route::get('/user/dashboard', function () {
-    return view('users.dashboard');
-})->middleware('role:user')->name('user.dashboard');
+Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::get('/admin/dashboard', function () {
+        return view('admin.dashboard');
+    })->name('admin.dashboard');
+});
+
+Route::middleware(['auth', 'role:user'])->group(function () {
+    Route::get('/user/dashboard', function () {
+        return view('users.dashboard');
+    })->name('users.dashboard');
+});

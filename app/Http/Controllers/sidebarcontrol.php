@@ -8,10 +8,11 @@ use App\Models\Pesanan;
 use App\Models\pemeriksaan;
 use App\Models\penerimaan;
 use App\Models\SPJ;
+use Illuminate\Support\Facades\Auth;
 
 class sidebarcontrol extends Controller
 {
-    public function showdashboard()
+    public function showdashboard1()
     {
         return view('users.dashboard');
     }
@@ -122,20 +123,23 @@ class sidebarcontrol extends Controller
     public function showreviewSPJ(Request $request)
     {
         $search = $request->input('search');
+        $userId = Auth::id() ?? session('user_id'); // backup kalau Auth hilang
 
-        // Ambil data SPJ beserta relasi Pesanan
-        $query = Spj::with('pesanan');
+        // 🔒 Pastikan hanya SPJ milik user login yang diambil
+        $query = Spj::with('pesanan')->where('user_id', $userId);
 
-        // Filter pencarian
+        // 🔍 Tambahkan filter pencarian opsional
         if ($search) {
-            $query->where('status', 'like', "%{$search}%")
-                ->orWhereHas('pesanan', function ($q) use ($search) {
-                    $q->where('no_surat', 'like', "%{$search}%")
+            $query->where(function ($q) use ($search) {
+                $q->where('status', 'like', "%{$search}%")
+                ->orWhereHas('pesanan', function ($q2) use ($search) {
+                    $q2->where('no_surat', 'like', "%{$search}%")
                         ->orWhere('surat_dibuat', 'like', "%{$search}%");
                 });
+            });
         }
 
-        // Pagination
+        // 📑 Pagination
         $spjs = $query->orderBy('created_at', 'desc')->paginate(10);
 
         return view('users.reviewSPJ', compact('spjs'));
