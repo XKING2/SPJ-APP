@@ -10,6 +10,7 @@ use App\Http\Controllers\pesanancontrol;
 use App\Http\Controllers\serahterimacontrol;
 use App\Http\Controllers\SPJController;
 
+
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
@@ -21,7 +22,7 @@ Route::get('/Serahterima', [sidebarcontrol::class, 'showserahterima'])->name('se
 Route::get('/Penerimaan', [sidebarcontrol::class, 'showpenerimaan'])->name('penerimaan');
 Route::get('/Pemeriksaan', [sidebarcontrol::class, 'showpemeriksaan'])->name('pemeriksaan');
 Route::get('/Serahbarang', [sidebarcontrol::class, 'showserahbarang'])->name('serahbarang');
-Route::get('/ReviewSPJ', [SPJController::class, 'index'])->name('reviewSPJ');
+Route::get('/ReviewSPJ', [sidebarcontrol::class, 'showreviewSPJ'])->name('reviewSPJ');
 Route::get('/CetakSPJ', [sidebarcontrol::class, 'showcetakSPJ'])->name('cetakSPJ');
 
 
@@ -29,8 +30,11 @@ Route::get('/CetakSPJ', [sidebarcontrol::class, 'showcetakSPJ'])->name('cetakSPJ
 
 Route::get('/spj', [SPJController::class, 'index'])->name('spj.index');
 Route::get('/spj/create', [SPJController::class, 'create'])->name('spj.create');
-Route::get('spj/review/{spj_id}', [SPJController::class, 'review'])->name('spj.review');
-Route::get('/spj/preview/{spj_id}', [SPJController::class, 'preview'])->name('spj.preview');
+// 🔹 Tampilkan preview SPJ (hasil generate PDF)
+Route::get('/spj/preview/{id}', [SPJController::class, 'preview'])->name('spj.preview');
+
+
+
 
 // ========== KWITANSI ==========
 Route::get('/kwitansi/create/{spj_id}', [KwitansiControl::class, 'create'])->name('kwitansi.create');

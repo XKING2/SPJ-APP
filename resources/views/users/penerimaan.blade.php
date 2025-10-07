@@ -15,8 +15,9 @@
         <div class="card-body">
             <!-- Search & Print -->
             <div class="d-flex justify-content-between mb-3">
-                <form action="#" method="GET" class="form-inline">
-                    <input type="text" name="search" class="form-control form-control-sm mr-2" placeholder="Cari...">
+                <form action="{{ route('penerimaan') }}" method="GET" class="form-inline">
+                    <input type="text" name="search" class="form-control form-control-sm mr-2" 
+                           placeholder="Cari..." value="{{ request('search') }}">
                     <button type="submit" class="btn btn-sm btn-secondary">Cari</button>
                 </form>
                 <a href="#" target="_blank" class="btn btn-info btn-sm">
@@ -30,36 +31,45 @@
                     <thead class="thead-light">
                         <tr>
                             <th style="width: 50px;">No</th>
-                            <th>Pihak Pertama</th>
-                            <th>Pihak Kedua </th>
+                            <th style="width: 180px;">No Surat</th>
+                            <th style="width: 200px;">Pihak Kedua</th>
                             <th>Hal Yang Dikerjakan</th>
                             <th style="width: 180px;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {{-- Contoh data statis --}}
-                        <tr>
-                            <td>1</td>
-                            <td>Drs. I Wayan Arsana, MAP</td>
-                            <td>Putu Agus Junaedi</td>
-                            <td>Belanja Pemeliharaan Alat Angkutan-Alat Angkutan Darat</td>
-                            <td>
-                                <a href="#" class="btn btn-sm btn-success">
-                                    <i class="fas fa-edit"></i> Edit
-                                </a>
-                                <button class="btn btn-sm btn-danger" onclick="return confirm('Yakin hapus?')">
-                                    <i class="fas fa-trash"></i> Hapus
-                                </button>
-                            </td>
-                        </tr>
-                        {{-- Jika tidak ada data --}}
-                        <tr>
-                            <td colspan="5" class="text-center">Data tidak tersedia</td>
-                        </tr>
+                        @forelse ($penerimaans as $index => $penerimaan)
+                            <tr>
+                                <td>{{ $loop->iteration + ($penerimaans->currentPage() - 1) * $penerimaans->perPage() }}</td>
+                                <td>{{ $penerimaan->pesanan->no_surat ?? '-' }}</td>
+                                <td>{{ $penerimaan->nama_pihak_kedua ?? '-' }}</td>
+                                <td>{{ $penerimaan->pekerjaan ?? '-' }}</td>
+                                <td>
+                                    <a href="#" class="btn btn-sm btn-success">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </a>
+                                    <form action="#" method="POST" style="display:inline-block;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Yakin hapus?')">
+                                            <i class="fas fa-trash"></i> Hapus
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="text-center">Data tidak tersedia</td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
             </div>
 
+            <!-- Pagination -->
+            <div class="d-flex justify-content-center mt-3">
+                {{ $penerimaans->links('pagination::bootstrap-5') }}
+            </div>
         </div>
     </div>
 </div>

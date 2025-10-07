@@ -1,40 +1,49 @@
 @extends('layouts.main')
 
 @section('pageheads')
-    <h1 class="h3 mb-4 text-gray-800">
-        Preview SPJ - {{ $spj->nomor_spj ?? 'Tanpa Nomor' }}
-    </h1>
+    <h1 class="h3 mb-4 text-gray-800">Preview SPJ</h1>
 @endsection
 
 @section('content')
 <div class="container-fluid">
+
     <div class="card shadow mb-4">
         <div class="card-header py-3 d-flex justify-content-between align-items-center">
-            <h6 class="m-0 font-weight-bold text-primary">
-                Preview Surat Pertanggungjawaban
-            </h6>
-
-            @if(isset($pdfUrl))
-            <a href="{{ $pdfUrl }}" class="btn btn-success btn-sm" download>
-                <i class="fas fa-file-pdf"></i> Download PDF
+            <h6 class="m-0 font-weight-bold text-primary">Preview SPJ</h6>
+            <a href="{{ route('reviewSPJ') }}" class="btn btn-sm btn-secondary">
+                <i class="fas fa-arrow-left"></i> Kembali
             </a>
-            @endif
         </div>
 
-        <div class="card-body p-0">
-            @if(isset($pdfUrl))
-            <iframe 
-                src="{{ $pdfUrl }}" 
-                style="width:100%; height:80vh; border:none;" 
-                frameborder="0">
-            </iframe>
-            @else
-            <div class="text-center p-5">
-                <p class="text-muted">Preview dokumen belum tersedia.</p>
+        <div class="card-body">
+            <!-- Info Singkat -->
+            <div class="mb-3">
+                <h6 class="text-primary mb-1">
+                    Nomor SPJ: <strong>{{ $spj->pesanan->no_surat ?? 'Tanpa Nomor' }}</strong>
+                </h6>
+                <p class="mb-0">
+                    Tanggal Dibuat: {{ \Carbon\Carbon::parse($spj->pesanan->surat_dibuat ?? now())->translatedFormat('d F Y') }}
+                </p>
             </div>
-            @endif
+
+            <!-- PDF Viewer -->
+            <div id="pdf-viewer" class="mt-3">
+                <iframe 
+                    id="pdf-frame" 
+                    src="{{ $fileUrl }}" 
+                    width="100%" 
+                    height="650px" 
+                    style="border:1px solid #ccc; border-radius: 8px;">
+                </iframe>
+            </div>
+
+            <!-- Tombol Tutup -->
+            <div class="mt-3 d-flex justify-content-end">
+                <a href="{{ route('reviewSPJ') }}" class="btn btn-danger btn-sm">
+                    <i class="fas fa-times"></i> Tutup Preview
+                </a>
+            </div>
         </div>
     </div>
 </div>
-
 @endsection

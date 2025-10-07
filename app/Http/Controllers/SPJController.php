@@ -10,11 +10,9 @@ use App\Models\Penerimaan;
 use App\Models\Kwitansi;
 use PhpOffice\PhpWord\TemplateProcessor;
 use Illuminate\Support\Facades\Storage;
-use PhpOffice\PhpWord\IOFactory;
-use PhpOffice\PhpWord\Settings;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Exception;
-
-
+use Illuminate\Support\Facades\Log;
 
 class SPJController extends Controller
 {
@@ -69,16 +67,14 @@ class SPJController extends Controller
         return view('users.reviewSPJ', compact('spj'));
     }
 
+    
 
-
-
-public function preview($id)
+    public function generateSPJDocument($id)
     {
         try {
-            // 1️⃣ Ambil data lengkap SPJ dan relasinya
             $spj = Spj::with([
                 'pesanan.items',
-                'penerimaan',
+                'penerimaan.details',
                 'kwitansi',
                 'pemeriksaan'
             ])->findOrFail($id);
@@ -88,88 +84,141 @@ public function preview($id)
             $kwitansi    = $spj->kwitansi;
             $pemeriksaan = $spj->pemeriksaan;
 
-            // 2️⃣ Path file
+            // Path file
             $templatePath = storage_path('app/public/Tamplate_SPJ.docx');
             $outputDocx   = storage_path("app/public/spj_preview_{$spj->id}.docx");
             $outputPdfDir = storage_path('app/public');
             $outputPdf    = "{$outputPdfDir}/spj_preview_{$spj->id}.pdf";
 
             if (!file_exists($templatePath)) {
-                return back()->with('error', 'Template tidak ditemukan.');
+                throw new Exception('Template SPJ tidak ditemukan.');
             }
 
-            // 3️⃣ Load template Word
             $template = new TemplateProcessor($templatePath);
 
-            // 4️⃣ Set nilai dari database (pakai nama placeholder yang sesuai di DOCX)
-            $template->setValue('${{no_rekening}}', $kwitansi->no_rekening ?? '-');
-            $template->setValue('${{nama_pt}}', $kwitansi->nama_pt ?? $pesanan->nama_pt ?? '-');
-            $template->setValue('${{no_rekening_tujuan}}', $kwitansi->no_rekening_tujuan ?? '-');
-            $template->setValue('${{nama_bank}}', $kwitansi->nama_bank ?? '-');
-            $template->setValue('${{npwp}}', $kwitansi->npwp ?? '-');
-            $template->setValue('${{telah_diterima_dari}}', $kwitansi->telah_diterima_dari ?? '-');
-            $template->setValue('${{uang_terbilang}}', $kwitansi->uang_terbilang ?? '-');
-            $template->setValue('${{pembayaran}}', $kwitansi->pembayaran ?? '-');
-            $template->setValue('${{sub_kegiatan}}', $kwitansi->sub_kegiatan ?? '-');
-            $template->setValue('${{jumlah_nominal}}', number_format($kwitansi->jumlah_nominal ?? 0));
-            $template->setValue('${{penerima_kwitansi}}', $kwitansi->penerima_kwitansi ?? '-');
-            $template->setValue('${{jabatan_penerima}}', $kwitansi->jabatan_penerima ?? '-');
+            // 4️⃣ Set nilai dari database
+            $template->setValue('no_rekening', $kwitansi->no_rekening ?? '-');
+            $template->setValue('nama_pt', $kwitansi->nama_pt ?? $pesanan->nama_pt ?? '-');
+            $template->setValue('no_rekening_tujuan', $kwitansi->no_rekening_tujuan ?? '-');
+            $template->setValue('nama_bank', $kwitansi->nama_bank ?? '-');
+            $template->setValue('npwp', $kwitansi->npwp ?? '-');
+            $template->setValue('telah_diterima_dari', $kwitansi->telah_diterima_dari ?? '-');
+            $template->setValue('uang_terbilang', $kwitansi->uang_terbilang ?? '-');
+            $template->setValue('pembayaran', $kwitansi->pembayaran ?? '-');
+            $template->setValue('sub_kegiatan', $kwitansi->sub_kegiatan ?? '-');
+            $template->setValue('jumlah_nominal', number_format($kwitansi->jumlah_nominal ?? 0));
+            $template->setValue('penerima_kwitansi', $kwitansi->penerima_kwitansi ?? '-');
+            $template->setValue('jabatan_penerima', $kwitansi->jabatan_penerima ?? '-');
 
             // Data Pesanan
             if ($pesanan) {
-                $template->setValue('${{no_surat}}', $pesanan->no_surat ?? '-');
-                $template->setValue('${{alamat_pt}}', $pesanan->alamat_pt ?? '-');
-                $template->setValue('${{nomor_tlp_pt}}', $pesanan->nomor_tlp_pt ?? '-');
-                $template->setValue('${{tanggal_diterima}}', $pesanan->tanggal_diterima ?? '-');
-                $template->setValue('${{surat_dibuat}}', $pesanan->surat_dibuat ?? '-');
+                $template->setValue('no_surat', $pesanan->no_surat ?? '-');
+                $template->setValue('alamat_pt', $pesanan->alamat_pt ?? '-');
+                $template->setValue('nomor_tlp_pt', $pesanan->nomor_tlp_pt ?? '-');
+                $template->setValue('tanggal_diterima', $pesanan->tanggal_diterima ?? '-');
+                $template->setValue('surat_dibuat', $pesanan->surat_dibuat ?? '-');
             }
 
             // Pemeriksaan
             if ($pemeriksaan) {
-                $template->setValue('${{hari_diterima}}', $pemeriksaan->hari_diterima ?? '-');
-                $template->setValue('${{bulan_diterima}}', $pemeriksaan->bulan_diterima ?? '-');
-                $template->setValue('${{tahun_diterima}}', $pemeriksaan->tahun_diterima ?? '-');
-                $template->setValue('${{nama_pihak_kedua}}', $pemeriksaan->nama_pihak_kedua ?? '-');
-                $template->setValue('${{jabatan_pihak_kedua}}', $pemeriksaan->jabatan_pihak_kedua ?? '-');
-                $template->setValue('${{alamat_pihak_kedua}}', $pemeriksaan->alamat_pihak_kedua ?? '-');
-                $template->setValue('${{pekerjaan}}', $pemeriksaan->pekerjaan ?? '-');
+                $template->setValue('hari_diterima', $pemeriksaan->hari_diterima ?? '-');
+                $template->setValue('bulan_diterima', $pemeriksaan->bulan_diterima ?? '-');
+                $template->setValue('tahun_diterima', $pemeriksaan->tahun_diterima ?? '-');
+                $template->setValue('nama_pihak_kedua', $pemeriksaan->nama_pihak_kedua ?? '-');
+                $template->setValue('jabatan_pihak_kedua', $pemeriksaan->jabatan_pihak_kedua ?? '-');
+                $template->setValue('alamat_pihak_kedua', $pemeriksaan->alamat_pihak_kedua ?? '-');
+                $template->setValue('pekerjaan', $pemeriksaan->pekerjaan ?? '-');
             }
 
-            // Penerimaan
+            // Data Penerimaan
             if ($penerimaan) {
-                $template->setValue('${{subtotal}}', number_format($penerimaan->subtotal ?? 0));
-                $template->setValue('${{ppn}}', number_format($penerimaan->ppn ?? 0));
-                $template->setValue('${{grandtotal}}', number_format($penerimaan->grandtotal ?? 0));
-                $template->setValue('${{dibulatkan}}', number_format($penerimaan->dibulatkan ?? 0));
-                $template->setValue('${{terbilang}}', $penerimaan->terbilang ?? '-');
+                $template->setValue('subtotal', number_format($penerimaan->subtotal ?? 0));
+                $template->setValue('ppn', number_format($penerimaan->ppn ?? 0));
+                $template->setValue('grandtotal', number_format($penerimaan->grandtotal ?? 0));
+                $template->setValue('dibulatkan', number_format($penerimaan->dibulatkan ?? 0));
+                $template->setValue('terbilang', $penerimaan->terbilang ?? '-');
             }
 
-            // Item Barang (ambil hanya item pertama untuk contoh)
-            if ($pesanan && $pesanan->items->count() > 0) {
-                $item = $pesanan->items->first();
-                $template->setValue('${{nama_barang}}', $item->nama_barang ?? '-');
-                $template->setValue('${{jumlah}}', $item->jumlah ?? '-');
-                $template->setValue('${{satuan}}', $item->satuan ?? '-');
-                $template->setValue('${{harga_satuan}}', $item->harga_satuan ?? '-');
+            // 🔁 Ambil detail penerimaan barang
+            $details = $penerimaan ? $penerimaan->details : collect();
+
+            if ($details->count() > 0) {
+                $template->cloneRow('nama_barang1', $details->count());
+                foreach ($details as $i => $detail) {
+                    $n = $i + 1;
+                    $template->setValue("no1#{$n}", $n); // 👉 Tambahkan ini
+                    $template->setValue("nama_barang1#{$n}", $detail->nama_barang ?? '-');
+                    $template->setValue("jumlah1#{$n}", $detail->jumlah ?? '-');
+                    $template->setValue("satuan1#{$n}", $detail->satuan ?? '-');
+                    $template->setValue("harga_satuan1#{$n}", number_format($detail->harga_satuan ?? 0));
+                    $template->setValue("subtotal1#{$n}", number_format($detail->total ?? 0));
+                }
+
+                // Serah Terima
+                $template->cloneRow('nama_barang2', $details->count());
+                foreach ($details as $i => $detail) {
+                    $n = $i + 1;
+                    $template->setValue("no2#{$n}", $n); // Tambahkan juga untuk tabel ke-2
+                    $template->setValue("nama_barang2#{$n}", $detail->nama_barang ?? '-');
+                    $template->setValue("jumlah2#{$n}", $detail->jumlah ?? '-');
+                    $template->setValue("satuan2#{$n}", $detail->satuan ?? '-');
+                    $template->setValue("harga_satuan2#{$n}", number_format($detail->harga_satuan ?? 0));
+                    $template->setValue("subtotal2#{$n}", number_format($detail->total ?? 0));
+                }
+
+                // Tabel ke-3
+                $template->cloneRow('nama_barang3', $details->count());
+                foreach ($details as $i => $detail) {
+                    $n = $i + 1;
+                    $template->setValue("no3#{$n}", $n); // Tambahkan juga
+                    $template->setValue("nama_barang3#{$n}", $detail->nama_barang ?? '-');
+                    $template->setValue("jumlah3#{$n}", $detail->jumlah ?? '-');
+                    $template->setValue("satuan3#{$n}", $detail->satuan ?? '-');
+                    $template->setValue("harga_satuan3#{$n}", number_format($detail->harga_satuan ?? 0));
+                    $template->setValue("subtotal3#{$n}", number_format($detail->total ?? 0));
+                }
             }
 
-            // 5️⃣ Simpan file hasil Word
+            // Simpan Word
             $template->saveAs($outputDocx);
 
-            // 6️⃣ Konversi ke PDF menggunakan LibreOffice (headless)
-            $command = "soffice --headless --convert-to pdf --outdir " . escapeshellarg($outputPdfDir) . " " . escapeshellarg($outputDocx);
+            // Konversi ke PDF
+            $command = "soffice --headless --convert-to pdf --outdir " 
+                . escapeshellarg($outputPdfDir) . " " 
+                . escapeshellarg($outputDocx);
             exec($command, $output, $returnCode);
 
             if ($returnCode !== 0) {
-                throw new Exception("Gagal konversi ke PDF. Pastikan LibreOffice terinstal di server.");
+                throw new Exception("Gagal konversi ke PDF. Pastikan LibreOffice terinstal.");
             }
 
-            // 7️⃣ Tampilkan hasil PDF langsung ke browser
-            return response()->file($outputPdf);
+            // Pastikan file tersimpan di storage/public
+            if (file_exists($outputPdf)) {
+                Storage::disk('public')->putFileAs('spj_generated', new \Illuminate\Http\File($outputPdf), "spj_{$spj->id}.pdf");
+            }
 
         } catch (Exception $e) {
-            return back()->with('error', 'Gagal membuat preview: ' . $e->getMessage());
+            Log::error('Gagal generate SPJ otomatis: ' . $e->getMessage());
         }
+    }
+
+    public function preview($id)
+    {
+        $spj = Spj::with('pesanan')->findOrFail($id);
+
+        // Lokasi file di storage
+        $relativePath = "spj_preview_{$spj->id}.pdf";
+        $pdfPath = storage_path("app/public/{$relativePath}");
+
+        // Pastikan file-nya ada
+        if (!file_exists($pdfPath)) {
+            return back()->with('error', 'File PDF tidak ditemukan.');
+        }
+
+        // Buat URL publik
+        $fileUrl = asset("storage/{$relativePath}");
+
+        return view('users.previewSPJ', compact('spj', 'fileUrl'));
     }
 
 

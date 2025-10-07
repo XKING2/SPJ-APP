@@ -1,10 +1,9 @@
 @extends('layouts.main')
-    <link href="../css/sb-admin-2.min.css" rel="stylesheet">
-    <link href="../css/page.css" rel="stylesheet">
-    
+<link href="../css/sb-admin-2.min.css" rel="stylesheet">
+<link href="../css/page.css" rel="stylesheet">
+
 @section('pageheads')
-    
-    <h1 class="h3 mb-4 text-gray-800">Kelola Data Kwitansi</h1>
+<h1 class="h3 mb-4 text-gray-800">Kelola Data Kwitansi</h1>
 @endsection
 
 @section('content')
@@ -16,12 +15,15 @@
             <h6 class="m-0 font-weight-bold text-primary">Data Kwitansi</h6>
         </div>
         <div class="card-body">
+
             <!-- Search & Print -->
             <div class="d-flex justify-content-between mb-3">
-                <form action="#" method="GET" class="form-inline">
-                    <input type="text" name="search" class="form-control form-control-sm mr-2" placeholder="Cari...">
+                <form action="{{ route('kwitansi') }}" method="GET" class="form-inline">
+                    <input type="text" name="search" value="{{ request('search') }}" 
+                        class="form-control form-control-sm mr-2" placeholder="Cari...">
                     <button type="submit" class="btn btn-sm btn-secondary">Cari</button>
                 </form>
+
                 <a href="#" target="_blank" class="btn btn-info btn-sm">
                     <i class="fas fa-print"></i> Cetak
                 </a>
@@ -40,27 +42,37 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {{-- Contoh data statis --}}
-                        <tr>
-                            <td>1</td>
-                            <td>Pembayaran Tagihan</td>
-                            <td>Rp 1.000.000</td>
-                            <td>PT Contoh Abadi</td>
-                            <td>
-                                <a href="#" class="btn btn-sm btn-success">
-                                    <i class="fas fa-edit"></i> Edit
-                                </a>
-                                <button class="btn btn-sm btn-danger" onclick="return confirm('Yakin hapus?')">
-                                    <i class="fas fa-trash"></i> Hapus
-                                </button>
-                            </td>
-                        </tr>
-                        {{-- Jika tidak ada data --}}
-                        <tr>
-                            <td colspan="5" class="text-center">Data tidak tersedia</td>
-                        </tr>
+                        @forelse ($kwitansis as $index => $kwitansi)
+                            <tr>
+                                <td>{{ $loop->iteration + ($kwitansis->currentPage() - 1) * $kwitansis->perPage() }}</td>
+                                <td>{{ $kwitansi->pembayaran ?? '-' }}</td>
+                                <td>Rp {{ number_format($kwitansi->jumlah_nominal ?? 0, 0, ',', '.') }}</td>
+                                <td>{{ $kwitansi->nama_pt ?? '-' }}</td>
+                                <td>
+                                    <a href="#" class="btn btn-sm btn-success">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </a>
+                                    <form action="#" method="POST" style="display:inline-block;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Yakin hapus?')">
+                                            <i class="fas fa-trash"></i> Hapus
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="text-center">Data tidak tersedia</td>
+                            </tr>
+                        @endforelse
                     </tbody>
                 </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="d-flex justify-content-center mt-3">
+                {{ $kwitansis->appends(['search' => request('search')])->links('pagination::bootstrap-5') }}
             </div>
 
         </div>

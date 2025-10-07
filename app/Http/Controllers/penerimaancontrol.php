@@ -7,6 +7,7 @@ use App\Models\Penerimaan;
 use App\Models\penerimaan_details;
 use App\Models\Pemeriksaan;
 use App\Models\SPJ;
+use App\Http\Controllers\SPJController; 
 
 class PenerimaanControl extends Controller
 {
@@ -17,6 +18,7 @@ class PenerimaanControl extends Controller
 
         return view('users.create.createpenerimaan', compact('spj', 'pemeriksaan'));
     }
+
 
     public function store(Request $request)
     {
@@ -37,7 +39,9 @@ class PenerimaanControl extends Controller
             'barang.*.total' => 'required|numeric',
         ]);
 
+        // 🔹 1. Simpan data penerimaan
         $penerimaan = Penerimaan::create([
+            'spj_id' => $request->spj_id,
             'pemeriksaan_id' => $request->pemeriksaan_id,
             'pesanan_id' => $request->pesanan_id,
             'pekerjaan' => $request->pekerjaan,
@@ -51,9 +55,13 @@ class PenerimaanControl extends Controller
             'dibulatkan' => $request->dibulatkan,
             'terbilang' => $request->terbilang,
         ]);
+
+        // 🔹 2. Update SPJ agar punya penerimaan_id
         $spj = SPJ::findOrFail($validated['spj_id']);
         $spj->update(['penerimaan_id' => $penerimaan->id]);
 
+        // 🔹 3. Simpan detail barang
+        // 🔹 3. Simpan detail barang
         foreach ($validated['barang'] as $item) {
             penerimaan_details::create([
                 'penerimaan_id' => $penerimaan->id,
@@ -65,8 +73,15 @@ class PenerimaanControl extends Controller
             ]);
         }
 
+        // 🔹 4. Panggil fungsi generate dokumen SPJ otomatis dari SPJController
+        $spjController = new SPJController();
+        $spjController->generateSPJDocument($spj->id);
+
+        // 🔹 5. Redirect ke daftar SPJ
         return redirect()
-            ->route('spj.preview', ['spj_id' => $validated['spj_id']])
-            ->with('success', 'Data penerimaan berhasil disimpan. Lanjut ke review.');
+            ->route('reviewSPJ')
+            ->with('success', 'Data penerimaan berhasil disimpan dan SPJ telah digenerate otomatis.');
+
     }
+
 }

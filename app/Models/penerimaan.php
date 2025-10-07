@@ -7,10 +7,14 @@ use Illuminate\Database\Eloquent\Model;
 class penerimaan extends Model
 {
     protected $fillable = [
-        'spj_id','pemeriksaan_id', 'pesanan_id', 'pekerjaan', 'no_surat', 'surat_dibuat',
+        'spj_id','pesanan_item_id','pemeriksaan_id', 'pesanan_id', 'pekerjaan', 'no_surat', 'surat_dibuat',
         'nama_pihak_kedua', 'jabatan_pihak_kedua',
         'subtotal', 'ppn', 'grandtotal', 'dibulatkan', 'terbilang'
     ];
+
+    public function items() {
+        return $this->hasMany(PesananItem::class);
+    }
 
     public function details()
     {
