@@ -45,13 +45,17 @@
                             <input type="text" name="telah_diterima_dari" class="form-control" value="{{ old('telah_diterima_dari') }}">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Jumlah Nominal</label>
-                            <input type="number" name="jumlah_nominal" class="form-control" value="{{ old('jumlah_nominal') }}">
+                        <label class="form-label fw-bold">Jumlah Nominal</label>
+                        <input 
+                            type="number" name="jumlah_nominal" id="jumlah_nominal" class="form-control" value="{{ old('jumlah_nominal') }}"placeholder="Masukkan jumlah nominal">
                         </div>
+
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Uang Terbilang</label>
-                            <input type="text" name="uang_terbilang" class="form-control" value="{{ old('uang_terbilang') }}">
+                        <label class="form-label fw-bold">Uang Terbilang</label>
+                        <input 
+                            type="text" name="uang_terbilang" id="uang_terbilang" class="form-control"  value="{{ old('uang_terbilang') }}" readonly>
                         </div>
+
                         <div class="mb-3">
                             <label class="form-label fw-bold">Jabatan Penerima Kwitansi</label>
                             <input type="text" name="jabatan_penerima" class="form-control" value="{{ old('jabatan_penerima') }}">
@@ -83,5 +87,58 @@
         </div>
     </div>
 </div>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const nominalInput = document.getElementById("jumlah_nominal");
+    const terbilangInput = document.getElementById("uang_terbilang");
+
+    nominalInput.addEventListener("input", function () {
+        const angka = parseInt(this.value) || 0;
+        terbilangInput.value = terbilangRupiah(angka);
+    });
+
+    function terbilangRupiah(angka) {
+        const satuan = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan"];
+        const belasan = ["Sepuluh", "Sebelas", "Dua Belas", "Tiga Belas", "Empat Belas", "Lima Belas", "Enam Belas", "Tujuh Belas", "Delapan Belas", "Sembilan Belas"];
+        const puluhan = ["", "", "Dua Puluh", "Tiga Puluh", "Empat Puluh", "Lima Puluh", "Enam Puluh", "Tujuh Puluh", "Delapan Puluh", "Sembilan Puluh"];
+        const ribuan = ["", "Ribu", "Juta", "Miliar", "Triliun"];
+
+        if (angka === 0) return "Nol Rupiah";
+
+        function konversi(num) {
+            let str = "";
+            if (num >= 100) {
+                if (Math.floor(num / 100) === 1) str += "Seratus ";
+                else str += satuan[Math.floor(num / 100)] + " Ratus ";
+                num %= 100;
+            }
+            if (num >= 10 && num <= 19) {
+                str += belasan[num - 10] + " ";
+            } else if (num >= 20) {
+                str += puluhan[Math.floor(num / 10)] + " ";
+                str += satuan[num % 10] + " ";
+            } else {
+                str += satuan[num] + " ";
+            }
+            return str.trim();
+        }
+
+        let result = "";
+        let i = 0;
+        while (angka > 0) {
+            const chunk = angka % 1000;
+            if (chunk > 0) {
+                let chunkStr = konversi(chunk);
+                if (i === 1 && chunk === 1) chunkStr = "Seribu";
+                result = chunkStr + " " + ribuan[i] + " " + result;
+            }
+            angka = Math.floor(angka / 1000);
+            i++;
+        }
+
+        return result.trim() + " Rupiah";
+    }
+});
+</script>
 @endsection
 

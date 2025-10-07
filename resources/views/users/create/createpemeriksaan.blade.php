@@ -23,7 +23,7 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold">Tanggal Diterima</label>
-                            <input type="text" name="tanggal_diterima" class="form-control" value="{{ old('no_rekening_tujuan') }}">
+                            <input type="text" name="tanggals_diterima" class="form-control" value="{{ old('no_rekening_tujuan') }}">
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold">Bulan Diterima</label>

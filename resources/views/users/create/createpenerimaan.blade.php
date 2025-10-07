@@ -135,20 +135,50 @@ document.addEventListener('DOMContentLoaded', function() {
     const dibulatkanInput = document.getElementById('dibulatkan');
     const terbilangInput = document.getElementById('terbilang');
 
-    function numberToWords(n) {
-        // Simple version for Indonesian numbers
-        const angka = ["","Satu","Dua","Tiga","Empat","Lima","Enam","Tujuh","Delapan","Sembilan"];
-        if (n == 0) return "Nol";
-        let words = "";
-        let str = n.toString();
-        let digits = str.split("").reverse();
-        for (let i=0; i<digits.length; i++) {
-            let d = parseInt(digits[i]);
-            if(d != 0) words = angka[d] + " " + words;
+    // ✅ Fungsi terbilang (versi lengkap dalam Bahasa Indonesia)
+    function terbilangRupiah(angka) {
+        const satuan = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan"];
+        const belasan = ["Sepuluh", "Sebelas", "Dua Belas", "Tiga Belas", "Empat Belas", "Lima Belas", "Enam Belas", "Tujuh Belas", "Delapan Belas", "Sembilan Belas"];
+        const puluhan = ["", "", "Dua Puluh", "Tiga Puluh", "Empat Puluh", "Lima Puluh", "Enam Puluh", "Tujuh Puluh", "Delapan Puluh", "Sembilan Puluh"];
+        const ribuan = ["", "Ribu", "Juta", "Miliar", "Triliun"];
+
+        if (angka === 0) return "Nol Rupiah";
+
+        function konversi(num) {
+            let str = "";
+            if (num >= 100) {
+                if (Math.floor(num / 100) === 1) str += "Seratus ";
+                else str += satuan[Math.floor(num / 100)] + " Ratus ";
+                num %= 100;
+            }
+            if (num >= 10 && num <= 19) {
+                str += belasan[num - 10] + " ";
+            } else if (num >= 20) {
+                str += puluhan[Math.floor(num / 10)] + " ";
+                str += satuan[num % 10] + " ";
+            } else {
+                str += satuan[num] + " ";
+            }
+            return str.trim();
         }
-        return words;
+
+        let result = "";
+        let i = 0;
+        while (angka > 0) {
+            const chunk = angka % 1000;
+            if (chunk > 0) {
+                let chunkStr = konversi(chunk);
+                if (i === 1 && chunk === 1) chunkStr = "Seribu";
+                result = chunkStr + " " + ribuan[i] + " " + result;
+            }
+            angka = Math.floor(angka / 1000);
+            i++;
+        }
+
+        return result.trim() + " Rupiah";
     }
 
+    // ✅ Fungsi perhitungan total dan PPN
     function hitungTotal() {
         let subtotal = 0;
         hargaInputs.forEach((input, i) => {
@@ -158,21 +188,30 @@ document.addEventListener('DOMContentLoaded', function() {
             totalInputs[i].value = total;
             subtotal += total;
         });
+
+        // Subtotal
         jumlahInput.value = subtotal;
+
+        // PPN 10%
         let ppn = subtotal * 0.1;
         ppnInput.value = ppn;
+
+        // Grand total (subtotal + ppn)
         let grandtotal = subtotal + ppn;
         grandtotalInput.value = grandtotal;
+
+        // Pembulatan dan terbilang
         let dibulatkan = Math.round(grandtotal);
         dibulatkanInput.value = dibulatkan;
-        terbilangInput.value = numberToWords(dibulatkan);
+        terbilangInput.value = terbilangRupiah(dibulatkan);
     }
 
     hargaInputs.forEach(input => {
         input.addEventListener('input', hitungTotal);
     });
 
-    // Hitung awal
+    // Hitung saat load awal
     hitungTotal();
 });
 </script>
+

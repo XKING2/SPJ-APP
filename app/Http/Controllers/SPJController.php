@@ -122,6 +122,7 @@ class SPJController extends Controller
             // Pemeriksaan
             if ($pemeriksaan) {
                 $template->setValue('hari_diterima', $pemeriksaan->hari_diterima ?? '-');
+                $template->setValue('tanggals_diterima', $pemeriksaan->tanggals_diterima ?? '-');
                 $template->setValue('bulan_diterima', $pemeriksaan->bulan_diterima ?? '-');
                 $template->setValue('tahun_diterima', $pemeriksaan->tahun_diterima ?? '-');
                 $template->setValue('nama_pihak_kedua', $pemeriksaan->nama_pihak_kedua ?? '-');

@@ -30,16 +30,16 @@
                             <input type="text" name="alamat_pt" class="form-control" value="{{ old('alamat_pt') }}">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Tanggal Barang Diterima</label>
-                            <input type="date" name="tanggal_diterima" class="form-control" value="{{ old('tanggal_diterima') }}">
+                            <label class="form-label fw-bold">Tanggal Surat Dibuat</label>
+                            <input type="date" id="surat_dibuat" name="surat_dibuat" class="form-control" value="{{ old('surat_dibuat') }}">
                         </div>
                     </div>
 
                     <!-- Kanan -->
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Tanggal Surat Dibuat</label>
-                            <input type="date" name="surat_dibuat" class="form-control" value="{{ old('surat_dibuat') }}">
+                                <label class="form-label fw-bold">Tanggal Barang Diterima</label>
+                                <input type="date" id="tanggal_diterima" name="tanggal_diterima" class="form-control" value="{{ old('tanggal_diterima') }}">
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold">Nomor Telpon PT</label>
@@ -103,6 +103,24 @@ document.addEventListener("DOMContentLoaded", function() {
         if(e.target.classList.contains("remove-row")) {
             e.target.closest("tr").remove();
         }
+    });
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const inputs = ['surat_dibuat', 'tanggal_diterima'];
+
+    inputs.forEach(id => {
+        const input = document.getElementById(id);
+        input.addEventListener('change', function () {
+            const date = new Date(this.value);
+            if (!isNaN(date)) {
+                const formatted = String(date.getDate()).padStart(2, '0') + '-' +
+                                  String(date.getMonth() + 1).padStart(2, '0') + '-' +
+                                  date.getFullYear();
+                console.log(`Tanggal ${id}: ${formatted}`); // debug
+            }
+        });
     });
 });
 </script>

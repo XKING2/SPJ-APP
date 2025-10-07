@@ -22,7 +22,7 @@ class PemeriksaanControl extends Controller
             'spj_id' => 'required|exists:spjs,id',
             'pesanan_id' => 'required|exists:pesanans,id',
             'hari_diterima' => 'required',
-            'tanggal_diterima' => 'required',
+            'tanggals_diterima' => 'required',
             'bulan_diterima' => 'required',
             'tahun_diterima' => 'required',
             'hari_diterima' => 'required|string|max:50',
