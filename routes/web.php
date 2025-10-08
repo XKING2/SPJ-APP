@@ -25,7 +25,9 @@ Route::get('/CetakSPJ', [sidebarcontrol::class, 'showcetakSPJ'])->name('cetakSPJ
 
 Route::get('/Superadmin/Dashboard', [sidebarcontrol3::class, 'showdashboard3'])->name('superdashboard');
 Route::get('/Superadmin/Validasi', [sidebarcontrol3::class, 'showvalidasi'])->name('Validasi');
-
+Route::get('/Superadmin/preview/{id}', [sidebarcontrol3::class, 'previewsuper'])->name('previewsuper');
+Route::post('/Superadmin/validasi/{id}/update-status', [sidebarcontrol3::class, 'updateStatusKasubag'])
+    ->name('updateStatusKasubag');
 
 
 Route::get('/spj', [SPJController::class, 'index'])->name('spj.index');
@@ -55,24 +57,20 @@ Route::post('/penerimaan/store', [PenerimaanControl::class, 'store'])->name('pen
 
 
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
-Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
+Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 
-// ===== Dashboard Routes =====
-Route::middleware(['auth', 'role:superadmin'])->group(function () {
-    Route::get('/super/dashboard', function () {
-        return view('superadmins.dashboard'); // disarankan pakai view
-    })->name('superadmins.dashboard');
+// 🔒 Logout
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// 🧭 Dashboard Routes
+Route::middleware(['auth', 'session.timeout', 'role:superadmin'])->group(function () {
+    Route::get('/super/dashboard', fn() => view('superadmins.dashboard'))->name('superadmins.dashboard');
 });
 
-Route::middleware(['auth', 'role:admin'])->group(function () {
-    Route::get('/admin/dashboard', function () {
-        return view('admin.dashboard');
-    })->name('admin.dashboard');
+Route::middleware(['auth', 'session.timeout', 'role:admin'])->group(function () {
+    Route::get('/admin/dashboard', fn() => view('admin.dashboard'))->name('admin.dashboard');
 });
 
-Route::middleware(['auth', 'role:user'])->group(function () {
-    Route::get('/user/dashboard', function () {
-        return view('users.dashboard');
-    })->name('users.dashboard');
+Route::middleware(['auth', 'session.timeout', 'role:user'])->group(function () {
+    Route::get('/user/dashboard', fn() => view('users.dashboard'))->name('users.dashboard');
 });

@@ -123,26 +123,30 @@ class sidebarcontrol extends Controller
     public function showreviewSPJ(Request $request)
     {
         $search = $request->input('search');
-        $userId = Auth::id() ?? session('user_id'); // backup kalau Auth hilang
+        $userId = Auth::id() ?? session('user_id'); // fallback untuk session manual
 
-        // 🔒 Pastikan hanya SPJ milik user login yang diambil
-        $query = Spj::with('pesanan')->where('user_id', $userId);
+        // 🔒 Ambil hanya SPJ milik user login
+        $query = Spj::with(['pesanan'])
+                    ->where('user_id', $userId);
 
-        // 🔍 Tambahkan filter pencarian opsional
+        // 🔍 Filter pencarian
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->where('status', 'like', "%{$search}%")
-                ->orWhereHas('pesanan', function ($q2) use ($search) {
-                    $q2->where('no_surat', 'like', "%{$search}%")
-                        ->orWhere('surat_dibuat', 'like', "%{$search}%");
+                $q->where('status2', 'like', "%{$search}%")
+                ->orWhereHas('pesanan', function ($pesananQuery) use ($search) {
+                    $pesananQuery->where('no_surat', 'like', "%{$search}%")
+                                ->orWhere('surat_dibuat', 'like', "%{$search}%");
                 });
             });
         }
 
-        // 📑 Pagination
+        // 📑 Urutkan dan paginasi
         $spjs = $query->orderBy('created_at', 'desc')->paginate(10);
 
-        return view('users.reviewSPJ', compact('spjs'));
+        // 🔎 Cek apakah ada yang ditolak
+        $spjDitolak = $spjs->firstWhere('status2', 'belum_valid');
+
+        return view('users.reviewSPJ', compact('spjs', 'spjDitolak'));
     }
     public function showcetakSPJ()
     {
