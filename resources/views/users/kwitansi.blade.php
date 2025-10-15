@@ -23,10 +23,6 @@
                         class="form-control form-control-sm mr-2" placeholder="Cari...">
                     <button type="submit" class="btn btn-sm btn-secondary">Cari</button>
                 </form>
-
-                <a href="#" target="_blank" class="btn btn-info btn-sm">
-                    <i class="fas fa-print"></i> Cetak
-                </a>
             </div>
 
             <!-- Table -->
@@ -37,7 +33,7 @@
                             <th style="width: 50px;">No</th>
                             <th>Untuk Pembayaran</th>
                             <th>Uang Sebanyak</th>
-                            <th>Telah Diterima Dari</th>
+                            <th>Penerima Kwitansi</th>
                             <th style="width: 180px;">Aksi</th>
                         </tr>
                     </thead>
@@ -47,21 +43,14 @@
                                 <td>{{ $loop->iteration + ($kwitansis->currentPage() - 1) * $kwitansis->perPage() }}</td>
                                 <td>{{ $kwitansi->pembayaran ?? '-' }}</td>
                                 <td>Rp {{ number_format($kwitansi->jumlah_nominal ?? 0, 0, ',', '.') }}</td>
-                                <td>{{ $kwitansi->nama_pt ?? '-' }}</td>
+                                <td>{{ $kwitansi->penerima_kwitansi ?? '-' }}</td>
                                 <td>
-                                <!-- Edit: gunakan id kwitansi, bukan $spj -->
-                                    <a href="{{ route('kwitansi.edit', $kwitansi->id) }}" class="btn btn-sm btn-success">
+                                    <!-- Tombol Edit dengan popup konfirmasi -->
+                                    <a href="{{ route('kwitansi.edit', $kwitansi->id) }}" 
+                                       class="btn btn-sm btn-success btn-edit"
+                                       data-edit-url="{{ route('kwitansi.edit', $kwitansi->id) }}">
                                         <i class="fas fa-edit"></i> Edit
                                     </a>
-
-                                    <!-- Delete: contoh route destroy (pastikan route & controller ada) -->
-                                    <form action="#" method="POST" style="display:inline-block;" onsubmit="return confirm('Yakin hapus?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger">
-                                            <i class="fas fa-trash"></i> Hapus
-                                        </button>
-                                    </form>
                                 </td>
                             </tr>
                         @empty
@@ -81,4 +70,69 @@
         </div>
     </div>
 </div>
+
+@if(session('success'))
+    <div data-swal-success="{{ session('success') }}"></div>
+@endif
+
+@if($errors->any())
+    <div data-swal-errors="{{ implode('|', $errors->all()) }}"></div>
+@endif
+
 @endsection
+
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Tangkap semua tombol Edit
+    const editButtons = document.querySelectorAll('.btn-edit');
+
+    editButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault(); // Cegah langsung pindah halaman
+            const editUrl = this.getAttribute('data-edit-url');
+
+            Swal.fire({
+                title: "Apakah Anda yakin ingin mengedit data ini?",
+                text: "Perubahan akan mempengaruhi data kwitansi terkait.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Ya, lanjutkan",
+                cancelButtonText: "Batal"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Redirect ke halaman edit
+                    window.location.href = editUrl;
+                }
+            });
+        });
+    });
+
+    // Jika ada notifikasi sukses
+    const swalSuccess = document.querySelector('[data-swal-success]');
+    if (swalSuccess) {
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            text: swalSuccess.getAttribute('data-swal-success'),
+            timer: 2500,
+            showConfirmButton: false
+        });
+    }
+
+    // Jika ada error
+    const swalErrors = document.querySelector('[data-swal-errors]');
+    if (swalErrors) {
+        const messages = swalErrors.getAttribute('data-swal-errors').split('|');
+        Swal.fire({
+            icon: 'error',
+            title: 'Terjadi Kesalahan!',
+            html: messages.join('<br>'),
+        });
+    }
+});
+</script>

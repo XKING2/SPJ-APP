@@ -5,46 +5,52 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\SPJ;
+use App\Models\pemeriksaan;
 
 class sidebarcontrol2 extends Controller
 {
     public function showdashboard2()
     {
-        return view('admins.dashboard');
+       // Hitung semua data SPJ
+    $totalSPJs = Spj::count();
+
+    // Hitung SPJ tervalidasi (status = valid & status2 = valid)
+    $spjTervalidasis = Spj::where('status', 'valid')
+                        ->count();
+
+
+    // Hitung SPJ belum divalidasi
+    $spjperludivalidasi = Spj::where('status', 'diajukan')
+                        ->count();
+
+    // Contoh laporan: bisa disesuaikan (misal total pemeriksaan, penerimaan, dsb.)
+    $ditolak =  Spj::where('status', 'belum_valid')
+                        ->count();
+
+    return view('admins.admindashboard', compact('totalSPJs', 'spjTervalidasis', 'ditolak', 'spjperludivalidasi'));
     }
 
-    public function showanggota(Request $request)
-    {
-        $search = $request->input('search');
-        
-        $anggotas = User::when($search, function($query) use ($search) {
-            return $query->where('nama', 'like', "%{$search}%")
-                        ->orWhere('NIP', 'like', "%{$search}%")
-                        ->orWhere('jabatan', 'like', "%{$search}%")
-                        ->orWhere('Alamat', 'like', "%{$search}%");
-        })->orderBy('created_at', 'desc')->get();
 
-        return view('admins.anggota', compact('anggotas', 'search'));
-    }
 
-     public function showverivikasi(Request $request)
+    public function showverivikasi(Request $request)
     {
         $search = $request->input('search');
 
-        // Ambil semua data SPJ beserta relasi user dan pesanan
-        $query = Spj::with(['user', 'pesanan']);
+        // Ambil semua data SPJ berstatus diajukan atau valid beserta relasi user dan pesanan
+        $query = Spj::with(['user', 'pesanan'])
+                    ->whereIn('status', ['diajukan', 'valid','belum_valid']); // ✅ tampilkan dua status
 
         // Filter pencarian (berdasarkan status, nomor surat, atau nama pembuat)
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('status', 'like', "%{$search}%")
-                    ->orWhereHas('pesanan', function ($pesananQuery) use ($search) {
-                        $pesananQuery->where('no_surat', 'like', "%{$search}%")
-                                     ->orWhere('surat_dibuat', 'like', "%{$search}%");
-                    })
-                    ->orWhereHas('user', function ($userQuery) use ($search) {
-                        $userQuery->where('nama', 'like', "%{$search}%");
-                    });
+                ->orWhereHas('pesanan', function ($pesananQuery) use ($search) {
+                    $pesananQuery->where('no_surat', 'like', "%{$search}%")
+                                ->orWhere('surat_dibuat', 'like', "%{$search}%");
+                })
+                ->orWhereHas('user', function ($userQuery) use ($search) {
+                    $userQuery->where('nama', 'like', "%{$search}%");
+                });
             });
         }
 
@@ -54,6 +60,8 @@ class sidebarcontrol2 extends Controller
         // Kirim data ke view
         return view('admins.verivikasi', compact('spjs'));
     }
+
+
 
     public function updateStatusbendahara(Request $request, $id)
     {
@@ -75,7 +83,7 @@ class sidebarcontrol2 extends Controller
         }
 
         $spj->status = $validated['status'];
-        $spj->komentar_kasubag = $validated['komentar_bendahara'] ?? null;
+        $spj->komentar_bendahara = $validated['komentar_bendahara'] ?? null;
         $spj->save();
 
         return redirect()->route('verivikasi')->with('success', 'Status validasi Kasubag berhasil diperbarui!');

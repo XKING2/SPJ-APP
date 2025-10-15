@@ -1,10 +1,10 @@
-@extends('layouts.main3')
+@extends('layouts.main2')
 
 @section('pageheads')
 <div class="container-fluid px-4">
     <div class="row align-items-center mb-4">
         <div class="col-md-6 col-12">
-            <h1 class="h3 mb-2 text-gray-800">Dashboard Kasubag</h1>
+            <h1 class="h3 mb-2 text-gray-800">Dashboard Bendahara</h1>
         </div>
     </div>
 </div>
@@ -20,7 +20,7 @@
             </div>
             <div class="info">
                 <div class="label">Data SPJ</div>
-                <div class="value">{{ $totalSPJ }}</div>
+                <div class="value">{{ $totalSPJs }}</div>
             </div>
         </div>
 
@@ -30,7 +30,7 @@
             </div>
             <div class="info">
                 <div class="label">Data SPJ Tervalidasi</div>
-                <div class="value">{{ $spjTervalidasi }}</div>
+                <div class="value">{{ $spjTervalidasis }}</div>
             </div>
         </div>
 
@@ -39,8 +39,8 @@
                 <i class="fas fa-chart-bar fa-2x"></i>
             </div>
             <div class="info">
-                <div class="label">Laporan</div>
-                <div class="value">{{ $ditolax }}</div>
+                <div class="label">Data SPJ Ditolak</div>
+                <div class="value">{{ $ditolak }}</div>
             </div>
         </div>
 
@@ -49,10 +49,11 @@
                 <i class="fas fa-clock fa-2x"></i>
             </div>
             <div class="info">
-                <div class="label">Data SPJ Belum Divalidasi</div>
-                <div class="value">{{ $spjBelumValid }}</div>
+                <div class="label">Data SPJ Perlu Divalidasi</div>
+                <div class="value">{{ $spjperludivalidasi }}</div>
             </div>
         </div>
+
 
     </div>
 </div>

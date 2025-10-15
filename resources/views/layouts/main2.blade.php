@@ -20,6 +20,7 @@
     <!-- Custom styles for this template-->
     <link href="{{ asset('css/sb-admin-2.min.css') }}" rel="stylesheet">
     <link href="{{ asset('css/page.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/dashboard.css') }}" rel="stylesheet">
 
 
 </head>
@@ -33,8 +34,8 @@
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
             <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
-                <div class="sidebar-brand-icon rotate-n -15">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{{ route('admindashboard') }}">
+                <div class="sidebar-brand-icon rotate-n-15">
                     <i class="fas fa-laugh-wink"></i>
                 </div>
                 <div class="sidebar-brand-text mx-3">E-SPJ</div>
@@ -44,23 +45,15 @@
             <hr class="sidebar-divider my-0">
 
             <!-- Dashboard -->
-             <li class="nav-item active">
+            <li class="nav-item {{ Request::routeIs('admindashboard') ? 'active' : '' }}">
                 <a class="nav-link" href="{{ route('admindashboard') }}">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>Dashboard</span>
                 </a>
             </li>
 
-            <!-- Anggota -->
-            <li class="nav-item active">
-                <a class="nav-link" href="{{ route('showanggota') }}">
-                    <i class="fas fa-fw fa-users"></i>
-                    <span>Data Anggota</span>
-                </a>
-            </li>
-
             <!-- Verifikasi -->
-            <li class="nav-item active">
+            <li class="nav-item {{ Request::routeIs('verivikasi') ? 'active' : '' }}">
                 <a class="nav-link" href="{{ route('verivikasi') }}">
                     <i class="fas fa-fw fa-check-circle"></i>
                     <span>Verifikasi</span>
@@ -76,6 +69,7 @@
             </div>
 
         </ul>
+
 
         <!-- End of Sidebar -->
 
@@ -163,7 +157,9 @@
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">Bendahara</span>
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">
+                                    {{ Auth::user()->nama ?? 'User' }}
+                                </span>
                                 <img class="img-profile rounded-circle"
                                     src="{{ asset('img/undraw_profile.svg') }}">
                             </a>
@@ -237,6 +233,9 @@
             </div>
         </div>
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    @stack('scripts')   
 
     <!-- Bootstrap core JavaScript-->
     <script src="{{ asset('vendor/jquery/jquery.min.js') }}"></script>

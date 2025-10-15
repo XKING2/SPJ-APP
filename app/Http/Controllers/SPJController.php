@@ -108,6 +108,7 @@ class SPJController extends Controller
             $template->setValue('sub_kegiatan', $kwitansi->sub_kegiatan ?? '-');
             $template->setValue('jumlah_nominal', number_format($kwitansi->jumlah_nominal ?? 0));
             $template->setValue('penerima_kwitansi', $kwitansi->penerima_kwitansi ?? '-');
+            $template->setValue('jabatan_penerima', $kwitansi->jabatan_penerima ?? '-');
             $template->setValue('subkegiatan', $kwitansi->pptk->subkegiatan ?? '-');
             $template->setValue('nama_pptk', $kwitansi->pptk->nama_pptk ?? '-');
             $template->setValue('jabatan_pptk', $kwitansi->pptk->jabatan_pptk ?? '-');
@@ -225,6 +226,62 @@ class SPJController extends Controller
         return view('users.previewSPJ', compact('spj', 'fileUrl'));
     }
 
+    public function submitToBendahara($id)
+    {
+
+    $spj = Spj::findOrFail($id);
+
+    // Pastikan SPJ masih draft sebelum bisa diajukan
+    if ($spj->status !== 'draft') {
+        return redirect()->back()->with('error', 'SPJ ini sudah diajukan atau divalidasi.');
+    }
+
+    $spj->update(['status' => 'diajukan']);
+
+    return redirect()->back()->with('success', 'SPJ berhasil diajukan ke Bendahara untuk diverifikasi.');
+
+    }
+    public function ajukanKasubag($id)
+    {
+        $spj = Spj::findOrFail($id);
+
+        // Hanya bisa diajukan kalau sudah valid oleh Bendahara
+        if ($spj->status !== 'valid') {
+            return back()->with('error', 'SPJ belum divalidasi oleh Bendahara.');
+        }
+
+        // Update status2 agar menandakan SPJ telah diajukan ke Kasubag
+        $spj->update([
+            'status2' => 'diajukan',
+        ]);
+
+        return back()->with('success', 'SPJ berhasil diajukan ke Kasubag untuk validasi.');
+    }
+
+    public function cetak($id)
+    {
+        try {
+            // Path file PDF hasil generate sebelumnya
+            $pdfPath = storage_path("app/public/spj_preview_{$id}.pdf");
+
+            // 🔍 Jika file belum ada, buat dulu
+            if (!file_exists($pdfPath)) {
+                // Panggil fungsi generateSPJDocument untuk membuatnya
+                $this->generateSPJDocument($id);
+
+                // Cek ulang apakah berhasil dibuat
+                if (!file_exists($pdfPath)) {
+                    return redirect()->back()->with('error', 'Gagal membuat file PDF SPJ.');
+                }
+            }
+
+            // 🖨️ Kirim file sebagai download response
+            return response()->download($pdfPath, "SPJ_{$id}.pdf")->deleteFileAfterSend(false);
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat mencetak SPJ: ' . $e->getMessage());
+        }
+    }
 
 
 }

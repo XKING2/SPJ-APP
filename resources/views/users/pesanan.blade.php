@@ -21,10 +21,6 @@
                         class="form-control form-control-sm mr-2" placeholder="Cari...">
                     <button type="submit" class="btn btn-sm btn-secondary">Cari</button>
                 </form>
-
-                <a href="#" target="_blank" class="btn btn-info btn-sm">
-                    <i class="fas fa-print"></i> Cetak
-                </a>
             </div>
 
             <!-- Table -->
@@ -52,21 +48,17 @@
                                 </td>
                                 <td>{{ $pesanan->nama_pt ?? '-' }}</td>
                                 <td>
-                                    <a href="{{ route('pesanan.edit', $pesanan->id) }}" class="btn btn-sm btn-success">
+                                    <!-- Tombol Edit dengan popup konfirmasi -->
+                                    <a href="{{ route('pesanan.edit', $pesanan->id) }}" 
+                                       class="btn btn-sm btn-success btn-edit"
+                                       data-edit-url="{{ route('pesanan.edit', $pesanan->id) }}">
                                         <i class="fas fa-edit"></i> Edit
                                     </a>
-                                    <form action="#" method="POST" style="display:inline-block;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Yakin hapus?')">
-                                            <i class="fas fa-trash"></i> Hapus
-                                        </button>
-                                    </form>
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="text-center">Data tidak tersedia</td>
+                                <td colspan="6" class="text-center">Data tidak tersedia</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -81,4 +73,70 @@
         </div>
     </div>
 </div>
+
+@if(session('success'))
+    <div data-swal-success="{{ session('success') }}"></div>
+@endif
+
+@if($errors->any())
+    <div data-swal-errors="{{ implode('|', $errors->all()) }}"></div>
+@endif
+
 @endsection
+
+@push('scripts')
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Tangkap semua tombol Edit
+    const editButtons = document.querySelectorAll('.btn-edit');
+
+    editButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault(); // Cegah redirect langsung
+            const editUrl = this.getAttribute('data-edit-url');
+
+            Swal.fire({
+                title: "Apakah Anda yakin ingin mengedit pesanan ini?",
+                text: "Perubahan data akan mempengaruhi laporan terkait.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Ya, lanjutkan",
+                cancelButtonText: "Batal"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = editUrl;
+                }
+            });
+        });
+    });
+
+    // Tampilkan notifikasi sukses
+    const swalSuccess = document.querySelector('[data-swal-success]');
+    if (swalSuccess) {
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            text: swalSuccess.getAttribute('data-swal-success'),
+            timer: 2500,
+            showConfirmButton: false
+        });
+    }
+
+    // Tampilkan error jika ada
+    const swalErrors = document.querySelector('[data-swal-errors]');
+    if (swalErrors) {
+        const messages = swalErrors.getAttribute('data-swal-errors').split('|');
+        Swal.fire({
+            icon: 'error',
+            title: 'Terjadi Kesalahan!',
+            html: messages.join('<br>'),
+        });
+    }
+});
+</script>
+@endpush

@@ -18,15 +18,15 @@ class AuthController extends Controller
 
         if (Auth::attempt($credentials)) {
             $user = Auth::user();
-
-            // Simpan user_id di session
             session(['user_id' => $user->id]);
 
-            // Arahkan ke dashboard sesuai role
+            // Simpan pesan sukses agar nanti ditampilkan JS di Blade
+            session()->flash('success', 'Login berhasil! Selamat datang ' . $user->nama);
+
             return match ($user->role) {
-                'superadmin' => redirect()->route('superadmins.dashboard'),
-                'admin'      => redirect()->route('admins.dashboard'),
-                'user'       => redirect()->route('users.dashboard'),
+                'superadmin' => redirect()->route('superdashboard'),
+                'admin'      => redirect()->route('admindashboard'),
+                'user'       => redirect()->route('userdashboard'),
                 default      => redirect()->route('login'),
             };
         }

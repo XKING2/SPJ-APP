@@ -19,19 +19,19 @@
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label class="form-label fw-bold">Hari Diterima</label>
-                            <input type="text" name="hari_diterima" class="form-control" value="{{ old('no_rekening') }}">
+                            <input type="text" name="hari_diterima" class="form-control" value="{{ old('hari_diterima') }}">
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold">Tanggal Diterima</label>
-                            <input type="text" name="tanggals_diterima" class="form-control" value="{{ old('no_rekening_tujuan') }}">
+                            <input type="text" name="tanggals_diterima" class="form-control" value="{{ old('tanggals_diterima') }}">
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold">Bulan Diterima</label>
-                            <input type="text" name="bulan_diterima" class="form-control" value="{{ old('nama_bank') }}">
+                            <input type="text" name="bulan_diterima" class="form-control" value="{{ old('bulan_diterima') }}">
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold">Tahun Diterima</label>
-                            <input type="text" name="tahun_diterima" class="form-control" value="{{ old('penerima_kwitansi') }}">
+                            <input type="text" name="tahun_diterima" class="form-control" value="{{ old('tahun_diterima') }}">
                         </div>
                     </div>
 
@@ -39,19 +39,19 @@
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label class="form-label fw-bold">Nama Pihak Kedua</label>
-                            <input type="text" name="nama_pihak_kedua" class="form-control" value="{{ old('telah_diterima_dari') }}">
+                            <input type="text" name="nama_pihak_kedua" class="form-control" value="{{ old('nama_pihak_kedua') }}">
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold">Jabatan Pihak Kedua</label>
-                            <input type="text" name="jabatan_pihak_kedua" class="form-control" value="{{ old('jumlah_nominal') }}">
+                            <input type="text" name="jabatan_pihak_kedua" class="form-control" value="{{ old('jabatan_pihak_kedua') }}">
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold">Alamat Pihak Kedua</label>
-                            <input type="text" name="alamat_pihak_kedua" class="form-control" value="{{ old('uang_terbilang') }}">
+                            <input type="text" name="alamat_pihak_kedua" class="form-control" value="{{ old('alamat_pihak_kedua') }}">
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold">Pekerjaan Yang Dilakukan</label>
-                            <input type="text" name="pekerjaan" class="form-control" value="{{ old('jabatan_penerima') }}">
+                            <input type="text" name="pekerjaan" class="form-control" value="{{ old('pekerjaan') }}">
                         </div>
                     </div>
                 </div>

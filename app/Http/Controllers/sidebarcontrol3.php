@@ -4,12 +4,45 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\SPJ;
+use App\Models\User;
+use App\Models\setting;
+
 
 class sidebarcontrol3 extends Controller
 {
     public function showdashboard3()
     {
-        return view('superadmins.dashboard');
+       // Hitung semua data SPJ
+    $totalSPJ =  Spj::count();
+
+    // Hitung SPJ tervalidasi (status = valid & status2 = valid)
+    $spjTervalidasi = Spj::where('status2', 'valid')
+                        ->count();
+
+
+    // Hitung SPJ belum divalidasi
+    $spjBelumValid = Spj::where('status2', 'diajukan')
+                        ->count();
+
+    // Contoh laporan: bisa disesuaikan (misal total pemeriksaan, penerimaan, dsb.)
+    $ditolax =  Spj::where('status2', 'belum_valid')
+                        ->count();
+
+    return view('superadmins.dashboard', compact('totalSPJ', 'spjTervalidasi', 'ditolax', 'spjBelumValid'));
+    }
+
+    public function showanggota(Request $request)
+    {
+        $search = $request->input('search');
+        
+        $anggotas = User::when($search, function($query) use ($search) {
+            return $query->where('nama', 'like', "%{$search}%")
+                        ->orWhere('NIP', 'like', "%{$search}%")
+                        ->orWhere('jabatan', 'like', "%{$search}%")
+                        ->orWhere('Alamat', 'like', "%{$search}%");
+        })->orderBy('created_at', 'desc')->get();
+
+        return view('superadmins.anggota', compact('anggotas', 'search'));
     }
 
     public function showvalidasi(Request $request)
@@ -17,7 +50,8 @@ class sidebarcontrol3 extends Controller
         $search = $request->input('search');
 
         // Ambil semua data SPJ beserta relasi user dan pesanan
-        $query = Spj::with(['user', 'pesanan']);
+        $query = Spj::with(['user', 'pesanan'])
+                    ->whereIn('status', ['diajukan', 'valid']); // ✅ tampilkan dua status
 
         // Filter pencarian (berdasarkan status, nomor surat, atau nama pembuat)
         if ($search) {
@@ -85,6 +119,21 @@ class sidebarcontrol3 extends Controller
 
         return redirect()->route('Validasi')->with('success', 'Status validasi Kasubag berhasil diperbarui!');
     }
+
+    public function index()
+    {
+        $ppn = Setting::firstOrCreate(['key' => 'ppn_rate'], ['value' => 10]);
+        return view('superadmins.settingppn', compact('ppn'));
+    }
+
+    public function update(Request $request)
+    {
+        $request->validate(['ppn_rate' => 'required|numeric|min:0|max:100']);
+        Setting::updateOrCreate(['key' => 'ppn_rate'], ['value' => $request->ppn_rate]);
+        return back()->with('success', 'PPN berhasil diperbarui!');
+    }
+
+
 
 
 

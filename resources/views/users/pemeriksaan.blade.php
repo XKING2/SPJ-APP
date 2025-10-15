@@ -13,6 +13,7 @@
             <h6 class="m-0 font-weight-bold text-primary">Data Pemeriksaan</h6>
         </div>
         <div class="card-body">
+
             <!-- Search & Print -->
             <div class="d-flex justify-content-between mb-3">
                 <form action="{{ route('pemeriksaan') }}" method="GET" class="form-inline">
@@ -20,9 +21,6 @@
                            placeholder="Cari..." value="{{ request('search') }}">
                     <button type="submit" class="btn btn-sm btn-secondary">Cari</button>
                 </form>
-                <a href="#" target="_blank" class="btn btn-info btn-sm">
-                    <i class="fas fa-print"></i> Cetak
-                </a>
             </div>
 
             <!-- Table -->
@@ -45,16 +43,12 @@
                                 <td>{{ $pemeriksaan->pesanan->no_surat ?? '-' }}</td>
                                 <td>{{ \Carbon\Carbon::parse($pemeriksaan->surat_dibuat ?? now())->translatedFormat('d F Y') }}</td>
                                 <td>
-                                    <a href="{{ route('pemeriksaan.edit', $pemeriksaan->id) }}" class="btn btn-sm btn-success">
+                                    <!-- Tombol Edit dengan SweetAlert -->
+                                    <a href="{{ route('pemeriksaan.edit', $pemeriksaan->id) }}" 
+                                       class="btn btn-sm btn-success btn-edit"
+                                       data-edit-url="{{ route('pemeriksaan.edit', $pemeriksaan->id) }}">
                                         <i class="fas fa-edit"></i> Edit
                                     </a>
-                                    <form action="#" method="POST" style="display:inline-block;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Yakin hapus?')">
-                                            <i class="fas fa-trash"></i> Hapus
-                                        </button>
-                                    </form>
                                 </td>
                             </tr>
                         @empty
@@ -74,4 +68,67 @@
         </div>
     </div>
 </div>
+
+@if(session('success'))
+    <div data-swal-success="{{ session('success') }}"></div>
+@endif
+
+@if($errors->any())
+    <div data-swal-errors="{{ implode('|', $errors->all()) }}"></div>
+@endif
+
 @endsection
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Tangkap semua tombol Edit
+    const editButtons = document.querySelectorAll('.btn-edit');
+
+    editButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault(); // Cegah pindah halaman langsung
+            const editUrl = this.getAttribute('data-edit-url');
+
+            Swal.fire({
+                title: "Apakah Anda yakin ingin mengedit data ini?",
+                text: "Perubahan pada data pemeriksaan dapat mempengaruhi laporan terkait.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Ya, lanjutkan",
+                cancelButtonText: "Batal"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = editUrl;
+                }
+            });
+        });
+    });
+
+    // Notifikasi sukses
+    const swalSuccess = document.querySelector('[data-swal-success]');
+    if (swalSuccess) {
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            text: swalSuccess.getAttribute('data-swal-success'),
+            timer: 2500,
+            showConfirmButton: false
+        });
+    }
+
+    // Notifikasi error
+    const swalErrors = document.querySelector('[data-swal-errors]');
+    if (swalErrors) {
+        const messages = swalErrors.getAttribute('data-swal-errors').split('|');
+        Swal.fire({
+            icon: 'error',
+            title: 'Terjadi Kesalahan!',
+            html: messages.join('<br>'),
+        });
+    }
+});
+</script>

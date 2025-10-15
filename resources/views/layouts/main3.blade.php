@@ -20,6 +20,7 @@
     <!-- Custom styles for this template-->
     <link href="{{ asset('css/sb-admin-2.min.css') }}" rel="stylesheet">
     <link href="{{ asset('css/page.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/dashboard.css') }}" rel="stylesheet">
 
 
 </head>
@@ -29,12 +30,12 @@
     <!-- Page Wrapper -->
     <div id="wrapper">
 
-        <!-- Sidebar -->
+       <!-- Sidebar -->
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
             <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
-                <div class="sidebar-brand-icon rotate-n -15">
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{{ route('superdashboard') }}">
+                <div class="sidebar-brand-icon rotate-n-15">
                     <i class="fas fa-laugh-wink"></i>
                 </div>
                 <div class="sidebar-brand-text mx-3">E-SPJ</div>
@@ -44,30 +45,54 @@
             <hr class="sidebar-divider my-0">
 
             <!-- Dashboard -->
-            <li class="nav-item active">
+            <li class="nav-item {{ Request::routeIs('superdashboard') ? 'active' : '' }}">
                 <a class="nav-link" href="{{ route('superdashboard') }}">
                     <i class="fas fa-fw fa-tachometer-alt"></i>
                     <span>Dashboard</span>
                 </a>
             </li>
 
-            <!-- Kwitansi -->
-            <li class="nav-item">
+            <li class="nav-item {{ Request::routeIs('showanggota') ? 'active' : '' }}">
+                <a class="nav-link" href="{{ route('showanggota') }}">
+                    <i class="fas fa-fw fa-users"></i>
+                    <span>Data Anggota</span>
+                </a>
+            </li>
+
+            <!-- Validasi SPJ -->
+            <li class="nav-item {{ Request::routeIs('Validasi') ? 'active' : '' }}">
                 <a class="nav-link" href="{{ route('Validasi') }}">
                     <i class="fas fa-fw fa-receipt"></i>
                     <span>Validasi SPJ</span>
                 </a>
             </li>
 
-            
+            <li class="nav-item">
+            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseBeritaAcara"
+                aria-expanded="#"
+                aria-controls="collapseBeritaAcara">
+                <i class="fas fa-fw fa-file-alt"></i>
+                <span>Setting SPJ</span>
+            </a>
+            <div id="collapseBeritaAcara"
+                class="collapse"
+                aria-labelledby="headingBeritaAcara" data-parent="#accordionSidebar">
+                <div class="bg-white py-2 collapse-inner rounded">
+                    <a class="collapse-item " href="{{route ('settings.index') }}">Setting PPN</a>
+                    <a class="collapse-item " href="#">Setting PPTK</a>
+                </div>
+            </div>
+        </li>
+
+            <!-- Divider -->
+            <hr class="sidebar-divider d-none d-md-block">
+
             <!-- Sidebar Toggler -->
             <div class="text-center d-none d-md-inline">
                 <button class="rounded-circle border-0" id="sidebarToggle"></button>
             </div>
 
         </ul>
-
-
 
         <!-- Content Wrapper -->
         <div id="content-wrapper" class="d-flex flex-column min-vh-100">
@@ -153,7 +178,9 @@
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">Douglas McGee</span>
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">
+                                    {{ Auth::user()->nama ?? 'User' }}
+                                </span>
                                 <img class="img-profile rounded-circle"
                                     src="{{asset('img/undraw_profile.svg') }}">
                             </a>

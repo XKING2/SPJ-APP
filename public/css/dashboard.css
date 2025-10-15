@@ -1,0 +1,49 @@
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 250px); /* 2 kolom */
+    grid-gap: 30px 40px; /* jarak antar card */
+    justify-content: center;
+}
+
+.dashboard-card {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    padding: 15px 20px;
+    transition: all 0.3s ease;
+}
+.dashboard-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.dashboard-card .icon {
+    width: 60px;
+    height: 60px;
+    color: #fff;
+    border-radius: 6px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: 15px;
+}
+
+.dashboard-card .info .label {
+    font-size: 14px;
+    color: #6c757d;
+}
+.dashboard-card .info .value {
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Responsif */
+@media (max-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}

@@ -53,18 +53,19 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold">Alamat Pihak Kedua</label>
-                            <textarea name="alamat_pihak_kedua" class="form-control">{{ old('alamat_pihak_kedua', $pemeriksaan->alamat_pihak_kedua) }}</textarea>
+                             <input type="text" name="alamat_pihak_kedua" class="form-control" 
+                                value="{{ old('alamat_pihak_kedua', $pemeriksaan->alamat_pihak_kedua) }}">
                         </div>
+                         
                         <div class="mb-3">
                             <label class="form-label fw-bold">Pekerjaan</label>
-                            <input type="text" name="pekerjaan" class="form-control" 
-                                value="{{ old('pekerjaan', $pemeriksaan->pekerjaan) }}">
+                            <textarea name="pekerjaan" class="form-control">{{ old('pekerjaan', $pemeriksaan->pekerjaan) }}</textarea>
                         </div>
                     </div>
                 </div>
 
                 <div class="d-flex justify-content-end gap-3">
-                    <a href="{{ route('spj.preview', ['id' => $spj->id]) }}" class="btn btn-secondary">
+                    <a href="{{ route('pemeriksaan') }}" class="btn btn-secondary">
                         <i class="bi bi-arrow-left"></i> Kembali
                     </a>
                     <button type="submit" class="btn btn-success">

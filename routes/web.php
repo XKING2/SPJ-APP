@@ -30,16 +30,18 @@ Route::get('/Superadmin/Validasi', [sidebarcontrol3::class, 'showvalidasi'])->na
 Route::get('/Superadmin/preview/{id}', [sidebarcontrol3::class, 'previewsuper'])->name('previewsuper');
 Route::post('/Superadmin/validasi/{id}/update-status', [sidebarcontrol3::class, 'updateStatusKasubag'])
     ->name('updateStatusKasubag');
-
-
-Route::get('/admin/Dashboard', [sidebarcontrol2::class, 'showdashboard2'])->name('admindashboard');
-
-Route::get('/admin/anggota', [sidebarcontrol2::class, 'showanggota'])->name('showanggota');
+Route::get('/superadmin/anggota', [sidebarcontrol3::class, 'showanggota'])->name('showanggota');
 Route::get('anggota/create', [AnggotaController::class, 'create'])->name('anggota.create');
 Route::post('anggota', [AnggotaController::class, 'store'])->name('anggota.store');
 Route::get('/anggota/{anggotum}/edit', [AnggotaController::class, 'edit'])->name('anggota.edit');
 Route::put('anggota/{anggotum}', [AnggotaController::class, 'update'])->name('anggota.update');
 Route::DELETE('anggota/{anggotum}', [AnggotaController::class, 'destroy'])->name('anggota.destroy');
+Route::get('/settings', [sidebarcontrol3::class, 'index'])->name('settings.index');
+Route::post('/settings', [sidebarcontrol3::class, 'update'])->name('settings.update');
+
+
+Route::get('/admin/Dashboard', [sidebarcontrol2::class, 'showdashboard2'])->name('admindashboard');
+
 
 
 Route::get('/admin/preview/{id}', [sidebarcontrol2::class, 'previewadmin'])->name('previewadmin');
@@ -50,6 +52,12 @@ Route::get('/spj', [SPJController::class, 'index'])->name('spj.index');
 Route::get('/spj/create', [SPJController::class, 'create'])->name('spj.create');
 // 🔹 Tampilkan preview SPJ (hasil generate PDF)
 Route::get('/spj/preview/{id}', [SPJController::class, 'preview'])->name('spj.preview');
+Route::post('/spj/{id}/submit-bendahara', [SpjController::class, 'submitToBendahara'])->name('spj.submitToBendahara');
+Route::post('/spj/{id}/ajukan-kasubag', [SPJController::class, 'ajukanKasubag'])->name('ajukanKasubag');
+Route::get('/spj/cetak/{id}', [SPJController::class, 'cetak'])->name('spj.cetak');
+
+
+
 
 
 

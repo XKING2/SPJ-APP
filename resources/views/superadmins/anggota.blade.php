@@ -1,4 +1,4 @@
-@extends('layouts.main2')
+@extends('layouts.main3')
 @section('pageheads')
     <h1 class="h3 mb-4 text-gray-800">Kelola Data Anggota</h1>
 @endsection
@@ -55,13 +55,15 @@
                             <td>{{ $item->jabatan }}</td>
                             <td>{{ $item->Alamat }}</td>
                             <td>
-                                <a href="{{ route('anggota.edit', $item->id) }}" class="btn btn-sm btn-success">
-                                    <i class="fas fa-edit"></i> Edit
-                                </a>
-                                <form action="{{ route('anggota.destroy', $item->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin hapus data ini?')">
+                                <a href="{{ route('anggota.edit', $item->id) }}" 
+                                       class="btn btn-sm btn-success btn-edit"
+                                       data-edit-url="{{ route('anggota.edit', $item->id) }}">
+                                        <i class="fas fa-edit"></i> Edit
+                                    </a>
+                                <form action="{{ route('anggota.destroy', $item->id) }}" method="POST" class="d-inline form-delete">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger">
+                                    <button type="submit" class="btn btn-sm btn-danger btn-delete">
                                         <i class="fas fa-trash"></i> Hapus
                                     </button>
                                 </form>
@@ -79,3 +81,59 @@
     </div>
 </div>
 @endsection
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Tangkap semua tombol Edit
+    const editButtons = document.querySelectorAll('.btn-edit');
+
+    editButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault(); // Cegah langsung pindah halaman
+            const editUrl = this.getAttribute('data-edit-url');
+
+            Swal.fire({
+                title: "Apakah Anda yakin ingin mengedit data ini?",
+                text: "Perubahan akan mempengaruhi data kwitansi terkait.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Ya, lanjutkan",
+                cancelButtonText: "Batal"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Redirect ke halaman edit
+                    window.location.href = editUrl;
+                }
+            });
+        });
+    });
+
+    // Jika ada notifikasi sukses
+    const swalSuccess = document.querySelector('[data-swal-success]');
+    if (swalSuccess) {
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            text: swalSuccess.getAttribute('data-swal-success'),
+            timer: 2500,
+            showConfirmButton: false
+        });
+    }
+
+    // Jika ada error
+    const swalErrors = document.querySelector('[data-swal-errors]');
+    if (swalErrors) {
+        const messages = swalErrors.getAttribute('data-swal-errors').split('|');
+        Swal.fire({
+            icon: 'error',
+            title: 'Terjadi Kesalahan!',
+            html: messages.join('<br>'),
+        });
+    }
+});
+</script>
+

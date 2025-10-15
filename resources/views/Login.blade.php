@@ -30,4 +30,46 @@
         @endif
     </div>
 </body>
+
+@if(session('success'))
+    <div data-swal-success="{{ session('success') }}"></div>
+@endif
+
+@if($errors->any())
+    <div data-swal-errors="{{ implode('|', $errors->all()) }}"></div>
+@endif
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // ✅ Ambil data flash message sukses dari elemen data
+    const successData = document.querySelector('[data-swal-success]');
+    const errorData = document.querySelector('[data-swal-errors]');
+
+    if (successData) {
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            text: successData.dataset.swalSuccess,
+            confirmButtonColor: '#3085d6',
+            confirmButtonText: 'OK'
+        });
+    }
+
+    if (errorData) {
+        const errorMessages = errorData.dataset.swalErrors.split('|');
+        Swal.fire({
+            icon: 'error',
+            title: 'Login Gagal',
+            html: errorMessages.join('<br>'),
+            confirmButtonColor: '#d33',
+            confirmButtonText: 'Coba Lagi'
+        });
+    }
+});
+</script>
+
+
 </html>

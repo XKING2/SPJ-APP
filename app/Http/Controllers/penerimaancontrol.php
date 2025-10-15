@@ -7,7 +7,8 @@ use App\Models\Penerimaan;
 use App\Models\penerimaan_details;
 use App\Models\Pemeriksaan;
 use App\Models\SPJ;
-use App\Http\Controllers\SPJController; 
+use App\Models\Setting;
+use App\Http\Controllers\SPJController;
 
 class PenerimaanControl extends Controller
 {
@@ -16,9 +17,11 @@ class PenerimaanControl extends Controller
         $spj = SPJ::findOrFail($request->spj_id);
         $pemeriksaan = Pemeriksaan::findOrFail($request->pemeriksaan_id);
 
-        return view('users.create.createpenerimaan', compact('spj', 'pemeriksaan'));
-    }
+        // 🔹 Ambil rate PPN dari tabel settings
+        $ppnRate = Setting::where('key', 'ppn_rate')->value('value') ?? 10;
 
+        return view('users.create.createpenerimaan', compact('spj', 'pemeriksaan', 'ppnRate'));
+    }
 
     public function store(Request $request)
     {
@@ -39,7 +42,12 @@ class PenerimaanControl extends Controller
             'barang.*.total' => 'required|numeric',
         ]);
 
-        // 🔹 1. Simpan data penerimaan
+        // 🔹 Ambil rate PPN dari setting
+        $ppnRate = Setting::where('key', 'ppn_rate')->value('value') ?? 10;
+        $ppnValue = $request->ppn ?? ($request->subtotal * ($ppnRate / 100));
+        $grandtotal = $request->grandtotal ?? ($request->subtotal + $ppnValue);
+
+        // 🔹 Simpan data penerimaan
         $penerimaan = Penerimaan::create([
             'spj_id' => $request->spj_id,
             'pemeriksaan_id' => $request->pemeriksaan_id,
@@ -50,18 +58,17 @@ class PenerimaanControl extends Controller
             'nama_pihak_kedua' => $request->nama_pihak_kedua,
             'jabatan_pihak_kedua' => $request->jabatan_pihak_kedua,
             'subtotal' => $request->subtotal,
-            'ppn' => $request->ppn,
-            'grandtotal' => $request->grandtotal,
+            'ppn' => $ppnValue,
+            'grandtotal' => $grandtotal,
             'dibulatkan' => $request->dibulatkan,
             'terbilang' => $request->terbilang,
         ]);
 
-        // 🔹 2. Update SPJ agar punya penerimaan_id
+        // 🔹 Update SPJ agar punya penerimaan_id
         $spj = SPJ::findOrFail($validated['spj_id']);
         $spj->update(['penerimaan_id' => $penerimaan->id]);
 
-        // 🔹 3. Simpan detail barang
-        // 🔹 3. Simpan detail barang
+        // 🔹 Simpan detail barang
         foreach ($validated['barang'] as $item) {
             penerimaan_details::create([
                 'penerimaan_id' => $penerimaan->id,
@@ -73,15 +80,13 @@ class PenerimaanControl extends Controller
             ]);
         }
 
-        // 🔹 4. Panggil fungsi generate dokumen SPJ otomatis dari SPJController
+        // 🔹 Panggil fungsi generate dokumen SPJ otomatis
         $spjController = new SPJController();
         $spjController->generateSPJDocument($spj->id);
 
-        // 🔹 5. Redirect ke daftar SPJ
         return redirect()
             ->route('reviewSPJ')
-            ->with('success', 'Data penerimaan berhasil disimpan dan SPJ telah digenerate otomatis.');
-
+            ->with('success', 'SPJ telah digenerate otomatis dengan perhitungan PPN terbaru.');
     }
 
     public function edit($id)
@@ -90,7 +95,10 @@ class PenerimaanControl extends Controller
         $spj = $penerimaan->spj;
         $pemeriksaan = $spj ? $spj->pemeriksaan : null;
 
-        return view('users.update.updatepenerimaan', compact('penerimaan', 'spj', 'pemeriksaan'));
+        // Ambil rate PPN terbaru
+        $ppnRate = Setting::where('key', 'ppn_rate')->value('value') ?? 10;
+
+        return view('users.update.updatepenerimaan', compact('penerimaan', 'spj', 'pemeriksaan', 'ppnRate'));
     }
 
     public function update(Request $request, $id)
@@ -111,43 +119,43 @@ class PenerimaanControl extends Controller
             'barang.*.total' => 'required|numeric|min:0',
         ]);
 
-        // 🔹 Ambil data penerimaan beserta detailnya
-        $penerimaan = Penerimaan::with(['spj', 'details'])->findOrFail($id);
+        // 🔹 Ambil rate PPN
+        $ppnRate = Setting::where('key', 'ppn_rate')->value('value') ?? 10;
+        $ppnValue = $request->ppn ?? ($request->subtotal * ($ppnRate / 100));
+        $grandtotal = $request->grandtotal ?? ($request->subtotal + $ppnValue);
 
         // 🔹 Update data utama
+        $penerimaan = Penerimaan::with(['spj', 'details'])->findOrFail($id);
         $penerimaan->update([
-            'no_surat'     => $validated['no_surat'],
+            'no_surat' => $validated['no_surat'],
             'surat_dibuat' => $validated['surat_dibuat'],
-            'subtotal'     => $validated['subtotal'],
-            'ppn'          => $validated['ppn'],
-            'grandtotal'   => $validated['grandtotal'],
-            'dibulatkan'   => $validated['dibulatkan'],
-            'terbilang'    => $validated['terbilang'],
+            'subtotal' => $validated['subtotal'],
+            'ppn' => $ppnValue,
+            'grandtotal' => $grandtotal,
+            'dibulatkan' => $validated['dibulatkan'],
+            'terbilang' => $validated['terbilang'],
         ]);
 
-        // 🔹 Hapus detail lama, buat ulang yang baru
+        // 🔹 Hapus & buat ulang detail
         $penerimaan->details()->delete();
-
         foreach ($validated['barang'] as $item) {
             $penerimaan->details()->create([
-                'nama_barang'   => $item['nama_barang'],
-                'jumlah'        => $item['jumlah'],
-                'satuan'        => $item['satuan'],
-                'harga_satuan'  => $item['harga_satuan'],
-                'total'         => $item['total'],
+                'nama_barang' => $item['nama_barang'],
+                'jumlah' => $item['jumlah'],
+                'satuan' => $item['satuan'],
+                'harga_satuan' => $item['harga_satuan'],
+                'total' => $item['total'],
             ]);
         }
 
-        // 🔹 Regenerasi SPJ
+        // 🔹 Regenerasi dokumen SPJ
         $spj = $penerimaan->spj;
         if ($spj) {
-            app(\App\Http\Controllers\SPJController::class)->generateSPJDocument($spj->id);
+            app(SPJController::class)->generateSPJDocument($spj->id);
         }
 
-        // 🔹 Redirect sukses
         return redirect()
             ->route('penerimaan', ['id' => $spj->id ?? null])
-            ->with('success', 'Data penerimaan berhasil diperbarui dan dokumen SPJ telah diregenerasi.');
+            ->with('success', 'Data penerimaan berhasil diperbarui dan PPN disesuaikan dengan pengaturan terbaru.');
     }
-
 }

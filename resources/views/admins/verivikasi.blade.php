@@ -19,9 +19,6 @@
                     <input type="text" name="search" class="form-control form-control-sm mr-2" placeholder="Cari...">
                     <button type="submit" class="btn btn-sm btn-secondary">Cari</button>
                 </form>
-                <a href="#" target="_blank" class="btn btn-info btn-sm">
-                    <i class="fas fa-print"></i> Cetak
-                </a>
             </div>
 
             <!-- Table -->
@@ -33,7 +30,6 @@
                             <th>Nomor SPJ</th>
                             <th>Tanggal Surat Dibuat</th>
                             <th>Status Validasi Bendahara</th>
-                            <th>Status Validasi Kasubag</th>
                             <th>Dibuat Oleh</th>
                             <th>Aksi</th>
                         </tr>
@@ -50,7 +46,7 @@
                                         @csrf
                                         <div class="dropdown">
                                             @php
-                                                $badgeClass = 'bg-secondary text-white';
+                                                $badgeClass = 'bg-warning text-dark';
                                                 $badgeText = 'Draft';
                                                 if ($spj->status == 'valid') {
                                                     $badgeClass = 'bg-success text-white';
@@ -79,23 +75,21 @@
                                     </form>
                                 </div>
                             </td>
-
-                            <td>
-                                @if ($spj->status2 == 'valid')
-                                    <span class="badge bg-success text-white">Valid</span>
-                                @elseif ($spj->status2 == 'draft')
-                                    <span class="badge bg-warning text-dark">Draft</span>
-                                @elseif ($spj->status2 == 'belum_valid')
-                                    <span class="badge bg-secondary text-white">Belum Valid</span>
-                                @endif
-                            </td>
                             
                             <td>{{ $spj->user->nama ?? '-' }}</td>
                             <td>
                                 <a href="{{ route('previewadmin', ['id' => $spj->id]) }}"
                                        class="btn btn-sm btn-info">
                                         <i class="fas fa-eye"></i> Preview
-                                    </a>
+                                </a>
+                                @if ($spj->status === 'valid' && $spj->status2 !== 'valid' && $spj->status2 !== 'diajukan')
+                                    <form action="{{ route('ajukanKasubag', $spj->id) }}" method="POST" class="d-inline">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-success">
+                                            <i class="fas fa-paper-plane"></i> Ajukan ke Kasubag
+                                        </button>
+                                    </form>
+                                @endif
                             </td>
                         </tr>
                     @empty
@@ -133,18 +127,19 @@
     </div>
   </div>
 </div>
-@endsection
 
+@endsection
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     let selectedId = null;
 
+    // 🔄 Dropdown status & komentar
     document.querySelectorAll('.status-option').forEach(option => {
         option.addEventListener('click', function(e) {
             e.preventDefault();
             const id = this.dataset.id;
             const status = this.dataset.status;
-
             document.getElementById(`status_${id}`).value = status;
 
             if (status === 'belum_valid') {
@@ -156,7 +151,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // submit komentar
+    // 💬 Form komentar
     document.getElementById('komentarForm').addEventListener('submit', function(e) {
         e.preventDefault();
         const komentar = document.getElementById('komentarText').value.trim();
@@ -168,7 +163,54 @@ document.addEventListener('DOMContentLoaded', function() {
         $('#komentarModal').modal('hide');
         document.getElementById(`form-${selectedId}`).submit();
     });
+
+    // 📨 Konfirmasi pengajuan ke Kasubag
+    document.querySelectorAll('form[action*="ajukanKasubag"]').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Ajukan ke Kasubag?',
+                text: 'SPJ ini akan dikirim untuk proses validasi Kasubag.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Ya, ajukan!',
+                cancelButtonText: 'Batal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
+    });
+
+    // ✅ SweetAlert Notifikasi sukses
+    const successMessage = document.querySelector('[data-swal-success]');
+    if (successMessage) {
+        Swal.fire({
+            icon: 'success',
+            title: 'Berhasil!',
+            text: successMessage.getAttribute('data-swal-success'),
+            timer: 2500,
+            showConfirmButton: false
+        });
+    }
+
+    // ❗ SweetAlert Notifikasi error
+    const errorMessage = document.querySelector('[data-swal-errors]');
+    if (errorMessage) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Terjadi Kesalahan!',
+            text: errorMessage.getAttribute('data-swal-errors').replaceAll('|', '\n'),
+        });
+    }
 });
 </script>
+
+
+
+
 
 

@@ -140,7 +140,7 @@
 
                 <!-- Tombol -->
                 <div class="d-flex justify-content-end gap-3">
-                    <a href="{{ route('spj.preview', ['id' => $spj->id]) }}" class="btn btn-secondary">
+                    <a href="{{ route('penerimaan') }}" class="btn btn-secondary">
                         <i class="bi bi-arrow-left"></i> Kembali
                     </a>
                     <button type="submit" class="btn btn-success">
@@ -155,6 +155,9 @@
 
 <div id="data-container" data-row="{{ $penerimaan->details->count() ?? 0 }}"></div>
 
+@push('scripts')
+<script src="{{ asset('js/sweet.js') }}"></script>
+@endpush
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     // ✅ Ambil nilai awal dari atribut data agar VSCode tidak error

@@ -20,6 +20,7 @@
     <!-- Custom styles for this template-->
     <link href="{{ asset('css/sb-admin-2.min.css') }}" rel="stylesheet">
     <link href="{{ asset('css/page.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/dashboard.css') }}" rel="stylesheet">
 
 
 </head>
@@ -30,92 +31,86 @@
     <div id="wrapper">
 
         <!-- Sidebar -->
-        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+       <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
-            <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="index.html">
-                <div class="sidebar-brand-icon rotate-n -15">
-                    <i class="fas fa-laugh-wink"></i>
-                </div>
-                <div class="sidebar-brand-text mx-3">E-SPJ</div>
-            </a>
-
-            <!-- Divider -->
-            <hr class="sidebar-divider my-0">
-
-            <!-- Dashboard -->
-            <li class="nav-item active">
-                <a class="nav-link" href="{{ route('userdashboard') }}">
-                    <i class="fas fa-fw fa-tachometer-alt"></i>
-                    <span>Dashboard</span>
-                </a>
-            </li>
-
-            <!-- Kwitansi -->
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('kwitansi') }}">
-                    <i class="fas fa-fw fa-receipt"></i>
-                    <span>Kwitansi</span>
-                </a>
-            </li>
-
-            <!-- Pesanan -->
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('pesanan') }}">
-                    <i class="fas fa-fw fa-wrench"></i>
-                    <span>Pesanan</span>
-                </a>
-            </li>
-
-            <!-- Serah Terima -->
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('serahterima') }}">
-                    <i class="fas fa-fw fa-folder"></i>
-                    <span>Serah Terima</span>
-                </a>
-            </li>
-
-            <!-- Berita Acara -->
-            <li class="nav-item">
-                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseBeritaAcara"
-                    aria-expanded="false" aria-controls="collapseBeritaAcara">
-                    <i class="fas fa-fw fa-file-alt"></i>
-                    <span>Berita Acara</span>
-                </a>
-                <div id="collapseBeritaAcara" class="collapse" aria-labelledby="headingBeritaAcara" data-parent="#accordionSidebar">
-                    <div class="bg-white py-2 collapse-inner rounded">
-                        <a class="collapse-item" href="{{ route('pemeriksaan') }}">Pemeriksaan</a>
-                        <a class="collapse-item" href="{{ route('penerimaan') }}">Penerimaan</a>
-                        <a class="collapse-item" href="{{ route('serahbarang') }}">Serah Barang</a>
-                    </div>
-                </div>
-            </li>
-
-            <!-- Review -->
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('reviewSPJ') }}">
-                    <i class="fas fa-fw fa-chart-area"></i>
-                    <span>Review Data SPJ</span>
-                </a>
-            </li>
-
-            <!-- Cetak -->
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('cetakSPJ') }}">
-                    <i class="fas fa-fw fa-print"></i>
-                    <span>Cetak Data SPJ</span>
-                </a>
-            </li>
-
-            <!-- Divider -->
-            <hr class="sidebar-divider d-none d-md-block">
-
-            <!-- Sidebar Toggler -->
-            <div class="text-center d-none d-md-inline">
-                <button class="rounded-circle border-0" id="sidebarToggle"></button>
+        <!-- Sidebar - Brand -->
+        <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{{ route('userdashboard') }}">
+            <div class="sidebar-brand-icon rotate-n-15">
+                <i class="fas fa-laugh-wink"></i>
             </div>
+            <div class="sidebar-brand-text mx-3">E-SPJ</div>
+        </a>
 
-        </ul>
+        <!-- Divider -->
+        <hr class="sidebar-divider my-0">
+
+        <!-- Dashboard -->
+        <li class="nav-item {{ Request::routeIs('userdashboard') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('userdashboard') }}">
+                <i class="fas fa-fw fa-tachometer-alt"></i>
+                <span>Dashboard</span>
+            </a>
+        </li>
+
+        <!-- Kwitansi -->
+        <li class="nav-item {{ Request::routeIs('kwitansi') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('kwitansi') }}">
+                <i class="fas fa-fw fa-receipt"></i>
+                <span>Kwitansi</span>
+            </a>
+        </li>
+
+        <!-- Pesanan -->
+        <li class="nav-item {{ Request::routeIs('pesanan') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('pesanan') }}">
+                <i class="fas fa-fw fa-wrench"></i>
+                <span>Pesanan</span>
+            </a>
+        </li>
+
+        <!-- Berita Acara -->
+        <li class="nav-item {{ Request::routeIs('pemeriksaan') || Request::routeIs('penerimaan') ? 'active' : '' }}">
+            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseBeritaAcara"
+                aria-expanded="{{ Request::routeIs('pemeriksaan') || Request::routeIs('penerimaan') ? 'true' : 'false' }}"
+                aria-controls="collapseBeritaAcara">
+                <i class="fas fa-fw fa-file-alt"></i>
+                <span>Berita Acara</span>
+            </a>
+            <div id="collapseBeritaAcara"
+                class="collapse {{ Request::routeIs('pemeriksaan') || Request::routeIs('penerimaan') ? 'show' : '' }}"
+                aria-labelledby="headingBeritaAcara" data-parent="#accordionSidebar">
+                <div class="bg-white py-2 collapse-inner rounded">
+                    <a class="collapse-item {{ Request::routeIs('pemeriksaan') ? 'active' : '' }}" href="{{ route('pemeriksaan') }}">Pemeriksaan</a>
+                    <a class="collapse-item {{ Request::routeIs('penerimaan') ? 'active' : '' }}" href="{{ route('penerimaan') }}">Penerimaan</a>
+                </div>
+            </div>
+        </li>
+
+        <!-- Review -->
+        <li class="nav-item {{ Request::routeIs('reviewSPJ') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('reviewSPJ') }}">
+                <i class="fas fa-fw fa-chart-area"></i>
+                <span>Review Data SPJ</span>
+            </a>
+        </li>
+
+        <!-- Cetak -->
+        <li class="nav-item {{ Request::routeIs('cetakSPJ') ? 'active' : '' }}">
+            <a class="nav-link" href="{{ route('cetakSPJ') }}">
+                <i class="fas fa-fw fa-print"></i>
+                <span>Cetak Data SPJ</span>
+            </a>
+        </li>
+
+        <!-- Divider -->
+        <hr class="sidebar-divider d-none d-md-block">
+
+        <!-- Sidebar Toggler -->
+        <div class="text-center d-none d-md-inline">
+            <button class="rounded-circle border-0" id="sidebarToggle"></button>
+        </div>
+    </ul>
+
 
         <!-- End of Sidebar -->
 
@@ -203,7 +198,9 @@
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
                                 data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">Douglas McGee</span>
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">
+                                    {{ Auth::user()->nama ?? 'User' }}
+                                </span>
                                 <img class="img-profile rounded-circle"
                                     src="{{asset('img/undraw_profile.svg') }}">
                             </a>
@@ -277,25 +274,50 @@
             </div>
         </div>
     </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    @stack('scripts')
 
+     <script type="text/javascript">
+          $(function(){
+            $(document).on('click','#submit', function(e){
+                e.preventDefault();
+                var link =$(this).attr("submit")
+                Swal.fire({
+                    title: "Are you sure?",
+                    text: "You won't be able to revert this!",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Yes, delete it!"
+                    }).then((result) => {
+                    if (result.isConfirmed) {
+                        Swal.fire({
+                        title: "Deleted!",
+                        text: "Your file has been deleted.",
+                        icon: "success"
+                        });
+                    }
+                });
+            })
+          })
+    </script>
     <!-- Bootstrap core JavaScript-->
-    <script src="{{asset('vendor/jquery/jquery.min.js') }}"></script>
-    <script src="{{asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 
-    <!-- Core plugin JavaScript-->
-    <script src="{{asset('vendor/jquery-easing/jquery.easing.min.js') }}"></script>
+    <script src="{{ asset('vendor/jquery/jquery.min.js') }}"></script>
+    <script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 
-    <!-- Custom scripts for all pages-->
-    <script src="{{asset('js/sb-admin-2.min.js') }}"></script>
+    <!-- Core plugin JavaScript -->
+    <script src="{{ asset('vendor/jquery-easing/jquery.easing.min.js') }}"></script>
 
-    <!-- Page level plugins -->
-    <script src="{{asset('vendor/chart.js/Chart.min.js') }}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom scripts for all pages -->
+    <script src="{{ asset('js/sb-admin-2.min.js') }}"></script>
 
-    <!-- Page level custom scripts -->
-    <script src="{{asset('js/demo/chart-area-demo.js') }}"></script>
-    <script src="{{asset('js/demo/chart-pie-demo.js') }}"></script>
+    <!-- Chart.js (opsional, paling akhir) -->
+    <script src="{{ asset('vendor/chart.js/Chart.min.js') }}"></script>
+    <script src="{{ asset('js/demo/chart-area-demo.js') }}"></script>
+    <script src="{{ asset('js/demo/chart-pie-demo.js') }}"></script>
 
 </body>
 

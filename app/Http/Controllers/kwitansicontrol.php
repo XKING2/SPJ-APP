@@ -53,16 +53,18 @@ class KwitansiControl extends Controller
 
     public function edit($id)
     {
+        $pptks = pptk::all();
         $kwitansi = Kwitansi::findOrFail($id);
         $spj = Spj::where('kwitansi_id', $kwitansi->id)->first();
 
-        return view('users.update.updatekwitansi', compact('kwitansi', 'spj'));
+        return view('users.update.updatekwitansi', compact('kwitansi', 'spj','pptks'));
     }
 
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
             'no_rekening' => 'required|string|max:255',
+            'id_pptk' => 'required|exists:pptk,id',
             'no_rekening_tujuan' => 'required|string|max:255',
             'nama_bank' => 'required|string|max:255',
             'penerima_kwitansi' => 'required|string|max:255',

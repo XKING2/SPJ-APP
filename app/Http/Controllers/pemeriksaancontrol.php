@@ -66,6 +66,7 @@ class PemeriksaanControl extends Controller
             'alamat_pihak_kedua' => 'required|string|max:255',
             'pekerjaan'          => 'required|string|max:255',
         ]);
+        //dd($validated);
 
         $pemeriksaan = Pemeriksaan::findOrFail($id);
         $pemeriksaan->update($validated);

@@ -14,8 +14,38 @@ class sidebarcontrol extends Controller
 {
     public function showdashboard1()
     {
-        return view('users.dashboard');
+        $user = Auth::user(); // ambil user yang sedang login
+
+        // Hitung total semua SPJ yang dibuat oleh user
+        $user_SPJ = Spj::where('user_id', $user->id)->count();
+
+        // Hitung SPJ tervalidasi (status2 = 'valid')
+        $spjTervalidasikasubag = Spj::where('user_id', $user->id)
+                            ->where('status2', 'valid')
+                            ->count();
+
+        // Hitung SPJ belum divalidasi (status2 != 'valid' atau 'belum_valid')
+        $spjTervalidasibendahara = Spj::where('user_id', $user->id)
+                            ->where('status', 'valid')
+                            ->count();
+
+        // Hitung laporan pemeriksaan milik user ini
+        // (Jika tabel pemeriksaan punya kolom user_id)
+        $laporan = \App\Models\Pemeriksaan::count() ?? 0;
+
+        return view('users.dashboarduser', compact(
+            'user_SPJ',
+            'spjTervalidasikasubag',
+            'spjTervalidasibendahara',
+            'laporan',
+            
+        ));
     }
+
+
+
+
+
     public function showkwitansi(Request $request)
     {
         $search = $request->input('search');
@@ -148,8 +178,37 @@ class sidebarcontrol extends Controller
 
         return view('users.reviewSPJ', compact('spjs', 'spjDitolak'));
     }
-    public function showcetakSPJ()
+
+    public function showcetakSPJ(Request $request)
     {
-        return view('users.cetakSPJ');
+        $search = $request->input('search');
+        $userId = Auth::id() ?? session('user_id'); // fallback untuk session manual
+
+        // 🔒 Ambil hanya SPJ milik user login yang status dan status2 valid
+        $query = Spj::with(['user', 'pesanan'])
+            ->where('user_id', $userId)
+            ->where('status', 'valid')
+            ->where('status2', 'valid');
+
+        // 🔍 Filter pencarian
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('status', 'like', "%{$search}%")
+                ->orWhere('status2', 'like', "%{$search}%")
+                ->orWhereHas('pesanan', function ($pesananQuery) use ($search) {
+                    $pesananQuery->where('no_surat', 'like', "%{$search}%")
+                                ->orWhere('surat_dibuat', 'like', "%{$search}%");
+                });
+            });
+        }
+
+        // 📑 Urutkan dan paginasi
+        $spjs = $query->orderBy('created_at', 'desc')->paginate(10);
+
+        // 🔎 Cek apakah ada SPJ yang belum valid (opsional)
+        $spjDitolak = $spjs->firstWhere('status2', 'belum_valid');
+
+        return view('users.cetakSPJ', compact('spjs', 'spjDitolak'));
     }
+
 }

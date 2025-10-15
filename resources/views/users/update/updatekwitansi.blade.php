@@ -87,9 +87,15 @@
                                 value="{{ old('npwp', $kwitansi->npwp) }}">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Nama PT</label>
-                            <input type="text" name="nama_pt" class="form-control"
-                                value="{{ old('nama_pt', $kwitansi->nama_pt) }}" required>
+                            <label class="form-label fw-bold">Pilih PPTK</label>
+                            <select name="id_pptk" class="form-select" required>
+                                <option value="{{ old('id_pptk', $kwitansi->id_pptk) }}">-- Pilih PPTK --</option>
+                                @foreach($pptks as $pptk)
+                                    <option value="{{ $pptk->id }}">
+                                        {{ $pptk->nama_pptk }}
+                                    </option>
+                                @endforeach
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -165,4 +171,15 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 </script>
+
+@if(session('success'))
+    <div data-swal-success="{{ session('success') }}"></div>
+@endif
+
+@if($errors->any())
+    <div data-swal-errors="{{ implode('|', $errors->all()) }}"></div>
+@endif
+
+
+
 @endsection
