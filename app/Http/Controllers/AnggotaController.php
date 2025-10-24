@@ -9,7 +9,7 @@ class AnggotaController extends Controller
 {
     public function create()
     {
-        return view('admins.create');
+        return view('superadmins.create');
     }
 
     public function store(Request $request)
@@ -52,10 +52,10 @@ class AnggotaController extends Controller
     public function edit($id)
     {
         $anggota = User::findOrFail($id);
-        return view('admins.edit', compact('anggota'));
+        return view('superadmins.edit', compact('anggota'));
     }
 
-        public function update(Request $request, $id)
+    public function update(Request $request, $id)
     {
         $anggota = User::findOrFail($id);
 
@@ -86,6 +86,7 @@ class AnggotaController extends Controller
         return redirect()->route('showanggota')
                         ->with('success', 'Data anggota berhasil diupdate!');
     }
+    
     public function destroy($id)
     {
         $anggota = User::findOrFail($id);

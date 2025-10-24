@@ -6,7 +6,6 @@
 
 @section('content')
 <div class="container-fluid">
-
     <div class="card shadow mb-4">
         <div class="card-header py-3 d-flex justify-content-between align-items-center">
             <h6 class="m-0 font-weight-bold text-primary">Preview SPJ</h6>
@@ -16,7 +15,6 @@
         </div>
 
         <div class="card-body">
-            <!-- Info Singkat -->
             <div class="mb-3">
                 <h6 class="text-primary mb-1">
                     Nomor SPJ: <strong>{{ $spj->pesanan->no_surat ?? 'Tanpa Nomor' }}</strong>
@@ -26,18 +24,11 @@
                 </p>
             </div>
 
-            <!-- PDF Viewer -->
             <div id="pdf-viewer" class="mt-3">
-                <iframe 
-                    id="pdf-frame" 
-                    src="{{ $fileUrl }}" 
-                    width="100%" 
-                    height="650px" 
-                    style="border:1px solid #ccc; border-radius: 8px;">
-                </iframe>
+                <iframe id="pdf-frame" src="{{ $fileUrl }}#toolbar=0" width="100%" height="650px"
+                    style="border:1px solid #ccc; border-radius:8px;"></iframe>
             </div>
 
-            <!-- Tombol Tutup -->
             <div class="mt-3 d-flex justify-content-end">
                 <a href="{{ route('reviewSPJ') }}" class="btn btn-danger btn-sm">
                     <i class="fas fa-times"></i> Tutup Preview

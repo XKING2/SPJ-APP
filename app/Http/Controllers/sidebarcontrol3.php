@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\SPJ;
 use App\Models\User;
-use App\Models\setting;
+
 
 
 class sidebarcontrol3 extends Controller
@@ -120,21 +120,7 @@ class sidebarcontrol3 extends Controller
         return redirect()->route('Validasi')->with('success', 'Status validasi Kasubag berhasil diperbarui!');
     }
 
-    public function index()
-    {
-        $ppn = Setting::firstOrCreate(['key' => 'ppn_rate'], ['value' => 10]);
-        return view('superadmins.settingppn', compact('ppn'));
-    }
-
-    public function update(Request $request)
-    {
-        $request->validate(['ppn_rate' => 'required|numeric|min:0|max:100']);
-        Setting::updateOrCreate(['key' => 'ppn_rate'], ['value' => $request->ppn_rate]);
-        return back()->with('success', 'PPN berhasil diperbarui!');
-    }
-
-
-
+    
 
 
 }

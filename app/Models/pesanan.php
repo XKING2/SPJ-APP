@@ -17,12 +17,14 @@ class Pesanan extends Model
         'nomor_tlp_pt'
     ];
 
-    public function items() {
-        return $this->hasMany(PesananItem::class);
+
+    public function items()
+    {
+        return $this->hasMany(PesananItem::class, 'pesanan_id');
     }
 
     public function spj() {
-        return $this->hasOne(Spj::class, 'pesanan_id');
+        return $this->belongsTo(Spj::class, 'spj_id');
     }
 
     public function pemeriksaans() {

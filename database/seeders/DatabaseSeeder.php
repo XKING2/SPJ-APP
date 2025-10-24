@@ -20,7 +20,7 @@ class DatabaseSeeder extends Seeder
             'jabatan'   => 'Staff',
             'Alamat'    => 'Jl. Mawar No.3',
             'nomor_tlp' => '0812777',
-            'role'      => 'superadmin',
+            'role'      => 'Kasubag',
         ]);
 
          User::create([
@@ -31,7 +31,7 @@ class DatabaseSeeder extends Seeder
             'jabatan'   => 'Staff',
             'Alamat'    => 'Jl. Mawar No.3',
             'nomor_tlp' => '0812777',
-            'role'      => 'admin',
+            'role'      => 'Bendahara',
         ]);
 
          User::create([

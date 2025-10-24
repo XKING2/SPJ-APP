@@ -8,6 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
     <meta name="author" content="">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>SPJ Dashboard</title>
 
@@ -21,6 +22,7 @@
     <link href="{{ asset('css/sb-admin-2.min.css') }}" rel="stylesheet">
     <link href="{{ asset('css/page.css') }}" rel="stylesheet">
     <link href="{{ asset('css/dashboard.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/aksi.css') }}" rel="stylesheet">
 
 
 </head>
@@ -35,10 +37,11 @@
 
         <!-- Sidebar - Brand -->
         <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{{ route('userdashboard') }}">
-            <div class="sidebar-brand-icon rotate-n-15">
-                <i class="fas fa-laugh-wink"></i>
+            <div class="sidebar-brand-icon">
+                <img src="{{ asset('images/logo2.png') }}" alt="Logo E-SPJ" 
+                    style="width: 40px; height: 40px; object-fit: cover; border-radius: 8px;">
             </div>
-            <div class="sidebar-brand-text mx-3">E-SPJ</div>
+            <div class="sidebar-brand-text mx-3 fw-bold">E-SPJ</div>
         </a>
 
         <!-- Divider -->
@@ -235,6 +238,44 @@
                 <!-- Begin Page Content -->
                 <div class="container-fluid">
 
+                   <div id="loading-screen" 
+                        style="display: none; 
+                                position: fixed; 
+                                top: 0; left: 0; right: 0; bottom: 0; 
+                                background-color: rgba(255, 255, 255, 0.7); 
+                                z-index: 9999; 
+                                align-items: center; 
+                                justify-content: center; 
+                                opacity: 0; 
+                                transition: opacity 0.4s ease;">
+                        
+                        <div id="loader-box" 
+                            style="position: relative;
+                                    background: white; 
+                                    border-radius: 20px; 
+                                    box-shadow: 0 4px 10px rgba(0,0,0,0.2); 
+                                    padding: 10px; 
+                                    width: 80px; 
+                                    height: 80px; 
+                                    display: flex; 
+                                    align-items: center; 
+                                    justify-content: center;
+                                    overflow: hidden;">
+                            
+                            <div id="lottie-container" 
+                                style="position: absolute;
+                                        width: 70; 
+                                        height: 70px; 
+                                        transform: scale(1.5); 
+                                        top: 50%; 
+                                        left: 50%; 
+                                        transform: translate(-50%, -50%) scale(1.5);">
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
                     <!-- Page Heading -->
                     <div class="d-sm-flex align-items-center justify-content-between mb-4">
                         @yield('pageheads')
@@ -274,45 +315,116 @@
             </div>
         </div>
     </div>
-    
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    @stack('scripts')
 
-     <script type="text/javascript">
-          $(function(){
-            $(document).on('click','#submit', function(e){
-                e.preventDefault();
-                var link =$(this).attr("submit")
-                Swal.fire({
-                    title: "Are you sure?",
-                    text: "You won't be able to revert this!",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonColor: "#3085d6",
-                    cancelButtonColor: "#d33",
-                    confirmButtonText: "Yes, delete it!"
-                    }).then((result) => {
-                    if (result.isConfirmed) {
-                        Swal.fire({
-                        title: "Deleted!",
-                        text: "Your file has been deleted.",
-                        icon: "success"
-                        });
-                    }
-                });
-            })
-          })
-    </script>
-    <!-- Bootstrap core JavaScript-->
 
+
+        <!-- Bootstrap core JavaScript -->
     <script src="{{ asset('vendor/jquery/jquery.min.js') }}"></script>
     <script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-
-    <!-- Core plugin JavaScript -->
     <script src="{{ asset('vendor/jquery-easing/jquery.easing.min.js') }}"></script>
+    <script>
+            /* ==========================================================
+            🚫 PATCH: CEGAH LOTTIE MUNCUL SAAT SWEETALERT AKTIF
+            ========================================================== */
 
-    <!-- Custom scripts for all pages -->
+            // Fungsi helper untuk deteksi SweetAlert sedang aktif
+            function isSweetAlertOpen() {
+                return document.querySelector('.swal2-container') !== null;
+            }
+
+            // Bungkus fungsi showLoader dan hideLoader supaya aman
+            const originalShowLoader = window.showLoader;
+            const originalHideLoader = window.hideLoader;
+
+            window.showLoader = function() {
+                // Jika SweetAlert aktif → jangan tampilkan loader
+                if (isSweetAlertOpen()) {
+                    console.log('⚠️ Loader diblokir karena SweetAlert aktif');
+                    return;
+                }
+                originalShowLoader && originalShowLoader();
+            };
+
+            window.hideLoader = function() {
+                // Jika SweetAlert aktif → langsung pastikan loader disembunyikan
+                if (isSweetAlertOpen()) {
+                    document.getElementById('loading-screen').style.display = 'none';
+                    return;
+                }
+                originalHideLoader && originalHideLoader();
+            };
+
+            // Tangkap event global — kalau SweetAlert muncul, pastikan loader hilang
+            const observer = new MutationObserver(() => {
+                if (isSweetAlertOpen()) {
+                    document.getElementById('loading-screen').style.display = 'none';
+                    document.getElementById('loading-screen').style.opacity = '0';
+                }
+            });
+            observer.observe(document.body, { childList: true, subtree: true });
+            </script>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+    <script>
+        const loadingScreen = document.getElementById('loading-screen');
+
+        // Inisialisasi animasi Lottie
+        const animation = lottie.loadAnimation({
+            container: document.getElementById('lottie-container'),
+            renderer: 'svg',
+            loop: true,
+            autoplay: true,
+            path: '/lottie/blue_loading.json'
+        });
+
+        // ✅ Fungsi kontrol loader
+        function showLoader() {
+            if (window._loaderDisabled) return; // 🔒 cegah saat SweetAlert aktif
+            loadingScreen.style.display = 'flex';
+            requestAnimationFrame(() => {
+                loadingScreen.style.opacity = '1';
+            });
+        }
+
+        function hideLoader() {
+            loadingScreen.style.opacity = '0';
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+            }, 400);
+        }
+
+        // ✅ Saat halaman selesai dimuat, sembunyikan loader
+        window.addEventListener('load', hideLoader);
+
+        // ✅ Tangani form submit
+        document.addEventListener('DOMContentLoaded', () => {
+            hideLoader();
+
+            document.querySelectorAll('form').forEach(form => {
+                form.addEventListener('submit', (e) => {
+                    // ❌ Jangan tampilkan loader saat SweetAlert aktif
+                    if (window._loaderDisabled || document.querySelector('.swal2-container')) return;
+                    showLoader();
+                });
+            });
+        });
+
+        // ✅ Tangani navigasi antar halaman
+        window.addEventListener('beforeunload', (e) => {
+            // Cegah loader saat SweetAlert muncul
+            if (window._loaderDisabled || document.querySelector('.swal2-container')) return;
+            showLoader();
+        });
+    </script>
+
+
+    <!-- SweetAlert -->
+
+    <!-- Custom scripts -->
     <script src="{{ asset('js/sb-admin-2.min.js') }}"></script>
+    <script src="{{ asset('vendor/chart.js/Chart.min.js') }}"></script>
+    <script src="{{ asset('js/demo/chart-area-demo.js') }}"></script>
+    <script src="{{ asset('js/demo/chart-pie-demo.js') }}"></script>
 
     <!-- Chart.js (opsional, paling akhir) -->
     <script src="{{ asset('vendor/chart.js/Chart.min.js') }}"></script>

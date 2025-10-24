@@ -12,36 +12,26 @@ class SPJ extends Model
     protected $table = 'spjs';
 
     protected $fillable = [
-        'pesanan_id',
-        'pemeriksaan_id',
-        'penerimaan_id',
-        'kwitansi_id',
+    
         'user_id',
-        'nomor_spj',
-        'tanggal_spj',
         'status',
         'status2',
         'komentar_kasubag',
-        'file_path',
-        'nama_pt_snapshot',
-        'nama_pemesan_snapshot',
-        'pihak_kedua_snapshot',
-        'jabatan_pihak_kedua_snapshot',
-        'total_snapshot',
-        'hasil_pemeriksaan_snapshot',
-        'pembayaran_snapshot',
-        'terbilang_snapshot',
+        'komentar_bendahara'
     ];
 
-    public function pesanan() {
-        return $this->belongsTo(Pesanan::class, 'pesanan_id');
+    public function pesanan() 
+    {
+        return $this->hasOne(Pesanan::class, 'spj_id');
     }
 
-    public function pemeriksaan() {
+    public function pemeriksaan()
+    {
         return $this->hasOne(Pemeriksaan::class, 'spj_id');
     }
 
-    public function penerimaan() {
+    public function penerimaan()
+    {
         return $this->hasOne(Penerimaan::class, 'spj_id');
     }
 
@@ -52,4 +42,22 @@ class SPJ extends Model
     public function user() {
         return $this->belongsTo(User::class, 'user_id');
     }
+
+    public function feedbacks()
+    {
+        return $this->hasMany(spj_feedbacks::class, 'spj_id');
+    }
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($spj) {
+            $spj->pesanan()->delete();
+            $spj->pemeriksaan()->delete();
+            $spj->penerimaan()->delete();
+            $spj->kwitansi()->delete();
+        });
+    }
+
 }

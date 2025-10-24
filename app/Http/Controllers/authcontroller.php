@@ -24,8 +24,8 @@ class AuthController extends Controller
             session()->flash('success', 'Login berhasil! Selamat datang ' . $user->nama);
 
             return match ($user->role) {
-                'superadmin' => redirect()->route('superdashboard'),
-                'admin'      => redirect()->route('admindashboard'),
+                'Kasubag' => redirect()->route('superdashboard'),
+                'Bendahara'      => redirect()->route('admindashboard'),
                 'user'       => redirect()->route('userdashboard'),
                 default      => redirect()->route('login'),
             };

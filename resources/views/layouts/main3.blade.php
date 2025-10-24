@@ -8,6 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
     <meta name="author" content="">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>SPJ Dashboard</title>
 
@@ -30,15 +31,16 @@
     <!-- Page Wrapper -->
     <div id="wrapper">
 
-       <!-- Sidebar -->
+        <!-- Sidebar -->
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
 
             <!-- Sidebar - Brand -->
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{{ route('superdashboard') }}">
-                <div class="sidebar-brand-icon rotate-n-15">
-                    <i class="fas fa-laugh-wink"></i>
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{{ route('userdashboard') }}">
+                <div class="sidebar-brand-icon">
+                    <img src="{{ asset('images/logo2.png') }}" alt="Logo E-SPJ" 
+                        style="width: 40px; height: 40px; object-fit: cover; border-radius: 8px;">
                 </div>
-                <div class="sidebar-brand-text mx-3">E-SPJ</div>
+                <div class="sidebar-brand-text mx-3 fw-bold">E-SPJ</div>
             </a>
 
             <!-- Divider -->
@@ -52,6 +54,7 @@
                 </a>
             </li>
 
+            <!-- Data Anggota -->
             <li class="nav-item {{ Request::routeIs('showanggota') ? 'active' : '' }}">
                 <a class="nav-link" href="{{ route('showanggota') }}">
                     <i class="fas fa-fw fa-users"></i>
@@ -67,22 +70,37 @@
                 </a>
             </li>
 
-            <li class="nav-item">
-            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseBeritaAcara"
-                aria-expanded="#"
+            <!-- Setting SPJ -->
+            @php
+                $isSettingActive = Request::routeIs('settings.index') || Request::routeIs('showpptk');
+            @endphp
+            <li class="nav-item {{ $isSettingActive ? 'active' : '' }}">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" 
+                data-target="#collapseBeritaAcara"
+                aria-expanded="{{ $isSettingActive ? 'true' : 'false' }}"
                 aria-controls="collapseBeritaAcara">
-                <i class="fas fa-fw fa-file-alt"></i>
-                <span>Setting SPJ</span>
-            </a>
-            <div id="collapseBeritaAcara"
-                class="collapse"
-                aria-labelledby="headingBeritaAcara" data-parent="#accordionSidebar">
-                <div class="bg-white py-2 collapse-inner rounded">
-                    <a class="collapse-item " href="{{route ('settings.index') }}">Setting PPN</a>
-                    <a class="collapse-item " href="#">Setting PPTK</a>
+                    <i class="fas fa-fw fa-file-alt"></i>
+                    <span>Setting SPJ</span>
+                </a>
+                <div id="collapseBeritaAcara" 
+                    class="collapse {{ $isSettingActive ? 'show' : '' }}"
+                    aria-labelledby="headingBeritaAcara" data-parent="#accordionSidebar">
+                    <div class="bg-white py-2 collapse-inner rounded">
+                        <a class="collapse-item {{ Request::routeIs('settings.index') ? 'active' : '' }}" 
+                        href="{{ route('settings.index') }}">
+                            Setting PPN
+                        </a>
+                        <a class="collapse-item {{ Request::routeIs('showpptk') ? 'active' : '' }}" 
+                        href="{{ route('showpptk') }}">
+                            Setting PPTK
+                        </a>
+                        <a class="collapse-item {{ Request::routeIs('showplt') ? 'active' : '' }}" 
+                        href="{{ route('showplt') }}">
+                            Setting Pihak Pertama
+                        </a>
+                    </div>
                 </div>
-            </div>
-        </li>
+            </li>
 
             <!-- Divider -->
             <hr class="sidebar-divider d-none d-md-block">
@@ -91,10 +109,8 @@
             <div class="text-center d-none d-md-inline">
                 <button class="rounded-circle border-0" id="sidebarToggle"></button>
             </div>
-
         </ul>
-
-        <!-- Content Wrapper -->
+                <!-- Content Wrapper -->
         <div id="content-wrapper" class="d-flex flex-column min-vh-100">
 
             <!-- Main Content -->
@@ -215,6 +231,42 @@
                 <!-- Begin Page Content -->
                 <div class="container-fluid">
 
+                     <div id="loading-screen" 
+                        style="display: none; 
+                                position: fixed; 
+                                top: 0; left: 0; right: 0; bottom: 0; 
+                                background-color: rgba(255, 255, 255, 0.7); 
+                                z-index: 9999; 
+                                align-items: center; 
+                                justify-content: center; 
+                                opacity: 0; 
+                                transition: opacity 0.4s ease;">
+                        
+                        <div id="loader-box" 
+                            style="position: relative;
+                                    background: white; 
+                                    border-radius: 20px; 
+                                    box-shadow: 0 4px 10px rgba(0,0,0,0.2); 
+                                    padding: 10px; 
+                                    width: 80px; 
+                                    height: 80px; 
+                                    display: flex; 
+                                    align-items: center; 
+                                    justify-content: center;
+                                    overflow: hidden;">
+                            
+                            <div id="lottie-container" 
+                                style="position: absolute;
+                                        width: 70; 
+                                        height: 70px; 
+                                        transform: scale(1.5); 
+                                        top: 50%; 
+                                        left: 50%; 
+                                        transform: translate(-50%, -50%) scale(1.5);">
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Page Heading -->
                     <div class="d-sm-flex align-items-center justify-content-between mb-4">
                         @yield('pageheads')
@@ -261,6 +313,59 @@
 
     <!-- Core plugin JavaScript-->
     <script src="{{asset('vendor/jquery-easing/jquery.easing.min.js') }}"></script>
+
+       <!-- Lottie -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+
+    <script>
+        // Load animasi dari file JSON
+        const animation = lottie.loadAnimation({
+            container: document.getElementById('lottie-container'),
+            renderer: 'svg',
+            loop: true,
+            autoplay: true,
+            path: '/lottie/blue_loading.json' // ganti path sesuai lokasi file kamu
+        });
+
+        const loadingScreen = document.getElementById('loading-screen');
+
+        function showLoader() {
+            loadingScreen.style.display = 'flex';
+            setTimeout(() => {
+                loadingScreen.style.opacity = '1';
+            }, 10);
+        }
+
+        function hideLoader() {
+            loadingScreen.style.opacity = '0';
+            setTimeout(() => {
+                loadingScreen.style.display = 'none';
+            }, 400); // durasi fade-out sama dengan transition CSS (0.4s)
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+        hideLoader();
+
+            const forms = document.querySelectorAll('form');
+            forms.forEach(form => {
+                form.addEventListener('submit', (e) => {
+                    // Kalau SweetAlert sedang aktif, jangan tampilkan loader
+                    if (document.querySelector('.swal2-container')) return;
+                    showLoader();
+                });
+            });
+        });
+
+        window.addEventListener('beforeunload', () => {
+            if (!document.querySelector('.swal2-container')) {
+                showLoader();
+            }
+        });
+
+            // Loader global saat berpindah halaman
+            window.addEventListener('beforeunload', showLoader);
+            window.addEventListener('load', hideLoader);
+    </script>
 
     <!-- Custom scripts for all pages-->
     <script src="{{asset('js/sb-admin-2.min.js') }}"></script>

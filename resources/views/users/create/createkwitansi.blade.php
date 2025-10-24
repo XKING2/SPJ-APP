@@ -11,67 +11,73 @@
     <div class="card shadow-sm rounded-3">
         <div class="card-body">
             <form action="{{ route('kwitansis.store') }}" method="POST">
-                <input type="hidden" name="spj_id" value="{{ $spj->id }}">
                 @csrf
+                <input type="hidden" name="spj_id" value="{{ $spj->id }}">
+
                 <div class="row">
-                    <!-- Kiri -->
+                    <!-- Kolom Kiri -->
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label class="form-label fw-bold">No Rekening</label>
                             <input type="text" name="no_rekening" class="form-control" value="{{ old('no_rekening') }}">
                         </div>
+
                         <div class="mb-3">
                             <label class="form-label fw-bold">No Rekening Tujuan</label>
                             <input type="text" name="no_rekening_tujuan" class="form-control" value="{{ old('no_rekening_tujuan') }}">
                         </div>
+
                         <div class="mb-3">
                             <label class="form-label fw-bold">Nama Bank</label>
                             <input type="text" name="nama_bank" class="form-control" value="{{ old('nama_bank') }}">
                         </div>
+
                         <div class="mb-3">
                             <label class="form-label fw-bold">Yang Menerima Kwitansi</label>
                             <input type="text" name="penerima_kwitansi" class="form-control" value="{{ old('penerima_kwitansi') }}">
                         </div>
+
                         <div class="mb-3">
                             <label class="form-label fw-bold">Sub Kegiatan</label>
                             <textarea name="sub_kegiatan" class="form-control" rows="5">{{ old('sub_kegiatan') }}</textarea>
                         </div>
                     </div>
 
-                    <!-- Kanan -->
+                    <!-- Kolom Kanan -->
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label class="form-label fw-bold">Telah Diterima Dari</label>
                             <input type="text" name="telah_diterima_dari" class="form-control" value="{{ old('telah_diterima_dari') }}">
                         </div>
+
                         <div class="mb-3">
-                        <label class="form-label fw-bold">Jumlah Nominal</label>
-                        <input 
-                            type="number" name="jumlah_nominal" id="jumlah_nominal" class="form-control" value="{{ old('jumlah_nominal') }}"placeholder="Masukkan jumlah nominal">
+                            <label class="form-label fw-bold">Jumlah Nominal</label>
+                            <input type="number" name="jumlah_nominal" id="jumlah_nominal" class="form-control"
+                                   value="{{ old('jumlah_nominal') }}" placeholder="Masukkan jumlah nominal">
                         </div>
 
                         <div class="mb-3">
-                        <label class="form-label fw-bold">Uang Terbilang</label>
-                        <input 
-                            type="text" name="uang_terbilang" id="uang_terbilang" class="form-control"  value="{{ old('uang_terbilang') }}" readonly>
+                            <label class="form-label fw-bold">Uang Terbilang</label>
+                            <input type="text" name="uang_terbilang" id="uang_terbilang" class="form-control"
+                                   value="{{ old('uang_terbilang') }}" readonly>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">Jabatan Penerima Kwitansi</label>
                             <input type="text" name="jabatan_penerima" class="form-control" value="{{ old('jabatan_penerima') }}">
                         </div>
+
                         <div class="mb-3">
                             <label class="form-label fw-bold">NPWP</label>
                             <input type="text" name="npwp" class="form-control" value="{{ old('npwp') }}">
                         </div>
+
                         <div class="mb-3">
                             <label class="form-label fw-bold">Pilih PPTK</label>
-                            <select name="id_pptk" class="form-select" required>
-                                <option value="">-- Pilih PPTK --</option>
+                            <select name="id_pptk" class="form-control" required>
+                                <option value="" disabled selected>-- Pilih PPTK --</option>
                                 @foreach($pptks as $pptk)
-                                    <option value="{{ $pptk->id }}">
-                                        {{ $pptk->nama_pptk }}
-                                    </option>
+                                    <option value="{{ $pptk->id }}">{{ $pptk->nama_pptk }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -84,9 +90,9 @@
                     <textarea name="pembayaran" class="form-control" rows="3">{{ old('pembayaran') }}</textarea>
                 </div>
 
-                <!-- Tombol -->
-                <div class="d-flex justify-content-end gap-5">
-                    <button type="submit" class="btn btn-success">
+                <!-- Tombol Simpan -->
+                <div class="d-flex justify-content-end gap-2">
+                    <button type="submit" class="btn btn-success px-4 py-2">
                         <i class="bi bi-save"></i> Simpan
                     </button>
                 </div>
@@ -94,6 +100,51 @@
         </div>
     </div>
 </div>
+
+   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function (e) {
+            // Jangan cegat submit kedua kalinya
+            if (form.dataset.submitting === "true") return;
+
+            e.preventDefault();
+            if (document.querySelector('.swal2-container')) return;
+
+            window._loaderDisabled = true;
+            hideLoader();
+
+            Swal.fire({
+                title: 'Apakah Anda yakin?',
+                text: "Pastikan data yang Anda isi sudah benar sebelum disimpan.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, Simpan!',
+                cancelButtonText: 'Batal',
+                reverseButtons: false,
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Tandai form agar tidak dicegat lagi
+                    form.dataset.submitting = "true";
+                    window._loaderDisabled = false;
+                    showLoader();
+
+                    // 🔥 Panggil submit asli tanpa trigger event listener lagi
+                    HTMLFormElement.prototype.submit.call(form);
+                } else {
+                    hideLoader();
+                    window._loaderDisabled = false;
+                }
+            });
+        });
+    });
+});
+</script>
+
+<!-- Script konversi nominal ke terbilang -->
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     const nominalInput = document.getElementById("jumlah_nominal");
@@ -148,4 +199,3 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 @endsection
-

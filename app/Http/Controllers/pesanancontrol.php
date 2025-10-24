@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Pesanan;
-use App\Models\PesananItem;
+use App\Models\Penerimaan;
+use App\Models\setting;
 use App\Models\SPJ;
 use App\Models\Kwitansi;
 
@@ -65,10 +66,9 @@ class PesananControl extends Controller
             ->with('success', 'Pesanan berhasil disimpan. Lanjut ke pemeriksaan.');
     }
 
-    public function edit($id)
+        public function edit($id)
     {
         $pesanan = Pesanan::with(['items', 'spj'])->findOrFail($id);
-        
 
         return view('users.update.updatepesanan', [
             'pesanan' => $pesanan,
@@ -79,57 +79,152 @@ class PesananControl extends Controller
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
-            'no_surat'             => 'required|string|max:255',
-            'nama_pt'              => 'required|string|max:255',
-            'nomor_tlp_pt'         => 'required|numeric',
-            'alamat_pt'            => 'required|string|max:255',
-            'surat_dibuat'         => 'required|date',
-            'tanggal_diterima'     => 'required|date',
-            'items'                => 'required|array|min:1',
-            'items.*.nama_barang'  => 'required|string|max:255',
-            'items.*.jumlah'       => 'required|numeric|min:1',
+            'no_surat'         => 'required|string|max:255',
+            'nama_pt'          => 'required|string|max:255',
+            'nomor_tlp_pt'     => 'required|numeric',
+            'alamat_pt'        => 'required|string|max:255',
+            'surat_dibuat'     => 'required|date',
+            'tanggal_diterima' => 'required|date',
+
+            'subtotal'     => 'nullable|numeric|min:0',
+            'ppn'          => 'nullable|numeric|min:0',
+            'grandtotal'   => 'nullable|numeric|min:0',
+            'dibulatkan'   => 'nullable|numeric|min:0',
+
+            'items'               => 'required|array|min:1',
+            'items.*.id'          => 'nullable|integer|exists:pesanan_items,id',
+            'items.*.nama_barang' => 'required|string|max:255',
+            'items.*.jumlah'      => 'required|numeric|min:1',
         ]);
 
-        // ✅ Ambil model Pesanan dengan relasi
-        $pesanan = Pesanan::with(['items', 'spj'])->findOrFail($id);
+        $pesanan = Pesanan::with(['items.penerimaanDetail'])->findOrFail($id);
+        $ppnRate = Setting::where('key', 'ppn_rate')->value('value') ?? 10;
 
-        // ✅ Update data utama
+        /** 🔹 Sinkronisasi item */
+        $formItemIds = collect($validated['items'])->pluck('id')->filter()->toArray();
+        $itemsToDelete = $pesanan->items()->whereNotIn('id', $formItemIds)->get();
+
+        foreach ($itemsToDelete as $item) {
+            $item->delete();
+        }
+
+        /** 🔹 Update / Tambah item baru */
+        foreach ($validated['items'] as $itemData) {
+            if (!empty($itemData['id'])) {
+                $item = $pesanan->items->firstWhere('id', $itemData['id']);
+                if ($item) {
+                    $item->update([
+                        'nama_barang' => $itemData['nama_barang'],
+                        'jumlah'      => $itemData['jumlah'],
+                    ]);
+                }
+            } else {
+                $pesanan->items()->create([
+                    'nama_barang' => $itemData['nama_barang'],
+                    'jumlah'      => $itemData['jumlah'],
+                ]);
+            }
+        }
+
+        /** 🔹 Reload data terbaru */
+        $pesanan->load('items.penerimaanDetail');
+
+        /** 🔹 Hitung total per item (jumlah × harga_satuan) */
+        foreach ($pesanan->items as $item) {
+            if ($item->penerimaanDetail) {
+                $jumlah = $item->jumlah ?? 0;
+                $harga  = $item->penerimaanDetail->harga_satuan ?? 0;
+                $total  = $jumlah * $harga;
+
+                $item->penerimaanDetail->update(['total' => $total]);
+            }
+        }
+
+        /** 🔹 Hitung ulang subtotal, PPN, Grandtotal, Dibulatkan */
+        $subtotal = $pesanan->items->sum(fn($i) => optional($i->penerimaanDetail)->total ?? 0);
+        $ppnValue = $subtotal * ($ppnRate / 100);
+        $grandtotal = $subtotal + $ppnValue;
+        $dibulatkan = round($grandtotal);
+
+        /** 🔹 Konversi ke terbilang */
+        $terbilang = $this->terbilang($dibulatkan) . ' rupiah';
+
+        /** 🔹 Update Pesanan utama */
         $pesanan->update([
             'no_surat'         => $validated['no_surat'],
             'nama_pt'          => $validated['nama_pt'],
-            'nomor_tlp_pt'     => $validated['nomor_tlp_pt'],
             'alamat_pt'        => $validated['alamat_pt'],
+            'nomor_tlp_pt'     => $validated['nomor_tlp_pt'],
             'surat_dibuat'     => $validated['surat_dibuat'],
             'tanggal_diterima' => $validated['tanggal_diterima'],
+            'subtotal'         => $subtotal,
+            'ppn'              => $ppnValue,
+            'grandtotal'       => $grandtotal,
+            'dibulatkan'       => $dibulatkan,
         ]);
 
-        // ✅ Hapus items lama & buat ulang
-        $pesanan->items()->delete();
-        foreach ($validated['items'] as $itemData) {
-            $pesanan->items()->create($itemData);
-        }
-
-        // ✅ Ambil ulang SPJ biar data fresh (sangat penting)
-        $spj = \App\Models\Spj::with(['kwitansi', 'penerimaan', 'pesanan.items'])
-            ->where('id', $pesanan->spj_id)
-            ->first();
-
-        // ✅ Update data di SPJ (sinkronisasi)
-        if ($spj) {
-            $spj->update([
-                'nama_pt'   => $pesanan->nama_pt,
-                'no_surat'  => $pesanan->no_surat,
+        /** 🔹 Update Penerimaan */
+        if ($penerimaan = Penerimaan::where('pesanan_id', $pesanan->id)->first()) {
+            $penerimaan->update([
+                'subtotal'   => $subtotal,
+                'ppn'        => $ppnValue,
+                'grandtotal' => $grandtotal,
+                'dibulatkan' => $dibulatkan,
+                'terbilang'  => $terbilang,
             ]);
-
-            // ✅ Regenerasi dokumen SPJ dengan data terbaru
-            app(\App\Http\Controllers\SPJController::class)
-                ->generateSPJDocument($spj->id);
         }
 
-        // ✅ Redirect ke halaman preview SPJ
+        /** 🔹 Regenerasi SPJ jika ada */
+        if ($pesanan->spj_id) {
+            app(\App\Http\Controllers\SPJController::class)->generateSPJDocument($pesanan->spj_id);
+        }
+
         return redirect()
-            ->route('pesanan', ['id' => $pesanan->spj_id])
-            ->with('success', 'Pesanan dan dokumen SPJ berhasil diperbarui.');
+            ->route('pesanan')
+            ->with('success', 'Pesanan, total, dan terbilang berhasil diperbarui.');
     }
 
+    private function terbilang($angka)
+    {
+        $angka = abs((int)$angka);
+        $huruf = [
+            "", "satu", "dua", "tiga", "empat", "lima", 
+            "enam", "tujuh", "delapan", "sembilan", 
+            "sepuluh", "sebelas"
+        ];
+
+        $hasil = "";
+
+        if ($angka < 12) {
+            $hasil = $huruf[$angka];
+        } elseif ($angka < 20) {
+            $hasil = $huruf[$angka - 10] . " belas";
+        } elseif ($angka < 100) {
+            $hasil = $this->terbilang(floor($angka / 10)) . " puluh " . $huruf[$angka % 10];
+        } elseif ($angka < 200) {
+            $hasil = "seratus " . $this->terbilang($angka - 100);
+        } elseif ($angka < 1000) {
+            $hasil = $this->terbilang(floor($angka / 100)) . " ratus " . $this->terbilang($angka % 100);
+        } elseif ($angka < 2000) {
+            $hasil = "seribu " . $this->terbilang($angka - 1000);
+        } elseif ($angka < 1000000) {
+            $hasil = $this->terbilang(floor($angka / 1000)) . " ribu " . $this->terbilang($angka % 1000);
+        } elseif ($angka < 1000000000) {
+            $hasil = $this->terbilang(floor($angka / 1000000)) . " juta " . $this->terbilang($angka % 1000000);
+        } elseif ($angka < 1000000000000) {
+            $hasil = $this->terbilang(floor($angka / 1000000000)) . " miliar " . $this->terbilang($angka % 1000000000);
+        } else {
+            $hasil = $this->terbilang(floor($angka / 1000000000000)) . " triliun " . $this->terbilang($angka % 1000000000000);
+        }
+
+        // Hilangkan spasi ganda dan rapikan
+        return trim(preg_replace('/\s+/', ' ', $hasil));
+    }
+
+
+
+
+
+
+    
 }

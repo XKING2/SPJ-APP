@@ -55,9 +55,8 @@ class KwitansiControl extends Controller
     {
         $pptks = pptk::all();
         $kwitansi = Kwitansi::findOrFail($id);
-        $spj = Spj::where('kwitansi_id', $kwitansi->id)->first();
 
-        return view('users.update.updatekwitansi', compact('kwitansi', 'spj','pptks'));
+        return view('users.update.updatekwitansi', compact('kwitansi','pptks'));
     }
 
     public function update(Request $request, $id)
@@ -80,7 +79,7 @@ class KwitansiControl extends Controller
         $kwitansi = Kwitansi::findOrFail($id);
         $kwitansi->update($validated);
 
-        $spj = Spj::where('kwitansi_id', $kwitansi->id)->first();
+        $spj = Spj::find($kwitansi->spj_id);
 
         if ($spj) {
             app(\App\Http\Controllers\SPJController::class)->generateSPJDocument($spj->id);

@@ -10,15 +10,16 @@
 <div class="container">
     <div class="card shadow-sm rounded-3">
         <div class="card-body">
-            <form action="{{ route('penerimaan.update', $penerimaan->id) }}" method="POST">
+            <form action="{{ route('penerimaan.update', $penerimaan->id) }}" method="POST" id="penerimaanForm">
                 @csrf
                 @method('PUT')
 
                 <input type="hidden" name="spj_id" value="{{ $spj->id }}">
                 <input type="hidden" name="pemeriksaan_id" value="{{ $pemeriksaan->id }}">
+                <input type="hidden" name="pesanan_id" value="{{ $pesanan->id }}">
 
                 <div class="row">
-                    <!-- Kiri -->
+                    <!-- Kolom kiri -->
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label class="form-label fw-bold">Pekerjaan Yang Dilakukan</label>
@@ -37,7 +38,7 @@
                         </div>
                     </div>
 
-                    <!-- Kanan -->
+                    <!-- Kolom kanan -->
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label class="form-label fw-bold">Nama Pihak Kedua</label>
@@ -69,42 +70,33 @@
                             </tr>
                         </thead>
                         <tbody id="barang-table">
-                            @foreach($penerimaan->details as $i => $item)
+                            @foreach($barangList as $i => $item)
                                 <tr>
                                     <td>{{ $i + 1 }}</td>
                                     <td>
-                                        <input type="text" 
-                                            name="barang[{{ $i }}][nama_barang]" 
-                                            class="form-control" 
-                                            value="{{ old('barang.'.$i.'.nama_barang', $item->nama_barang) }}">
+                                        <input type="hidden" name="barang[{{ $i }}][id]" value="{{ $item->id }}">
+                                        <input type="text" name="barang[{{ $i }}][nama_barang]" class="form-control" 
+                                            value="{{ $item->nama_barang ?? ($item->pesananItem->nama_barang ?? '') }}">
                                     </td>
                                     <td>
-                                        <input type="number" 
-                                            name="barang[{{ $i }}][jumlah]" 
-                                            class="form-control jumlah" 
-                                            value="{{ old('barang.'.$i.'.jumlah', $item->jumlah) }}">
+                                        <input type="number" name="barang[{{ $i }}][jumlah]" class="form-control jumlah" 
+                                            value="{{ $item->jumlah ?? ($item->pesananItem->jumlah ?? 1) }}">
                                     </td>
                                     <td>
-                                        <input type="text" 
-                                            name="barang[{{ $i }}][satuan]" 
-                                            class="form-control" 
-                                            value="{{ old('barang.'.$i.'.satuan', $item->satuan) }}">
+                                        <input type="text" name="barang[{{ $i }}][satuan]" class="form-control" 
+                                            value="{{ $item->satuan ?? ($item->pesananItem->satuan ?? '') }}">
                                     </td>
                                     <td>
-                                        <input type="number" 
-                                            name="barang[{{ $i }}][harga_satuan]" 
-                                            class="form-control harga" 
-                                            value="{{ old('barang.'.$i.'.harga_satuan', $item->harga_satuan) }}">
+                                        <input type="number" name="barang[{{ $i }}][harga_satuan]" class="form-control harga" 
+                                            value="{{ $item->harga_satuan ?? 0 }}">
                                     </td>
                                     <td>
-                                        <input type="number" 
-                                            name="barang[{{ $i }}][total]" 
-                                            class="form-control total" 
-                                            value="{{ old('barang.'.$i.'.total', $item->total) }}" readonly>
+                                        <input type="number" name="barang[{{ $i }}][total]" class="form-control total" 
+                                            value="{{ $item->total ?? 0 }}" readonly>
                                     </td>
-                                    <td>
-                                        <button type="button" class="btn btn-sm btn-danger remove-row">
-                                            <i class="bi bi-trash"></i>
+                                    <td class="text-center">
+                                        <button type="button" class="btn btn-sm btn-danger" onclick="removeRow(this)">
+                                            <i class="bi bi-trash"></i> Hapus
                                         </button>
                                     </td>
                                 </tr>
@@ -112,7 +104,11 @@
                         </tbody>
                     </table>
 
-                    <button type="button" id="add-row" class="btn btn-sm btn-primary">+ Tambah Baris</button>
+                    <button type="button" id="addRowBtn" 
+                        class="btn btn-sm btn-primary" 
+                        data-row-count="{{ count($barangList) }}">
+                        <i class="bi bi-plus-circle"></i> Tambah Barang
+                    </button>
 
                     <table class="table table-bordered w-50 ms-auto mt-3">
                         <tr>
@@ -151,33 +147,38 @@
         </div>
     </div>
 </div>
-@endsection
 
-<div id="data-container" data-row="{{ $penerimaan->details->count() ?? 0 }}"></div>
-
-@push('scripts')
-<script src="{{ asset('js/sweet.js') }}"></script>
-@endpush
+{{-- ✅ SCRIPT --}}
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-    // ✅ Ambil nilai awal dari atribut data agar VSCode tidak error
-    const rowIndexElement = document.getElementById("data-container");
-    let rowIndex = Number(rowIndexElement.getAttribute("data-row")) || 0;
+    let addBtn = document.getElementById('addRowBtn');
+    let rowIndex = parseInt(addBtn.dataset.rowCount) || 0;
+    const table = document.getElementById('barang-table');
 
-    const barangTable = document.getElementById('barang-table');
-    const subtotalInput = document.getElementById('subtotal');
-    const ppnInput = document.getElementById('ppn');
-    const grandtotalInput = document.getElementById('grandtotal');
-    const dibulatkanInput = document.getElementById('dibulatkan');
-    const terbilangInput = document.getElementById('terbilang');
+    window.removeRow = function (btn) {
+        btn.closest('tr').remove();
+        hitungTotal();
+    }
 
-    // 🧮 Fungsi konversi angka ke teks rupiah
+    addBtn.addEventListener('click', function () {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${++rowIndex}</td>
+            <td><input type="text" name="barang[${rowIndex}][nama_barang]" class="form-control"></td>
+            <td><input type="number" name="barang[${rowIndex}][jumlah]" class="form-control jumlah" value="1"></td>
+            <td><input type="text" name="barang[${rowIndex}][satuan]" class="form-control" value="Pcs"></td>
+            <td><input type="number" name="barang[${rowIndex}][harga_satuan]" class="form-control harga" value="0"></td>
+            <td><input type="number" name="barang[${rowIndex}][total]" class="form-control total" value="0" readonly></td>
+            <td><button type="button" class="btn btn-sm btn-danger" onclick="removeRow(this)"><i class="bi bi-trash"></i> Hapus</button></td>
+        `;
+        table.appendChild(row);
+    });
+
     function terbilangRupiah(angka) {
         const satuan = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan"];
         const belasan = ["Sepuluh", "Sebelas", "Dua Belas", "Tiga Belas", "Empat Belas", "Lima Belas", "Enam Belas", "Tujuh Belas", "Delapan Belas", "Sembilan Belas"];
         const puluhan = ["", "", "Dua Puluh", "Tiga Puluh", "Empat Puluh", "Lima Puluh", "Enam Puluh", "Tujuh Puluh", "Delapan Puluh", "Sembilan Puluh"];
         const ribuan = ["", "Ribu", "Juta", "Miliar", "Triliun"];
-
         if (angka === 0) return "Nol Rupiah";
 
         function konversi(num) {
@@ -190,8 +191,7 @@ document.addEventListener("DOMContentLoaded", function() {
             if (num >= 10 && num <= 19) {
                 str += belasan[num - 10] + " ";
             } else if (num >= 20) {
-                str += puluhan[Math.floor(num / 10)] + " ";
-                str += satuan[num % 10] + " ";
+                str += puluhan[Math.floor(num / 10)] + " " + satuan[num % 10] + " ";
             } else {
                 str += satuan[num] + " ";
             }
@@ -210,60 +210,28 @@ document.addEventListener("DOMContentLoaded", function() {
             angka = Math.floor(angka / 1000);
             i++;
         }
-        return result.trim() + " Rupiah";
+        return result.trim().replace(/\s+/g, ' ') + " Rupiah";
     }
 
-    // ⚙️ Hitung total
     function hitungTotal() {
         let subtotal = 0;
         document.querySelectorAll('#barang-table tr').forEach(tr => {
-            const hargaEl = tr.querySelector('.harga');
-            const jumlahEl = tr.querySelector('.jumlah');
-            const totalEl = tr.querySelector('.total');
-            if (!hargaEl || !jumlahEl || !totalEl) return;
-
-            const harga = parseFloat(hargaEl.value) || 0;
-            const jumlah = parseFloat(jumlahEl.value) || 0;
+            const harga = parseFloat(tr.querySelector('.harga')?.value || 0);
+            const jumlah = parseFloat(tr.querySelector('.jumlah')?.value || 0);
             const total = harga * jumlah;
-
-            totalEl.value = total.toFixed(0);
+            tr.querySelector('.total').value = total.toFixed(0);
             subtotal += total;
         });
 
-        subtotalInput.value = subtotal.toFixed(0);
+        document.getElementById('subtotal').value = subtotal.toFixed(0);
         const ppn = subtotal * 0.1;
-        ppnInput.value = ppn.toFixed(0);
-        const grandtotal = subtotal + ppn;
-        grandtotalInput.value = grandtotal.toFixed(0);
-        dibulatkanInput.value = Math.round(grandtotal);
-        terbilangInput.value = terbilangRupiah(Math.round(grandtotal));
+        document.getElementById('ppn').value = ppn.toFixed(0);
+        const grand = subtotal + ppn;
+        document.getElementById('grandtotal').value = grand.toFixed(0);
+        document.getElementById('dibulatkan').value = Math.round(grand);
+        document.getElementById('terbilang').value = terbilangRupiah(Math.round(grand));
     }
 
-    // ➕ Tambah baris
-    document.getElementById('add-row').addEventListener('click', function() {
-        rowIndex++;
-        const newRow = `
-            <tr>
-                <td>${rowIndex}</td>
-                <td><input type="text" name="barang[${rowIndex}][nama_barang]" class="form-control"></td>
-                <td><input type="number" name="barang[${rowIndex}][jumlah]" class="form-control jumlah" value="1"></td>
-                <td><input type="text" name="barang[${rowIndex}][satuan]" class="form-control" value="Pcs"></td>
-                <td><input type="number" name="barang[${rowIndex}][harga_satuan]" class="form-control harga" value="0"></td>
-                <td><input type="number" name="barang[${rowIndex}][total]" class="form-control total" value="0" readonly></td>
-                <td><button type="button" class="btn btn-sm btn-danger remove-row"><i class="bi bi-trash"></i></button></td>
-            </tr>`;
-        barangTable.insertAdjacentHTML('beforeend', newRow);
-    });
-
-    // ❌ Hapus baris
-    document.addEventListener('click', function(e) {
-        if (e.target.closest('.remove-row')) {
-            e.target.closest('tr').remove();
-            hitungTotal();
-        }
-    });
-
-    // 🔁 Recalculate saat input berubah
     document.addEventListener('input', function(e) {
         if (e.target.classList.contains('harga') || e.target.classList.contains('jumlah')) {
             hitungTotal();
@@ -273,4 +241,4 @@ document.addEventListener("DOMContentLoaded", function() {
     hitungTotal();
 });
 </script>
-
+@endsection

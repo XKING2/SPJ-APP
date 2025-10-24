@@ -30,4 +30,9 @@ class kwitansi extends Model
         return $this->belongsTo(pptk::class, 'id_pptk');
     }
 
+    public function spjs()
+    {
+        return $this->belongsTo(SPJ::class, 'spj_id');
+    }
+
 }

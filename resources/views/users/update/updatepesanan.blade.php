@@ -10,7 +10,7 @@
 <div class="container">
     <div class="card shadow-sm rounded-3">
         <div class="card-body">
-            <form action="{{ route('pesanan.update', $pesanan->id) }}" method="POST">
+            <form action="{{ route('pesanan.update', $pesanan->id) }}" method="POST" id="pesananForm">
                 @csrf
                 @method('PUT')
 
@@ -36,7 +36,7 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold">Tanggal Surat Dibuat</label>
-                            <input type="date" id="surat_dibuat" name="surat_dibuat" class="form-control" 
+                            <input type="date" name="surat_dibuat" class="form-control" 
                                 value="{{ old('surat_dibuat', $pesanan->surat_dibuat) }}">
                         </div>
                     </div>
@@ -45,7 +45,7 @@
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label class="form-label fw-bold">Tanggal Barang Diterima</label>
-                            <input type="date" id="tanggal_diterima" name="tanggal_diterima" class="form-control"
+                            <input type="date" name="tanggal_diterima" class="form-control"
                                 value="{{ old('tanggal_diterima', $pesanan->tanggal_diterima) }}">
                         </div>
                         <div class="mb-3">
@@ -71,20 +71,17 @@
                             @foreach($pesanan->items as $index => $item)
                                 <tr>
                                     <td>
-                                        <input type="text" 
-                                            name="items[{{ $index }}][nama_barang]" 
-                                            class="form-control" 
-                                            value="{{ old('items.'.$index.'.nama_barang', $item->nama_barang) }}">
+                                        <input type="hidden" name="items[{{ $index }}][id]" value="{{ $item->id }}">
+                                        <input type="text" class="form-control" name="items[{{ $index }}][nama_barang]" 
+                                            value="{{ $item->nama_barang }}">
                                     </td>
                                     <td>
-                                        <input type="number" 
-                                            name="items[{{ $index }}][jumlah]" 
-                                            class="form-control" 
-                                            value="{{ old('items.'.$index.'.jumlah', $item->jumlah) }}">
+                                        <input type="number" class="form-control" name="items[{{ $index }}][jumlah]" 
+                                            value="{{ $item->jumlah }}">
                                     </td>
                                     <td class="text-center">
-                                        <button type="button" class="btn btn-sm btn-danger remove-row">
-                                            <i class="bi bi-trash"></i>
+                                        <button type="button" class="btn btn-sm btn-danger" onclick="removeRow(this)">
+                                            <i class="bi bi-trash"></i> Hapus
                                         </button>
                                     </td>
                                 </tr>
@@ -92,14 +89,15 @@
                         </tbody>
                     </table>
 
-                    <button type="button" id="add-row" class="btn btn-sm btn-primary">
-                        + Tambah Baris
+                    <button type="button" class="btn btn-sm btn-primary" id="addRowBtn"
+                        data-item-count="{{ $pesanan->items->count() }}">
+                        <i class="bi bi-plus-circle"></i> Tambah Barang
                     </button>
                 </div>
 
                 <!-- Tombol Submit -->
                 <div class="d-flex justify-content-end gap-3">
-                    <a href="{{ route('spj.preview', ['id' => $spj->id]) }}" class="btn btn-secondary">
+                    <a href="{{ route('pesanan') }}" class="btn btn-secondary">
                         <i class="bi bi-arrow-left"></i> Kembali
                     </a>
                     <button type="submit" class="btn btn-success">
@@ -110,34 +108,39 @@
         </div>
     </div>
 </div>
-@endsection
 
+{{-- ✅ FIXED SCRIPT --}}
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    let rowIndex = Number("{{ $pesanan->items->count() ?? 0 }}");
+document.addEventListener('DOMContentLoaded', function () {
+    // ✅ Ambil jumlah item dari attribute HTML (aman untuk Blade)
+    let addBtn = document.getElementById('addRowBtn');
+    let itemIndex = parseInt(addBtn.dataset.itemCount, 10) || 0;
 
-    document.getElementById("add-row").addEventListener("click", function() {
-        const tableBody = document.getElementById("items-table");
-        const newRow = `
-            <tr>
-                <td><input type="text" name="items[${rowIndex}][nama_barang]" class="form-control"></td>
-                <td><input type="number" name="items[${rowIndex}][jumlah]" class="form-control" value="1"></td>
-                <td class="text-center">
-                    <button type="button" class="btn btn-sm btn-danger remove-row">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                </td>
-            </tr>
+    window.removeRow = function (btn) {
+        btn.closest('tr').remove();
+    }
+
+    addBtn.addEventListener('click', function () {
+        const table = document.getElementById('items-table');
+        const row = document.createElement('tr');
+
+        row.innerHTML = `
+            <td>
+                <input type="hidden" name="items[${itemIndex}][id]" value="">
+                <input type="text" class="form-control" name="items[${itemIndex}][nama_barang]" placeholder="Nama Barang">
+            </td>
+            <td>
+                <input type="number" class="form-control" name="items[${itemIndex}][jumlah]" placeholder="Jumlah">
+            </td>
+            <td class="text-center">
+                <button type="button" class="btn btn-sm btn-danger" onclick="removeRow(this)">
+                    <i class="bi bi-trash"></i> Hapus
+                </button>
+            </td>
         `;
-        tableBody.insertAdjacentHTML('beforeend', newRow);
-        rowIndex++;
-    });
-
-    document.addEventListener("click", function(e) {
-        if (e.target.closest(".remove-row")) {
-            e.target.closest("tr").remove();
-        }
+        table.appendChild(row);
+        itemIndex++;
     });
 });
 </script>
-
+@endsection

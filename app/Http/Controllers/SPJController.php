@@ -10,9 +10,10 @@ use App\Models\Pemeriksaan;
 use App\Models\Penerimaan;
 use App\Models\Kwitansi;
 use App\Models\User;
+use setasign\Fpdi\Fpdi;
 use PhpOffice\PhpWord\TemplateProcessor;
 use Illuminate\Support\Facades\Storage;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\spjfeedback;
 use Exception;
 use Illuminate\Support\Facades\Log;
 
@@ -77,7 +78,7 @@ class SPJController extends Controller
                 'pesanan.items',
                 'penerimaan.details',
                 'kwitansi.pptk',
-                'pemeriksaan'
+                'pemeriksaan.plt'
             ])->findOrFail($id);
 
             $pesanan     = $spj->pesanan;
@@ -96,6 +97,7 @@ class SPJController extends Controller
             }
 
             $template = new TemplateProcessor($templatePath);
+            
 
             // 4️⃣ Set nilai dari database
             $template->setValue('no_rekening', $kwitansi->no_rekening ?? '-');
@@ -134,6 +136,10 @@ class SPJController extends Controller
                 $template->setValue('jabatan_pihak_kedua', $pemeriksaan->jabatan_pihak_kedua ?? '-');
                 $template->setValue('alamat_pihak_kedua', $pemeriksaan->alamat_pihak_kedua ?? '-');
                 $template->setValue('pekerjaan', $pemeriksaan->pekerjaan ?? '-');
+                $template->setValue('nama_pertama', $pemeriksaan->plt->nama_pihak_pertama ?? '-');
+                $template->setValue('nip_pertama', $pemeriksaan->plt->nip_pihak_pertama ?? '-');
+                $template->setValue('gol_pertama', $pemeriksaan->plt->gol_pihak_pertama ?? '-');
+                $template->setValue('jab_pertama', $pemeriksaan->plt->jabatan_pihak_pertama ?? '-');
             }
 
             // Data Penerimaan
@@ -145,44 +151,67 @@ class SPJController extends Controller
                 $template->setValue('terbilang', $penerimaan->terbilang ?? '-');
             }
 
-            // 🔁 Ambil detail penerimaan barang
-            $details = $penerimaan ? $penerimaan->details : collect();
+            // Ambil daftar barang dari pesanan
+            $details = $spj->penerimaan && $spj->penerimaan->details
+            ? $spj->penerimaan->details->load('pesananItem') // pastikan relasi diload
+            : collect();
 
-            if ($details->count() > 0) {
-                $template->cloneRow('nama_barang1', $details->count());
-                foreach ($details as $i => $detail) {
-                    $n = $i + 1;
-                    $template->setValue("no1#{$n}", $n); // 👉 Tambahkan ini
-                    $template->setValue("nama_barang1#{$n}", $detail->nama_barang ?? '-');
-                    $template->setValue("jumlah1#{$n}", $detail->jumlah ?? '-');
-                    $template->setValue("satuan1#{$n}", $detail->satuan ?? '-');
-                    $template->setValue("harga_satuan1#{$n}", number_format($detail->harga_satuan ?? 0));
-                    $template->setValue("subtotal1#{$n}", number_format($detail->total ?? 0));
-                }
+        if ($details->count() > 0) {
+            // =======================
+            // TABEL 1: DAFTAR BARANG
+            // =======================
+            $template->cloneRow('nama_barang1', $details->count());
+            foreach ($details as $i => $detail) {
+                $n = $i + 1;
+                $item = $detail->pesananItem; // ambil dari relasi pesanan_item
 
-                // Serah Terima
-                $template->cloneRow('nama_barang2', $details->count());
-                foreach ($details as $i => $detail) {
-                    $n = $i + 1;
-                    $template->setValue("no2#{$n}", $n); // Tambahkan juga untuk tabel ke-2
-                    $template->setValue("nama_barang2#{$n}", $detail->nama_barang ?? '-');
-                    $template->setValue("jumlah2#{$n}", $detail->jumlah ?? '-');
-                    $template->setValue("satuan2#{$n}", $detail->satuan ?? '-');
-                    $template->setValue("harga_satuan2#{$n}", number_format($detail->harga_satuan ?? 0));
-                    $template->setValue("subtotal2#{$n}", number_format($detail->total ?? 0));
-                }
-
-                $template->cloneRow('nama_barang3', $details->count());
-                foreach ($details as $i => $detail) {
-                    $n = $i + 1;
-                    $template->setValue("no3#{$n}", $n); // Tambahkan juga untuk tabel ke-2
-                    $template->setValue("nama_barang3#{$n}", $detail->nama_barang ?? '-');
-                    $template->setValue("jumlah3#{$n}", $detail->jumlah ?? '-');
-                    $template->setValue("satuan3#{$n}", $detail->satuan ?? '-');
-                }
-
-                
+                $template->setValue("no1#{$n}", $n);
+                $template->setValue("nama_barang1#{$n}", $item->nama_barang ?? '-');
+                $template->setValue("jumlah1#{$n}", $item->jumlah ?? '-');
+                $template->setValue("satuan1#{$n}", $detail->satuan ?? '-');
+                $template->setValue("harga_satuan1#{$n}", number_format($detail->harga_satuan ?? 0, 0, ',', '.'));
+                $template->setValue("total1#{$n}", number_format($detail->total ?? 0, 0, ',', '.'));
             }
+
+            // =======================
+            // TABEL 2: SERAH TERIMA
+            // =======================
+            $template->cloneRow('nama_barang2', $details->count());
+            foreach ($details as $i => $detail) {
+                $n = $i + 1;
+                $item = $detail->pesananItem;
+
+                $template->setValue("no2#{$n}", $n);
+                $template->setValue("nama_barang2#{$n}", $item->nama_barang ?? '-');
+                $template->setValue("jumlah2#{$n}", $item->jumlah ?? '-');
+                $template->setValue("satuan2#{$n}", $detail->satuan ?? '-');
+                $template->setValue("harga_satuan2#{$n}", number_format($detail->harga_satuan ?? 0, 0, ',', '.'));
+                $template->setValue("total2#{$n}", number_format($detail->total ?? 0, 0, ',', '.'));
+            }
+
+            // =======================
+            // TABEL 3: RINGKASAN
+            // =======================
+            $template->cloneRow('nama_barang3', $details->count());
+            foreach ($details as $i => $detail) {
+                $n = $i + 1;
+                $item = $detail->pesananItem;
+
+                $template->setValue("no3#{$n}", $n);
+                $template->setValue("nama_barang3#{$n}", $item->nama_barang ?? '-');
+                $template->setValue("jumlah3#{$n}", $item->jumlah ?? '-');
+                $template->setValue("satuan3#{$n}", $detail->satuan ?? '-');
+            }
+        } else {
+            // fallback kalau kosong
+            $template->setValue('nama_barang1', '-');
+            $template->setValue('jumlah1', '-');
+            $template->setValue('satuan1', '-');
+            $template->setValue('harga_satuan1', '-');
+            $template->setValue('subtotal1', '-');
+        }
+
+
 
             // Simpan Word
             $template->saveAs($outputDocx);
@@ -209,38 +238,47 @@ class SPJController extends Controller
 
     public function preview($id)
     {
-        $spj = Spj::with('pesanan')->findOrFail($id);
+        $spj = Spj::with(['pesanan', 'feedbacks'])->findOrFail($id);
 
-        // Lokasi file di storage
-        $relativePath = "spj_preview_{$spj->id}.pdf";
-        $pdfPath = storage_path("app/public/{$relativePath}");
-
-        // Pastikan file-nya ada
-        if (!file_exists($pdfPath)) {
-            return back()->with('error', 'File PDF tidak ditemukan.');
+        // 🧠 Logika baru: jika salah satu status belum valid → tampilkan versi revisi
+        if ($spj->status === 'belum_valid' || $spj->status2 === 'belum_valid') {
+            $relativePath = "spj_marked/spj_revisi_{$spj->id}.pdf";
+        } else {
+            $relativePath = "spj_generated/spj_{$spj->id}.pdf";
         }
 
-        // Buat URL publik
-        $fileUrl = asset("storage/{$relativePath}");
+        $pdfPath = storage_path("app/public/{$relativePath}");
 
+        if (!file_exists($pdfPath)) {
+            // fallback otomatis: jika file revisi belum ada, coba tampilkan versi generated
+            $fallbackPath = storage_path("app/public/spj_generated/spj_{$spj->id}.pdf");
+            if (file_exists($fallbackPath)) {
+                $pdfPath = $fallbackPath;
+                $relativePath = "spj_generated/spj_{$spj->id}.pdf";
+            } else {
+                return back()->with('error', 'File PDF tidak ditemukan.');
+            }
+        }
+
+        $fileUrl = asset("storage/{$relativePath}");
         return view('users.previewSPJ', compact('spj', 'fileUrl'));
     }
 
+
     public function submitToBendahara($id)
     {
+        $spj = Spj::findOrFail($id);
 
-    $spj = Spj::findOrFail($id);
+        // Hanya bisa diajukan kalau masih draft atau belum_valid
+        if (!in_array($spj->status, ['draft', 'belum_valid'])) {
+            return redirect()->back()->with('error', 'SPJ ini sudah diajukan atau divalidasi.');
+        }
 
-    // Pastikan SPJ masih draft sebelum bisa diajukan
-    if ($spj->status !== 'draft') {
-        return redirect()->back()->with('error', 'SPJ ini sudah diajukan atau divalidasi.');
+        $spj->update(['status' => 'diajukan']);
+
+        return redirect()->back()->with('success', 'SPJ berhasil diajukan ke Bendahara untuk diverifikasi.');
     }
 
-    $spj->update(['status' => 'diajukan']);
-
-    return redirect()->back()->with('success', 'SPJ berhasil diajukan ke Bendahara untuk diverifikasi.');
-
-    }
     public function ajukanKasubag($id)
     {
         $spj = Spj::findOrFail($id);
@@ -282,6 +320,39 @@ class SPJController extends Controller
             return redirect()->back()->with('error', 'Terjadi kesalahan saat mencetak SPJ: ' . $e->getMessage());
         }
     }
+
+
+    public function destroy($id)
+    {
+        $spj = Spj::findOrFail($id);
+
+        // 1️⃣ Hapus tabel terkait (jika ada relasi yang mengarah ke spj_id)
+        // Tapi karena di struktur kamu arah relasinya terbalik,
+        // maka kita hapus berdasarkan foreign key yang dimiliki spj.
+        if ($spj->pesanan_id) {
+            \App\Models\Pesanan::where('id', $spj->pesanan_id)->delete();
+        }
+
+        if ($spj->penerimaan_id) {
+            \App\Models\Penerimaan::where('id', $spj->penerimaan_id)->delete();
+        }
+
+        if ($spj->pemeriksaan_id) {
+            \App\Models\Pemeriksaan::where('id', $spj->pemeriksaan_id)->delete();
+        }
+
+        if ($spj->kwitansi_id) {
+            \App\Models\Kwitansi::where('id', $spj->kwitansi_id)->delete();
+        }
+
+        // 2️⃣ Hapus SPJ itu sendiri
+        $spj->delete();
+
+        return redirect()->back()->with('success', 'SPJ dan seluruh data terkait berhasil dihapus.');
+    }
+
+
+
 
 
 }

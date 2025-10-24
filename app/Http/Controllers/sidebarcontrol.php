@@ -146,20 +146,22 @@ class sidebarcontrol extends Controller
         return view('users.penerimaan', compact('penerimaans'));
     
     }
+    
     public function showserahbarang()
     {
         return view('users.serahbarang');
     }
+
     public function showreviewSPJ(Request $request)
     {
         $search = $request->input('search');
-        $userId = Auth::id() ?? session('user_id'); // fallback untuk session manual
+        $userId = Auth::id() ?? session('user_id');
 
-        // 🔒 Ambil hanya SPJ milik user login
-        $query = Spj::with(['pesanan'])
+        // Ambil SPJ milik user login
+        $query = Spj::with(['pesanan', 'feedbacks'])
                     ->where('user_id', $userId);
 
-        // 🔍 Filter pencarian
+        // Filter pencarian
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('status2', 'like', "%{$search}%")
@@ -170,14 +172,14 @@ class sidebarcontrol extends Controller
             });
         }
 
-        // 📑 Urutkan dan paginasi
         $spjs = $query->orderBy('created_at', 'desc')->paginate(10);
 
-        // 🔎 Cek apakah ada yang ditolak
+        // Cek apakah ada yang ditolak
         $spjDitolak = $spjs->firstWhere('status2', 'belum_valid');
 
         return view('users.reviewSPJ', compact('spjs', 'spjDitolak'));
     }
+
 
     public function showcetakSPJ(Request $request)
     {

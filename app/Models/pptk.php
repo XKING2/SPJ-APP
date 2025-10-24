@@ -13,4 +13,5 @@ class pptk extends Model
     {
         return $this->hasMany(Kwitansi::class, 'id_pptk');
     }
+
 }

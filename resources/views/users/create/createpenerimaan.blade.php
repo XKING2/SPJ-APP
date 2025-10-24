@@ -14,6 +14,7 @@
                 @csrf
                 <input type="hidden" name="pemeriksaan_id" value="{{ $pemeriksaan->id }}">
                 <input type="hidden" name="spj_id" value="{{ $spj->id }}">
+                <input type="hidden" name="pesanan_id" value="{{ $pemeriksaan->pesanan->id }}">
                 <input type="hidden" id="ppn_rate" value="{{ $ppnRate }}">
 
                 <div class="row">
@@ -117,7 +118,48 @@
         </div>
     </div>
 </div>
+   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function (e) {
+            // Jangan cegat submit kedua kalinya
+            if (form.dataset.submitting === "true") return;
 
+            e.preventDefault();
+            if (document.querySelector('.swal2-container')) return;
+
+            window._loaderDisabled = true;
+            hideLoader();
+
+            Swal.fire({
+                title: 'Apakah Anda yakin?',
+                text: "Pastikan data yang Anda isi sudah benar sebelum disimpan.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, Simpan!',
+                cancelButtonText: 'Batal',
+                reverseButtons: false,
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Tandai form agar tidak dicegat lagi
+                    form.dataset.submitting = "true";
+                    window._loaderDisabled = false;
+                    showLoader();
+
+                    // 🔥 Panggil submit asli tanpa trigger event listener lagi
+                    HTMLFormElement.prototype.submit.call(form);
+                } else {
+                    hideLoader();
+                    window._loaderDisabled = false;
+                }
+            });
+        });
+    });
+});
+</script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const hargaInputs = document.querySelectorAll('.harga');

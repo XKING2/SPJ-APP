@@ -16,7 +16,7 @@ class SessionTimeout
      */
     public function handle(Request $request, Closure $next)
     {
-        $timeout = 60 * 8; // 8 jam dalam detik
+        $timeout = 60 * 60 * 8; // 8 jam dalam detik
         $lastActivity = session('last_activity_time');
 
         if ($lastActivity && (time() - $lastActivity) > $timeout) {

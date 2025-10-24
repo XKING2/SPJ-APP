@@ -81,10 +81,6 @@
 @if($errors->any())
     <div data-swal-errors="{{ implode('|', $errors->all()) }}"></div>
 @endif
-
-@endsection
-
-@push('scripts')
 <!-- SweetAlert2 -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -139,4 +135,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-@endpush
+
+
+@endsection
+

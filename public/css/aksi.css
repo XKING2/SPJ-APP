@@ -1,0 +1,27 @@
+
+    /* Konsistensi tombol aksi */
+    .action-btn {
+        min-width: 60px;
+        text-align: center;
+        font-size: 0.85rem;
+        padding: 6px 10px;
+    }
+
+    /* Untuk memastikan tinggi baris seragam */
+    table.table td {
+        vertical-align: middle !important;
+    }
+
+    /* Jarak antar baris tombol di kolom aksi */
+    td > .d-flex.flex-column {
+        gap: 0.5rem;
+    }
+
+    /* Responsive layout */
+    @media (max-width: 768px) {
+        .action-btn {
+            min-width: 80px;
+            font-size: 0.8rem;
+            padding: 5px 8px;
+        }
+    }

@@ -1,247 +1,332 @@
 @extends('layouts.main')
 
 @section('pageheads')
-    <h1 class="h3 mb-4 text-gray-800">Kelola Data SPJ</h1>
+<h1 class="h3 mb-4 text-gray-800">Kelola Data SPJ</h1>
 @endsection
 
 @section('content')
 <div class="container-fluid">
-
-    <!-- 🗂️ Card utama -->
     <div class="card shadow mb-4">
         <div class="card-header d-flex justify-content-between align-items-center py-3">
             <h6 class="m-0 font-weight-bold text-primary">Data SPJ</h6>
         </div>
 
         <div class="card-body">
-            <!-- 🔍 Search bar -->
+            <!-- 🔍 Search -->
             <form action="{{ route('reviewSPJ') }}" method="GET" class="form-inline mb-3 d-flex justify-content-end">
-                <input 
-                    type="text" 
-                    name="search" 
-                    class="form-control form-control-sm mr-2"
-                    placeholder="Cari status atau nomor surat..."
-                    value="{{ request('search') }}"
-                >
+                <input type="text" name="search" class="form-control form-control-sm mr-2"
+                    placeholder="Cari status atau nomor surat..." value="{{ request('search') }}">
                 <button type="submit" class="btn btn-sm btn-secondary">
                     <i class="fas fa-search"></i> Cari
                 </button>
             </form>
 
-            <!-- 📋 Tabel data SPJ -->
+            <!-- 📋 Tabel -->
             <div class="table-responsive">
                 <table class="table table-bordered table-hover text-center align-middle">
                     <thead class="table-light">
                         <tr>
-                            <th style="width: 50px;">No</th>
+                            <th>No</th>
                             <th>Nomor SPJ</th>
-                            <th>Tanggal Surat Dibuat</th>
-                            <th>Status Validasi Bendahara</th>
-                            <th>Status Validasi Kasubag</th>
-                            <th style="width: 260px;">Aksi</th>
+                            <th>Tanggal Dibuat</th>
+                            <th>Status Bendahara</th>
+                            <th>Status Kasubag</th>
+                            <th style="width: 240px;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($spjs as $spj)
+                        @forelse($spjs as $spj)
+                        @php
+                            $feedbackArray = [];
+                            foreach ($spj->feedbacks as $f) {
+                                $feedbackArray[] = [
+                                    'field' => $f->field_name,
+                                    'message' => $f->message,
+                                    'role' => $f->role,
+                                    'created_at' => $f->created_at->format('d-m-Y H:i'),
+                                ];
+                            }
+
+                            $status1 = $spj->status;
+                            $status2 = $spj->status2;
+                        @endphp
+
                         <tr>
                             <td>{{ $loop->iteration + ($spjs->currentPage() - 1) * $spjs->perPage() }}</td>
                             <td>{{ $spj->pesanan->no_surat ?? '-' }}</td>
+                            <td>{{ \Carbon\Carbon::parse($spj->pesanan->surat_dibuat ?? now())->translatedFormat('d F Y') }}</td>
+
+                            <!-- Status Bendahara -->
                             <td>
-                                @if (!empty($spj->pesanan?->surat_dibuat))
-                                    {{ \Carbon\Carbon::parse($spj->pesanan->surat_dibuat)->translatedFormat('d F Y') }}
+                                @if($status1 === 'valid')
+                                    <span class="badge badge-success">Disetujui</span>
+                                @elseif($status1 === 'belum_valid')
+                                    <span class="badge badge-danger">Tidak Disetujui</span>
+                                    @if(count($feedbackArray) > 0)
+                                        <button type="button"
+                                            class="btn btn-link p-0 ml-1 alasan-btn position-relative"
+                                            data-feedback='@json($feedbackArray)'
+                                            title="Lihat alasan penolakan (Bendahara)">
+                                            <i class="fas fa-bell text-warning"></i>
+                                            <span class="notif-badge position-absolute badge badge-danger">
+                                                {{ count($feedbackArray) }}
+                                            </span>
+                                        </button>
+                                    @endif
+                                @elseif($status1 === 'diajukan')
+                                    <span class="badge badge-info">Diajukan</span>
                                 @else
-                                    <span class="text-muted">-</span>
+                                    <span class="badge badge-warning">Menunggu</span>
                                 @endif
                             </td>
+
+                            <!-- Status Kasubag -->
                             <td>
-                                @switch($spj->status)
-                                    @case('valid')
-                                        <span class="badge badge-success">Disetujui</span>
-                                        @break
-                                    @case('belum_valid')
-                                        <span class="badge badge-danger">Tidak Disetujui</span>
-                                        <!-- 🔔 Tombol lonceng -->
-                                        <button 
-                                            type="button" 
+                                @if($status2 === 'valid')
+                                    <span class="badge badge-success">Disetujui</span>
+                                @elseif($status2 === 'belum_valid')
+                                    <span class="badge badge-danger">Tidak Disetujui</span>
+                                    @if(count($feedbackArray) > 0)
+                                        <button type="button"
                                             class="btn btn-link p-0 ml-1 alasan-btn position-relative"
-                                            data-nomor="{{ $spj->pesanan->no_surat ?? '-' }}"
-                                            data-tanggal="{{ $spj->pesanan?->surat_dibuat ? \Carbon\Carbon::parse($spj->pesanan->surat_dibuat)->translatedFormat('d F Y') : '-' }}"
-                                            data-alasan="{{ $spj->komentar_bendahara ?? 'Tidak ada komentar dari Bendahara.' }}"
-                                            title="Lihat alasan penolakan"
-                                        >
+                                            data-feedback='@json($feedbackArray)'
+                                            title="Lihat alasan penolakan (Kasubag)">
                                             <i class="fas fa-bell text-warning"></i>
-                                            <span class="notif-badge position-absolute badge badge-danger d-none">1</span>
+                                            <span class="notif-badge position-absolute badge badge-danger">
+                                                {{ count($feedbackArray) }}
+                                            </span>
                                         </button>
-                                        @break
-                                    @default
-                                        <span class="badge badge-warning text-dark">Menunggu Verivikasi</span>
-                                @endswitch
-                            </td>
-                            <td>
-                                @switch($spj->status2)
-                                    @case('valid')
-                                        <span class="badge badge-success">Disetujui</span>
-                                        @break
-                                    @case('belum_valid')
-                                        <span class="badge badge-danger">Tidak Disetujui</span>
-                                        <!-- 🔔 Tombol lonceng -->
-                                        <button 
-                                            type="button" 
-                                            class="btn btn-link p-0 ml-1 alasan-btn position-relative"
-                                            data-nomor="{{ $spj->pesanan->no_surat ?? '-' }}"
-                                            data-tanggal="{{ $spj->pesanan?->surat_dibuat ? \Carbon\Carbon::parse($spj->pesanan->surat_dibuat)->translatedFormat('d F Y') : '-' }}"
-                                            data-alasan="{{ $spj->komentar_kasubag ?? 'Tidak ada komentar dari Kasubag.' }}"
-                                            title="Lihat alasan penolakan"
-                                        >
-                                            <i class="fas fa-bell text-warning"></i>
-                                            <span class="notif-badge position-absolute badge badge-danger d-none">1</span>
-                                        </button>
-                                        @break
-                                    @default
-                                        <span class="badge badge-warning text-dark">Menunggu Validasi</span>
-                                @endswitch
-                            </td>
-                            <td>
-                                <!-- 👁️ Preview -->
-                                <a href="{{ route('spj.preview', ['id' => $spj->id]) }}" class="btn btn-sm btn-info mb-1">
-                                    <i class="fas fa-eye"></i> Preview
-                                </a>
-
-                                <!-- 📨 Ajukan ke Bendahara -->
-                                @if($spj->status == null || $spj->status == 'draft')
-                                    <form action="{{ route('spj.submitToBendahara', $spj->id) }}" method="POST" class="d-inline-block submit-bendahara-form mb-1">
-                                        @csrf
-                                        <button type="submit" class="btn btn-sm btn-success">
-                                            <i class="fas fa-paper-plane"></i> Ajukan ke Bendahara
-                                        </button>
-                                    </form>
-                                @endif
-
-                                <!-- 🖨️ Cetak hanya jika kedua status valid -->
-                                @if($spj->status === 'valid' && $spj->status2 === 'valid')
-                                    <a href="{{ route('spj.cetak', $spj->id) }}" target="_blank" class="btn btn-sm btn-primary mb-1">
-                                        <i class="fas fa-print"></i> Cetak
-                                    </a>
+                                    @endif
+                                @elseif($status2 === 'diajukan')
+                                    <span class="badge badge-info">Diajukan</span>
+                                @else
+                                    <span class="badge badge-warning">Menunggu</span>
                                 @endif
                             </td>
+                            <!-- Aksi -->
+                            <td>
+                                <div class="d-flex flex-column align-items-center justify-content-center gap-5">
 
+                                    <!-- 🔹 Baris atas -->
+                                    <div class="d-flex flex-wrap justify-content-center align-items-center gap-5">
+                                        <a href="{{ route('spj.preview', $spj->id) }}" class="btn btn-sm btn-info action-btn">
+                                            <i class="fas fa-eye"></i> Preview
+                                        </a>
+
+                                        @if(
+                                            ($status1 === 'draft' && $status2 === 'draft') ||
+                                            ($status1 === 'belum_valid' || $status2 === 'belum_valid')
+                                        )
+                                            <form action="{{ route('spj.destroy', $spj->id) }}" method="POST" class="form-delete d-inline-block">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-danger action-btn">
+                                                    <i class="fas fa-trash"></i> Hapus
+                                                </button>
+                                            </form>
+                                        @endif
+
+                                        @if($status1 === 'valid' && $status2 === 'valid')
+                                            <a href="{{ route('spj.cetak', $spj->id) }}" target="_blank" class="btn btn-sm btn-secondary action-btn">
+                                                <i class="fas fa-print"></i> Cetak
+                                            </a>
+                                        @endif
+                                    </div>
+
+                                    <!-- 🔹 Baris bawah -->
+                                    <div class="d-flex flex-wrap justify-content-center align-items-center gap-5">
+                                        @if($status1 === 'draft' || $status1 === 'belum_valid')
+                                            <form action="{{ route('spj.submitToBendahara', $spj->id) }}" method="POST" class="d-inline-block">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-success action-btn">
+                                                    <i class="fas fa-paper-plane"></i> Ajukan Ke Bendahara
+                                                </button>
+                                            </form>
+                                        @endif
+
+                                        @if($status1 === 'valid' && ($status2 === null || $status2 === 'belum_valid'))
+                                            <form action="{{ route('ajukanKasubag', $spj->id) }}" method="POST" class="d-inline-block">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-primary action-btn">
+                                                    <i class="fas fa-paper-plane"></i> Ajukan Ke Kasubag
+                                                </button>
+                                            </form>
+                                        @endif
+                                    </div>
+                                </div>
+                            </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="6" class="text-center text-muted py-3">
-                                Tidak ada data SPJ untuk akun ini.
-                            </td>
+                            <td colspan="6" class="text-center text-muted py-3">Tidak ada data SPJ</td>
                         </tr>
                         @endforelse
                     </tbody>
                 </table>
             </div>
 
-            <!-- 📑 Pagination -->
             <div class="d-flex justify-content-center mt-3">
                 {{ $spjs->links('pagination::bootstrap-4') }}
             </div>
         </div>
     </div>
+</div>
 
-    <!-- 🔔 Modal Dinamis -->
-    <div class="modal fade" id="modalAlasan" tabindex="-1" role="dialog" aria-labelledby="modalAlasanLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content animate__animated animate__fadeIn">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title" id="modalAlasanLabel">
-                        <i class="fas fa-exclamation-circle mr-2"></i> Alasan Penolakan SPJ
-                    </h5>
-                    <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <p><strong>Nomor Surat:</strong> <span id="modalNomor"></span></p>
-                    <p><strong>Tanggal Surat:</strong> <span id="modalTanggal"></span></p>
-                    <hr>
-                    <p><strong>Alasan Penolakan:</strong></p>
-                    <p id="modalAlasanText" class="text-muted"></p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-dismiss="modal">Tutup</button>
-                </div>
+<!-- 🔔 Modal Alasan -->
+<div class="modal fade" id="modalAlasan" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content animate__animated animate__fadeIn">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-circle mr-2"></i> Alasan Penolakan SPJ
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-sm table-bordered">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Field</th>
+                            <th>Pesan</th>
+                            <th>Role</th>
+                            <th>Waktu</th>
+                        </tr>
+                    </thead>
+                    <tbody id="feedbackTableBody"></tbody>
+                </table>
             </div>
         </div>
     </div>
 </div>
 
-@if(session('success'))
-    <div data-swal-success="{{ session('success') }}"></div>
-@endif
-
-@if($errors->any())
-    <div data-swal-errors="{{ implode('|', $errors->all()) }}"></div>
-@endif
-@endsection
-
-@push('styles')
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-<style>
-    .notif-badge {
-        font-size: 0.65rem;
-        padding: 4px 6px;
-    }
-</style>
-@endpush
-
-@push('scripts')
-<!-- ✅ Pastikan jQuery & SweetAlert2 dimuat -->
+<!-- ✅ Scripts -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <script>
 $(document).ready(function() {
-    // 🔔 Modal alasan
-    $('.alasan-btn').on('click', function() {
-        const nomor = $(this).data('nomor');
-        const tanggal = $(this).data('tanggal');
-        const alasan = $(this).data('alasan');
-        $('#modalNomor').text(nomor);
-        $('#modalTanggal').text(tanggal);
-        $('#modalAlasanText').text(alasan);
-        $('#modalAlasan').modal('show');
-    });
-
-    // 📨 Konfirmasi pengajuan ke bendahara
-    $('.submit-bendahara-form').on('submit', function(e) {
+    $('.form-delete').on('submit', function(e) {
         e.preventDefault();
         const form = this;
-        if (typeof Swal === 'undefined') {
-            alert('SweetAlert tidak ditemukan. Pastikan koneksi ke CDN aktif.');
-            form.submit();
-            return;
-        }
+
+        // Aktifkan mode "disable loader" dan flag SweetAlert
+        isSweetAlertActive = true;
+        isLoaderDisabled = true;
+        hideLoader();
+
         Swal.fire({
-            title: 'Ajukan ke Bendahara?',
-            text: 'SPJ ini akan dikirim untuk proses validasi bendahara.',
-            icon: 'question',
+            title: "Yakin ingin menghapus SPJ ini?",
+            text: "Data yang dihapus tidak dapat dikembalikan.",
+            icon: "warning",
             showCancelButton: true,
-            confirmButtonText: 'Ya, ajukan!',
-            cancelButtonText: 'Batal',
-            confirmButtonColor: '#28a745'
-        }).then((result) => {
-            if (result.isConfirmed) form.submit();
+            confirmButtonText: "Ya, hapus",
+            cancelButtonText: "Batal",
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            allowOutsideClick: false,
+            allowEscapeKey: false,
+        }).then(result => {
+            // Reset flag setelah SweetAlert ditutup
+            isSweetAlertActive = false;
+            isLoaderDisabled = false;
+
+            if (result.isConfirmed) {
+                showLoader();
+                setTimeout(() => form.submit(), 400);
+            } else {
+                hideLoader();
+            }
         });
     });
 
-    // ✅ Notifikasi sukses
-    const successMsg = $('[data-swal-success]').data('swal-success');
-    if (successMsg && typeof Swal !== 'undefined') {
-        Swal.fire({ icon: 'success', title: 'Berhasil', text: successMsg });
-    }
+   // 🔔 Modal alasan
+    $('.alasan-btn').on('click', function() {
+        const feedbacks = $(this).data('feedback');
+        const tbody = $('#feedbackTableBody');
+        tbody.empty();
 
-    // ❗ Notifikasi error
-    const errorMsgs = $('[data-swal-errors]').data('swal-errors');
-    if (errorMsgs && typeof Swal !== 'undefined') {
-        const list = errorMsgs.split('|').join('\n');
-        Swal.fire({ icon: 'error', title: 'Terjadi Kesalahan', text: list });
-    }
+        // 🧭 Mapping nama field → label & grup
+        const fieldGroups = {
+            'Bagian Kwitansi': {
+                'uang_terbilang': 'Uang Terbilang',
+                'jumlah_nominal': 'Jumlah Nominal',
+                'pembayaran': 'Pembayaran',
+                'no_rekening': 'Nomor Rekening',
+                'no_rekening_tujuan': 'Nomor Rekening Tujuan',
+                'nama_bank': 'Nama Bank',
+                'npwp': 'NPWP',
+                'telah_diterima_dari': 'Telah Diterima Dari',
+                'penerima_kwitansi': 'Penerima Kwitansi',
+                'jabatan_penerima': 'Jabatan Penerima',
+            },
+            'Bagian Pesanan': {
+                'no_surat': 'Nomor Surat',
+                'nama_pt': 'Nama PT',
+                'alamat_pt': 'Alamat PT',
+                'nomor_tlp_pt': 'Nomor Telepon PT',
+                'tanggal_diterima': 'Tanggal Diterima',
+                'surat_dibuat': 'Tanggal Surat Dibuat',
+            },
+            'Bagian Pemeriksaan': {
+                'nama_pihak_kedua': 'Nama Pihak Kedua',
+                'jabatan_pihak_kedua': 'Jabatan Pihak Kedua',
+                'alamat_pihak_kedua': 'Alamat Pihak Kedua',
+                'nama_pihak_pertama': 'Nama Pihak Pertama (PLT)',
+                'nip_pihak_pertama': 'NIP Pihak Pertama (PLT)',
+                'gol_pertama': 'Golongan Pihak Pertama',
+                'jab_pertama': 'Jabatan Pihak Pertama',
+            },
+            'Bagian Penerimaan': {
+                'subtotal': 'Subtotal',
+                'ppn': 'PPN',
+                'grandtotal': 'Grand Total',
+                'dibulatkan': 'Dibulatkan',
+                'terbilang': 'Terbilang',
+            },
+            'Bagian Daftar Barang': {
+                'nama_barang': 'Nama Barang',
+                'jumlah': 'Jumlah',
+                'satuan': 'Satuan',
+                'harga_satuan': 'Harga Satuan',
+                'total': 'Total',
+            }
+        };
+
+        if (Array.isArray(feedbacks) && feedbacks.length > 0) {
+            feedbacks.forEach(f => {
+                let groupName = '-';
+                let fieldLabel = f.field || '-';
+
+                // cari field di dalam grup mana
+                for (const [group, fields] of Object.entries(fieldGroups)) {
+                    if (fields[f.field]) {
+                        groupName = group;
+                        fieldLabel = fields[f.field];
+                        break;
+                    }
+                }
+
+                tbody.append(`
+                    <tr>
+                        <td>
+                            <strong>${fieldLabel}</strong><br>
+                            <small class="text-muted">${groupName}</small>
+                        </td>
+                        <td>${f.message || '-'}</td>
+                        <td>${f.role || '-'}</td>
+                        <td>${f.created_at}</td>
+                    </tr>
+                `);
+            });
+        } else {
+            tbody.append('<tr><td colspan="4" class="text-center text-muted">Tidak ada alasan penolakan.</td></tr>');
+        }
+
+        $('#modalAlasan').modal('show');
+    });
+
 });
 </script>
-@endpush
+
+@endsection
