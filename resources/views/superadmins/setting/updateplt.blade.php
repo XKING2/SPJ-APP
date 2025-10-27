@@ -71,7 +71,7 @@
                             @enderror
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold">NIP Pihak Pertama</label>
+                            <label class="form-label fw-bold">Gol Pihak Pertama</label>
                             <input type="text" 
                                    name="gol_pihak_pertama" 
                                    class="form-control @error('gol_pihak_pertama') is-invalid @enderror"

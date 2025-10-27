@@ -50,8 +50,8 @@ class sidebarcontrol3 extends Controller
         $search = $request->input('search');
 
         // Ambil semua data SPJ beserta relasi user dan pesanan
-        $query = Spj::with(['user', 'pesanan'])
-                    ->whereIn('status', ['diajukan', 'valid']); // ✅ tampilkan dua status
+        $query = Spj::with(['user'])
+                    ->whereIn('status2', ['diajukan','valid']); // ✅ tampilkan dua status
 
         // Filter pencarian (berdasarkan status, nomor surat, atau nama pembuat)
         if ($search) {

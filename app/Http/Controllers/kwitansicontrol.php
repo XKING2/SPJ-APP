@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Kwitansi;
 use App\Models\SPJ;
 use App\Models\pptk;
+use Illuminate\Support\Facades\Log;
 
 class KwitansiControl extends Controller
 {
@@ -81,12 +82,28 @@ class KwitansiControl extends Controller
 
         $spj = Spj::find($kwitansi->spj_id);
 
+        if (!$spj) {
+            Log::error("SPJ dengan ID {$kwitansi->spj_id} tidak ditemukan saat update Kwitansi.");
+            return redirect()->back()->with('error', 'Data SPJ tidak ditemukan.');
+        }
+
+        if ($spj) {
+            $spj->feedbacks()->delete(); // bersihkan alasan lama
+            if ($spj->status === 'belum_valid') $spj->status = 'draft';
+            if ($spj->status2 === 'belum_valid') $spj->status2 = 'draft';
+            $spj->save();
+        }
+
+        $spj->save();
+
+        Log::info("✅ SPJ #{$spj->id} berhasil diubah ke status: {$spj->status} / {$spj->status2}");
+
         if ($spj) {
             app(\App\Http\Controllers\SPJController::class)->generateSPJDocument($spj->id);
         }
 
         return redirect()
             ->route('kwitansi', ['id' => $spj->id ?? null])
-            ->with('success', 'Kwitansi berhasil diperbarui dan dokumen SPJ diregenerasi.');
+            ->with('success', 'Data Kwitansi berhasil diperbarui dan dokumen SPJ Diperbaharui.');
     }
 }

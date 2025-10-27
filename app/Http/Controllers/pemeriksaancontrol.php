@@ -8,6 +8,7 @@ use App\Models\SPJ;
 use App\Models\Pesanan;
 use App\Models\Plt;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 Carbon::setLocale('id');
 
@@ -145,12 +146,28 @@ class PemeriksaanControl extends Controller
 
         // Regenerasi dokumen SPJ otomatis
         $spj = SPJ::find($pemeriksaan->spj_id);
+
+        if (!$spj) {
+            Log::error("SPJ dengan ID {$pemeriksaan->spj_id} tidak ditemukan saat update Kwitansi.");
+            return redirect()->back()->with('error', 'Data SPJ tidak ditemukan.');
+        }
+
+        if ($spj->status === 'belum_valid') {
+            $spj->status = 'draft';
+        }
+        if ($spj->status2 === 'belum_valid') {
+            $spj->status2 = 'draft';
+        }
+
+        $spj->save();
+
+        Log::info("✅ SPJ #{$spj->id} berhasil diubah ke status: {$spj->status} / {$spj->status2}");
         if ($spj) {
             app(\App\Http\Controllers\SPJController::class)->generateSPJDocument($spj->id);
         }
 
         return redirect()
             ->route('pemeriksaan')
-            ->with('success', 'Data pemeriksaan berhasil diperbarui dan dokumen SPJ telah diupdate.');
+            ->with('success', 'Data pemeriksaan berhasil diperbarui dan dokumen SPJ telah Perbaharui.');
     }
 }

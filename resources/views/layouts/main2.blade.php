@@ -235,13 +235,15 @@
 
 
 
-                    <!-- Page Heading -->
+                    <div class="container-fluid mt-4">
                     <div class="d-sm-flex align-items-center justify-content-between mb-4">
                         @yield('pageheads')
                     </div>
-                        @yield('content')
 
+                    
+                    @yield('content')
                 </div>
+
             <!-- End of Main Content -->
 
         </div>

@@ -25,7 +25,7 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('kwitansi.update', $kwitansi->id) }}">
+            <form method="POST" action="{{ route('kwitansi.update', $kwitansi->id) }}" novalidate>
                 @csrf
                 @method('PUT')
 
@@ -121,6 +121,75 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function (e) {
+            // Cegah submit default dulu
+            e.preventDefault();
+
+            if (form.dataset.submitting === "true") return;
+            if (document.querySelector('.swal2-container')) return;
+
+            window._loaderDisabled = true;
+            hideLoader();
+
+            // 🔍 Cari input yang wajib diisi (required)
+            const requiredFields = form.querySelectorAll('[required]');
+            const emptyFields = [];
+
+            requiredFields.forEach(input => {
+                const label = input.closest('.mb-3')?.querySelector('label')?.innerText || input.name;
+                if (!input.value.trim()) {
+                    emptyFields.push(label.replace('*', '').trim());
+                }
+            });
+
+            // ⚠️ Jika ada yang kosong, tampilkan SweetAlert error
+            if (emptyFields.length > 0) {
+                Swal.fire({
+                    title: 'Data Belum Lengkap!',
+                    html: `
+                        <p>Harap isi semua kolom berikut sebelum menyimpan:</p>
+                        <ul style="text-align:left; margin-left: 20px;">
+                            ${emptyFields.map(f => `<li>${f}</li>`).join('')}
+                        </ul>
+                    `,
+                    icon: 'error',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#3085d6',
+                    allowOutsideClick: false
+                });
+                return;
+            }
+
+            // ✅ Jika semua terisi, tampilkan konfirmasi submit
+            Swal.fire({
+                title: 'Apakah Anda yakin?',
+                text: "Pastikan data yang Anda isi sudah benar sebelum disimpan.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Ya, Simpan!',
+                cancelButtonText: 'Batal',
+                reverseButtons: true,
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.dataset.submitting = "true";
+                    window._loaderDisabled = false;
+                    showLoader();
+                    HTMLFormElement.prototype.submit.call(form);
+                } else {
+                    hideLoader();
+                    window._loaderDisabled = false;
+                }
+            });
+        });
+    });
+});
+</script>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     const nominalInput = document.getElementById("jumlah_nominal");

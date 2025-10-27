@@ -35,7 +35,7 @@
                         <tr>
                             <th style="width: 50px;">No</th>
                             <th>Nama Pihak Pertama</th>
-                            <th>jabatan Pihak Pertama</th>
+                            <th>Jabatan Pihak Pertama</th>
                             <th>NIP Pihak Pertama</th>
                             <th style="width: 180px;">Aksi</th>
                         </tr>

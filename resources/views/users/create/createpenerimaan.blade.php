@@ -10,7 +10,8 @@
 <div class="container">
     <div class="card shadow-sm rounded-3">
         <div class="card-body">
-            <form action="{{ route('penerimaan.store') }}" method="POST">
+            <form id="form-penerimaan" action="{{ route('penerimaan.store') }}" method="POST" novalidate>
+
                 @csrf
                 <input type="hidden" name="pemeriksaan_id" value="{{ $pemeriksaan->id }}">
                 <input type="hidden" name="spj_id" value="{{ $spj->id }}">
@@ -23,17 +24,17 @@
                         <div class="mb-3">
                             <label class="form-label fw-bold">Pekerjaan</label>
                             <input type="text" name="pekerjaan" class="form-control"
-                                value="{{ old('pekerjaan', $pemeriksaan->pekerjaan ?? '') }}">
+                                value="{{ old('pekerjaan', $pemeriksaan->pekerjaan ?? '') }}"required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold">Nomor SP</label>
                             <input type="text" name="no_surat" class="form-control"
-                                value="{{ old('no_surat', $pemeriksaan->pesanan->no_surat ?? '') }}">
+                                value="{{ old('no_surat', $pemeriksaan->pesanan->no_surat ?? '') }}"required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold">Tanggal SP</label>
                             <input type="date" name="surat_dibuat" class="form-control"
-                                value="{{ old('surat_dibuat', $pemeriksaan->pesanan->surat_dibuat ?? '') }}">
+                                value="{{ old('surat_dibuat', $pemeriksaan->pesanan->surat_dibuat ?? '') }}"required>
                         </div>
                     </div>
 
@@ -42,12 +43,12 @@
                         <div class="mb-3">
                             <label class="form-label fw-bold">Nama Pihak Kedua</label>
                             <input type="text" name="nama_pihak_kedua" class="form-control"
-                                value="{{ old('nama_pihak_kedua', $pemeriksaan->nama_pihak_kedua ?? '') }}">
+                                value="{{ old('nama_pihak_kedua', $pemeriksaan->nama_pihak_kedua ?? '') }}"required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold">Jabatan Pihak Kedua</label>
                             <input type="text" name="jabatan_pihak_kedua" class="form-control"
-                                value="{{ old('jabatan_pihak_kedua', $pemeriksaan->jabatan_pihak_kedua ?? '') }}">
+                                value="{{ old('jabatan_pihak_kedua', $pemeriksaan->jabatan_pihak_kedua ?? '') }}" required>
                         </div>
                     </div>
                 </div>
@@ -73,10 +74,10 @@
                                         value="{{ $item->nama_barang }}" readonly></td>
                                 <td><input type="number" name="barang[{{ $i }}][jumlah]" class="form-control jumlah"
                                         value="{{ $item->jumlah }}" readonly></td>
-                                <td><input type="text" name="barang[{{ $i }}][satuan]" class="form-control" value="Pcs">
+                                <td><input type="text" name="barang[{{ $i }}][satuan]" class="form-control" required value="Pcs">
                                 </td>
                                 <td><input type="number" name="barang[{{ $i }}][harga_satuan]" class="form-control harga"
-                                        value="0"></td>
+                                        value="0" required></td>
                                 <td><input type="number" name="barang[{{ $i }}][total]" class="form-control total"
                                         value="0" readonly></td>
                             </tr>
@@ -118,48 +119,131 @@
         </div>
     </div>
 </div>
-   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('form').forEach(form => {
-        form.addEventListener('submit', function (e) {
-            // Jangan cegat submit kedua kalinya
-            if (form.dataset.submitting === "true") return;
+  const form = document.getElementById('form-penerimaan');
 
-            e.preventDefault();
-            if (document.querySelector('.swal2-container')) return;
 
-            window._loaderDisabled = true;
-            hideLoader();
+    if (!form) {
+        console.error('Form penerimaan tidak ditemukan');
+        return;
+    }
 
-            Swal.fire({
-                title: 'Apakah Anda yakin?',
-                text: "Pastikan data yang Anda isi sudah benar sebelum disimpan.",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Ya, Simpan!',
-                cancelButtonText: 'Batal',
-                reverseButtons: false,
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Tandai form agar tidak dicegat lagi
-                    form.dataset.submitting = "true";
-                    window._loaderDisabled = false;
-                    showLoader();
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
 
-                    // 🔥 Panggil submit asli tanpa trigger event listener lagi
-                    HTMLFormElement.prototype.submit.call(form);
-                } else {
-                    hideLoader();
-                    window._loaderDisabled = false;
-                }
-            });
+        if (form.dataset.submitting === "true") return;
+        if (document.querySelector('.swal2-container')) return;
+
+        // Reset invalid style
+        form.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+
+        let emptyFields = [];
+
+        // 1️⃣ Validasi umum untuk input required (di luar tabel)
+        const requiredInputs = form.querySelectorAll('[required]');
+        requiredInputs.forEach(input => {
+            const label = input.closest('.mb-3')?.querySelector('label')?.innerText || input.name;
+            if (!input.value.trim()) {
+                input.classList.add('is-invalid');
+                emptyFields.push(label.replace('*', '').trim());
+            }
         });
+
+        // 2️⃣ Validasi khusus untuk tabel barang
+        const rows = document.querySelectorAll('#barang-table tr');
+        rows.forEach((row, index) => {
+            const nama = row.querySelector('input[name^="barang"][name$="[nama_barang]"]');
+            const satuan = row.querySelector('input[name^="barang"][name$="[satuan]"]');
+            const harga = row.querySelector('input[name^="barang"][name$="[harga_satuan]"]');
+            const total = row.querySelector('input[name^="barang"][name$="[total]"]');
+
+            if (!nama?.value.trim()) {
+                nama?.classList.add('is-invalid');
+                emptyFields.push(`Nama Barang (baris ${index + 1})`);
+            }
+
+            if (!satuan?.value.trim()) {
+                satuan?.classList.add('is-invalid');
+                emptyFields.push(`Satuan (baris ${index + 1})`);
+            }
+
+            if (!harga?.value || parseFloat(harga.value) <= 0) {
+                harga?.classList.add('is-invalid');
+                emptyFields.push(`Harga Satuan (baris ${index + 1})`);
+            }
+        });
+
+        // 3️⃣ Kalau ada field kosong, tampilkan SweetAlert
+        if (emptyFields.length > 0) {
+            Swal.fire({
+                title: 'Data Belum Lengkap!',
+                html: `
+                    <p>Harap isi semua kolom berikut sebelum menyimpan:</p>
+                    <ul style="text-align:left; margin-left: 20px;">
+                        ${emptyFields.map(f => `<li>${f}</li>`).join('')}
+                    </ul>
+                `,
+                icon: 'error',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#3085d6',
+                allowOutsideClick: false
+            });
+            return;
+        }
+
+        // 4️⃣ Kalau semua lengkap → konfirmasi simpan
+        Swal.fire({
+            title: 'Apakah Anda yakin?',
+            text: "Pastikan data yang Anda isi sudah benar sebelum disimpan.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, Simpan!',
+            cancelButtonText: 'Batal',
+            reverseButtons: true,
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // 🔥 Tampilkan loader Lottie sebelum submit
+                if (typeof showLoader === 'function') {
+                    showLoader();
+                }
+
+                // Tunggu sebentar agar animasi sempat muncul (opsional)
+                setTimeout(() => {
+                    form.dataset.submitting = "true";
+                    HTMLFormElement.prototype.submit.call(form);
+                }, 400);
+            }
+        });
+
     });
 });
 </script>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const container = document.getElementById('lottie-container');
+    console.log('🧩 Lottie container ditemukan:', container);
+
+    const animation = lottie.loadAnimation({
+        container: container,
+        renderer: 'svg',
+        loop: true,
+        autoplay: true,
+        path: "{{ asset('lottie/blue_loading.json') }}"
+    });
+
+    animation.addEventListener('data_failed', () => {
+        console.error('🚨 Gagal memuat animasi Lottie. Cek path JSON-nya!');
+    });
+});
+</script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const hargaInputs = document.querySelectorAll('.harga');

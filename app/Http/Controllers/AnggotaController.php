@@ -20,7 +20,7 @@ class AnggotaController extends Controller
             'nama' => 'required|max:255',
             'jabatan' => 'required',
             'alamat' => 'required',
-            'nomor_tlp' => 'required',
+            'nomor_tlp' => 'required|max:255',
             'role' => 'required',
         ], [
             'nip.required' => 'NIP wajib diisi',

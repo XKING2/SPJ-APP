@@ -10,7 +10,7 @@
 <div class="container">
     <div class="card shadow-sm rounded-3">
         <div class="card-body">
-            <form action="{{ route('kwitansis.store') }}" method="POST">
+            <form action="{{ route('kwitansis.store') }}" method="POST" novalidate>
                 @csrf
                 <input type="hidden" name="spj_id" value="{{ $spj->id }}">
 
@@ -19,27 +19,27 @@
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label class="form-label fw-bold">No Rekening</label>
-                            <input type="text" name="no_rekening" class="form-control" value="{{ old('no_rekening') }}">
+                            <input type="text" name="no_rekening" class="form-control" value="{{ old('no_rekening') }}" required>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">No Rekening Tujuan</label>
-                            <input type="text" name="no_rekening_tujuan" class="form-control" value="{{ old('no_rekening_tujuan') }}">
+                            <input type="text" name="no_rekening_tujuan" class="form-control" value="{{ old('no_rekening_tujuan') }}" required>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">Nama Bank</label>
-                            <input type="text" name="nama_bank" class="form-control" value="{{ old('nama_bank') }}">
+                            <input type="text" name="nama_bank" class="form-control" value="{{ old('nama_bank') }}" required>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">Yang Menerima Kwitansi</label>
-                            <input type="text" name="penerima_kwitansi" class="form-control" value="{{ old('penerima_kwitansi') }}">
+                            <input type="text" name="penerima_kwitansi" class="form-control"  value="{{ old('penerima_kwitansi') }}" required>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">Sub Kegiatan</label>
-                            <textarea name="sub_kegiatan" class="form-control" rows="5">{{ old('sub_kegiatan') }}</textarea>
+                            <textarea name="sub_kegiatan" class="form-control"  rows="5" required>{{ old('sub_kegiatan') }}</textarea>
                         </div>
                     </div>
 
@@ -47,29 +47,29 @@
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label class="form-label fw-bold">Telah Diterima Dari</label>
-                            <input type="text" name="telah_diterima_dari" class="form-control" value="{{ old('telah_diterima_dari') }}">
+                            <input type="text" name="telah_diterima_dari" class="form-control" value="{{ old('telah_diterima_dari') }}"required>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">Jumlah Nominal</label>
                             <input type="number" name="jumlah_nominal" id="jumlah_nominal" class="form-control"
-                                   value="{{ old('jumlah_nominal') }}" placeholder="Masukkan jumlah nominal">
+                                   value="{{ old('jumlah_nominal') }}" placeholder="Masukkan jumlah nominal" required>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">Uang Terbilang</label>
                             <input type="text" name="uang_terbilang" id="uang_terbilang" class="form-control"
-                                   value="{{ old('uang_terbilang') }}" readonly>
+                                   value="{{ old('uang_terbilang') }} " required>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">Jabatan Penerima Kwitansi</label>
-                            <input type="text" name="jabatan_penerima" class="form-control" value="{{ old('jabatan_penerima') }}">
+                            <input type="text" name="jabatan_penerima" class="form-control" value="{{ old('jabatan_penerima') }}"required>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">NPWP</label>
-                            <input type="text" name="npwp" class="form-control" value="{{ old('npwp') }}">
+                            <input type="text" name="npwp" class="form-control" value="{{ old('npwp') }}"required>
                         </div>
 
                         <div class="mb-3">
@@ -87,7 +87,7 @@
                 <!-- Untuk Pembayaran -->
                 <div class="mb-3">
                     <label class="form-label fw-bold">Untuk Pembayaran</label>
-                    <textarea name="pembayaran" class="form-control" rows="3">{{ old('pembayaran') }}</textarea>
+                    <textarea name="pembayaran" class="form-control" rows="3" required>{{ old('pembayaran') }}</textarea>
                 </div>
 
                 <!-- Tombol Simpan -->
@@ -101,20 +101,50 @@
     </div>
 </div>
 
-   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('form').forEach(form => {
         form.addEventListener('submit', function (e) {
-            // Jangan cegat submit kedua kalinya
-            if (form.dataset.submitting === "true") return;
-
+            // Cegah submit default dulu
             e.preventDefault();
+
+            if (form.dataset.submitting === "true") return;
             if (document.querySelector('.swal2-container')) return;
 
             window._loaderDisabled = true;
             hideLoader();
 
+            // 🔍 Cari input yang wajib diisi (required)
+            const requiredFields = form.querySelectorAll('[required]');
+            const emptyFields = [];
+
+            requiredFields.forEach(input => {
+                const label = input.closest('.mb-3')?.querySelector('label')?.innerText || input.name;
+                if (!input.value.trim()) {
+                    emptyFields.push(label.replace('*', '').trim());
+                }
+            });
+
+            // ⚠️ Jika ada yang kosong, tampilkan SweetAlert error
+            if (emptyFields.length > 0) {
+                Swal.fire({
+                    title: 'Data Belum Lengkap!',
+                    html: `
+                        <p>Harap isi semua kolom berikut sebelum menyimpan:</p>
+                        <ul style="text-align:left; margin-left: 20px;">
+                            ${emptyFields.map(f => `<li>${f}</li>`).join('')}
+                        </ul>
+                    `,
+                    icon: 'error',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#3085d6',
+                    allowOutsideClick: false
+                });
+                return;
+            }
+
+            // ✅ Jika semua terisi, tampilkan konfirmasi submit
             Swal.fire({
                 title: 'Apakah Anda yakin?',
                 text: "Pastikan data yang Anda isi sudah benar sebelum disimpan.",
@@ -124,15 +154,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 cancelButtonColor: '#d33',
                 confirmButtonText: 'Ya, Simpan!',
                 cancelButtonText: 'Batal',
-                reverseButtons: false,
+                reverseButtons: true,
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Tandai form agar tidak dicegat lagi
                     form.dataset.submitting = "true";
                     window._loaderDisabled = false;
                     showLoader();
-
-                    // 🔥 Panggil submit asli tanpa trigger event listener lagi
                     HTMLFormElement.prototype.submit.call(form);
                 } else {
                     hideLoader();
@@ -143,6 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 </script>
+
 
 <!-- Script konversi nominal ke terbilang -->
 <script>

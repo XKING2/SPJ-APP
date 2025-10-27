@@ -92,17 +92,17 @@ class settingcontrol extends Controller
 
         // Validasi — untuk rule unique kita kecualikan id yang sedang diupdate
         $validated = $request->validate([
-            'nama_pptk'   => 'required|max:255|pptk,nama_pptk,' . $id,
-            'jabatan_pptk'=> 'required|max:255',
-            'nip_pptk'    => 'required|max:255|unique:pptk,nip_pptk,' . $id,
-            'subkegiatan' => 'required',
+            'nama_pptk'    => 'required|max:255|unique:pptk,nama_pptk,' . $id,
+            'jabatan_pptk' => 'required|max:255',
+            'nip_pptk'     => 'required|max:255|unique:pptk,nip_pptk,' . $id,
+            'subkegiatan'  => 'required',
         ], [
-            'nama_pptk.required' => 'Nama wajib diisi',
-            'nama_pptk.unique'   => 'Nama sudah terdaftar',
-            'jabatan_pptk.required' => 'Jabatan wajib diisi',
-            'nip_pptk.required'   => 'NIP wajib diisi',
-            'nip_pptk.unique'     => 'NIP sudah terdaftar',
-            'subkegiatan.required'=> 'Sub kegiatan wajib diisi',
+            'nama_pptk.required'     => 'Nama wajib diisi',
+            'nama_pptk.unique'       => 'Nama sudah terdaftar',
+            'jabatan_pptk.required'  => 'Jabatan wajib diisi',
+            'nip_pptk.required'      => 'NIP wajib diisi',
+            'nip_pptk.unique'        => 'NIP sudah terdaftar',
+            'subkegiatan.required'   => 'Sub kegiatan wajib diisi',
         ]);
 
         // Gunakan array $validated untuk update

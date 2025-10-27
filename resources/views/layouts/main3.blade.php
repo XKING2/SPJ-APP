@@ -267,12 +267,14 @@
                         </div>
                     </div>
 
-                    <!-- Page Heading -->
+                    <div class="container-fluid mt-4">
+                        
                     <div class="d-sm-flex align-items-center justify-content-between mb-4">
                         @yield('pageheads')
                     </div>
-                        @yield('content')
 
+                    
+                    @yield('content')
                 </div>
             <!-- End of Main Content -->
 
@@ -376,7 +378,6 @@
     <!-- Page level custom scripts -->
     <script src="{{asset('js/demo/chart-area-demo.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{asset('js/demo/chart-pie-demo.js') }}"></script>
     
 

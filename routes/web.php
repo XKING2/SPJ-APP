@@ -15,6 +15,10 @@ use App\Http\Controllers\AnggotaController;
 use App\Http\Controllers\settingcontrol;
 use App\Http\Controllers\spjresponcontrol;
 
+
+Route::get('/', function () {
+    return redirect()->route('login');
+});
 Route::get('/User/Dashboard', [sidebarcontrol::class, 'showdashboard1'])->name('userdashboard');
 Route::get('/Kwitansi', [sidebarcontrol::class, 'showkwitansi'])->name('kwitansi');
 Route::get('/Pesanan', [sidebarcontrol::class, 'showpesanan'])->name('pesanan');

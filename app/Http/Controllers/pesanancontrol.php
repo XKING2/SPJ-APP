@@ -8,6 +8,7 @@ use App\Models\Penerimaan;
 use App\Models\setting;
 use App\Models\SPJ;
 use App\Models\Kwitansi;
+use Illuminate\Support\Facades\Log;
 
 class PesananControl extends Controller
 {
@@ -25,7 +26,7 @@ class PesananControl extends Controller
             'kwitansi_id'        => 'required|exists:kwitansis,id',
             'no_surat'           => 'required|string|max:255',
             'nama_pt'            => 'required|string|max:255',
-            'nomor_tlp_pt'       => 'required|numeric',
+            'nomor_tlp_pt'       => ['required', 'string', 'regex:/^[0-9]{10,15}$/'],
             'surat_dibuat'       => 'required|date',
             'tanggal_diterima'   => 'required|date',
             'alamat_pt'          => 'required|string|max:255',
@@ -63,7 +64,7 @@ class PesananControl extends Controller
                 'spj_id'     => $validated['spj_id'],
                 'pesanan_id' => $pesanan->id
             ])
-            ->with('success', 'Pesanan berhasil disimpan. Lanjut ke pemeriksaan.');
+            ->with('success', 'Pesanan berhasil Disimpan. Lanjut ke pemeriksaan.');
     }
 
         public function edit($id)
@@ -174,6 +175,26 @@ class PesananControl extends Controller
             ]);
         }
 
+                        // Regenerasi dokumen SPJ otomatis
+        $spj = SPJ::find($pesanan->spj_id);
+
+        if (!$spj) {
+            Log::error("SPJ dengan ID {$pesanan->spj_id} tidak ditemukan saat update Kwitansi.");
+            return redirect()->back()->with('error', 'Data SPJ tidak ditemukan.');
+        }
+
+        if ($spj->status === 'belum_valid') {
+            $spj->status = 'draft';
+        }
+        if ($spj->status2 === 'belum_valid') {
+            $spj->status2 = 'draft';
+        }
+
+        $spj->save();
+
+        Log::info("✅ SPJ #{$spj->id} berhasil diubah ke status: {$spj->status} / {$spj->status2}");
+        
+
         /** 🔹 Regenerasi SPJ jika ada */
         if ($pesanan->spj_id) {
             app(\App\Http\Controllers\SPJController::class)->generateSPJDocument($pesanan->spj_id);
@@ -181,7 +202,7 @@ class PesananControl extends Controller
 
         return redirect()
             ->route('pesanan')
-            ->with('success', 'Pesanan, total, dan terbilang berhasil diperbarui.');
+            ->with('success', 'Pesanan berhasil diperbarui dan dokumen SPJ telah Perbaharui.');
     }
 
     private function terbilang($angka)

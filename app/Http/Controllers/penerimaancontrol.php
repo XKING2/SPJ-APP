@@ -216,6 +216,25 @@ class PenerimaanControl extends Controller
             'terbilang'      => $terbilang,
         ]);
 
+                // Regenerasi dokumen SPJ otomatis
+        $spj = SPJ::find($penerimaan->spj_id);
+
+        if (!$spj) {
+            Log::error("SPJ dengan ID {$penerimaan->spj_id} tidak ditemukan saat update Kwitansi.");
+            return redirect()->back()->with('error', 'Data SPJ tidak ditemukan.');
+        }
+
+        if ($spj->status === 'belum_valid') {
+            $spj->status = 'draft';
+        }
+        if ($spj->status2 === 'belum_valid') {
+            $spj->status2 = 'draft';
+        }
+
+        $spj->save();
+
+        Log::info("✅ SPJ #{$spj->id} berhasil diubah ke status: {$spj->status} / {$spj->status2}");
+
         /** 🔹 Regenerasi SPJ jika ada */
         if ($penerimaan->spj) {
             app(\App\Http\Controllers\SPJController::class)->generateSPJDocument($penerimaan->spj->id);
@@ -223,7 +242,7 @@ class PenerimaanControl extends Controller
 
         return redirect()
             ->route('penerimaan')
-            ->with('success', 'Data penerimaan berhasil diperbarui.');
+            ->with('success', 'Data penerimaan berhasil diperbarui Dan Dokumen SPJ diperbaharui.');
     }
 
     private function terbilang($angka)
