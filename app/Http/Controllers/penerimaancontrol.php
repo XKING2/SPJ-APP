@@ -18,10 +18,7 @@ class PenerimaanControl extends Controller
     {
         $spj = SPJ::findOrFail($request->spj_id);
         $pemeriksaan = Pemeriksaan::findOrFail($request->pemeriksaan_id);
-
         $ppnRate = Setting::where('key', 'ppn_rate')->value('value') ?? 10;
-
-        // Ambil semua item pesanan untuk dipilih sebagai detail penerimaan
         $pesananItems = $pemeriksaan->pesanan->items ?? [];
 
         return view('users.create.createpenerimaan', compact('spj', 'pemeriksaan', 'ppnRate', 'pesananItems'));
@@ -29,7 +26,7 @@ class PenerimaanControl extends Controller
 
     public function store(Request $request)
     {
-        // 🧠 Validasi input form
+        
         $validated = $request->validate([
             'spj_id' => 'required|exists:spjs,id',
             'pemeriksaan_id' => 'required|exists:pemeriksaans,id',
@@ -51,12 +48,11 @@ class PenerimaanControl extends Controller
             'barang.*.total' => 'required|numeric|min:0',
         ]);
 
-        // 💰 Ambil nilai PPN dari Setting
         $ppnRate = Setting::where('key', 'ppn_rate')->value('value') ?? 10;
         $ppnValue = $validated['ppn'] ?? ($validated['subtotal'] * ($ppnRate / 100));
         $grandtotal = $validated['grandtotal'] ?? ($validated['subtotal'] + $ppnValue);
 
-        // 🧾 Buat entri utama di tabel penerimaans
+
         $penerimaan = Penerimaan::create([
             'spj_id' => $validated['spj_id'],
             'pemeriksaan_id' => $validated['pemeriksaan_id'],
@@ -74,10 +70,8 @@ class PenerimaanControl extends Controller
             'terbilang' => $validated['terbilang'],
         ]);
 
-        // 📦 Simpan data detail barang via relasi
         $penerimaan->details()->createMany(
             collect($validated['barang'])->map(function ($item) use ($validated) {
-                // Ambil data item dari PesananItem berdasarkan nama_barang
                 $pesananItem = \App\Models\PesananItem::where('nama_barang', $item['nama_barang'])
                                 ->where('pesanan_id', $validated['pesanan_id'])
                                 ->first();
@@ -92,13 +86,10 @@ class PenerimaanControl extends Controller
             })->toArray()
         );
 
-
-        // 🔁 Regenerasi dokumen SPJ jika ada
         if ($penerimaan->spj) {
             app(SPJController::class)->generateSPJDocument($penerimaan->spj->id);
         }
 
-        // ✅ Redirect sukses
         return redirect()
             ->route('reviewSPJ')
             ->with('success', 'Data penerimaan berhasil disimpan dan SPJ telah digenerate otomatis.');
@@ -112,9 +103,8 @@ class PenerimaanControl extends Controller
 
         $spj = $penerimaan->spj;
         $pemeriksaan = $spj->pemeriksaan;
-        $pesanan = $spj->pesanan; // ✅ Ambil langsung dari relasi SPJ, bukan dari request
+        $pesanan = $spj->pesanan;
 
-        // Jika penerimaan belum punya detail, ambil dari pesanan items
         $barangList = $penerimaan->details->count() > 0
             ? $penerimaan->details
             : ($spj->pesanan->items ?? collect());
@@ -124,7 +114,6 @@ class PenerimaanControl extends Controller
 
     public function update(Request $request, $id)
     {
-        // 🧠 Validasi input form
         $validated = $request->validate([
             'spj_id'             => 'required|exists:spjs,id',
             'pemeriksaan_id'     => 'required|exists:pemeriksaans,id',
@@ -146,11 +135,9 @@ class PenerimaanControl extends Controller
             'barang.*.total'           => 'nullable|numeric|min:0',
         ]);
 
-        // 🔍 Ambil data penerimaan lengkap beserta relasi
         $penerimaan = Penerimaan::with(['details'])->findOrFail($id);
         $ppnRate = Setting::where('key', 'ppn_rate')->value('value') ?? 10;
 
-        /** 🔹 Hapus detail yang tidak ada di form */
         $formDetailIds = collect($validated['barang'])->pluck('id')->filter()->toArray();
         $detailsToDelete = $penerimaan->details()->whereNotIn('id', $formDetailIds)->get();
 
@@ -158,9 +145,7 @@ class PenerimaanControl extends Controller
             $detail->delete();
         }
 
-        /** 🔹 Update atau Tambah detail baru */
         foreach ($validated['barang'] as $barangData) {
-            // Pastikan total dihitung ulang dari jumlah × harga
             $jumlah = $barangData['jumlah'] ?? 0;
             $harga  = $barangData['harga_satuan'] ?? 0;
             $total  = $jumlah * $harga;
@@ -175,7 +160,6 @@ class PenerimaanControl extends Controller
                     ]);
                 }
             } else {
-                // Cari ID item pesanan untuk menjaga relasi
                 $pesananItem = \App\Models\PesananItem::where('nama_barang', $barangData['nama_barang'])
                                 ->where('pesanan_id', $validated['pesanan_id'])
                                 ->first();
@@ -190,19 +174,13 @@ class PenerimaanControl extends Controller
             }
         }
 
-        /** 🔹 Reload relasi setelah perubahan */
         $penerimaan->load('details');
-
-        /** 🔹 Hitung subtotal dari kolom total */
         $subtotal = $penerimaan->details->sum('total');
         $ppnValue = $subtotal * ($ppnRate / 100);
         $grandtotal = $subtotal + $ppnValue;
         $dibulatkan = round($grandtotal);
-
-        /** 🔹 Konversi ke terbilang */
         $terbilang = $this->terbilang($dibulatkan) . ' rupiah';
 
-        /** 🔹 Update data utama penerimaan */
         $penerimaan->update([
             'spj_id'         => $validated['spj_id'],
             'pemeriksaan_id' => $validated['pemeriksaan_id'],
@@ -216,7 +194,6 @@ class PenerimaanControl extends Controller
             'terbilang'      => $terbilang,
         ]);
 
-                // Regenerasi dokumen SPJ otomatis
         $spj = SPJ::find($penerimaan->spj_id);
 
         if (!$spj) {
@@ -235,7 +212,6 @@ class PenerimaanControl extends Controller
 
         Log::info("✅ SPJ #{$spj->id} berhasil diubah ke status: {$spj->status} / {$spj->status2}");
 
-        /** 🔹 Regenerasi SPJ jika ada */
         if ($penerimaan->spj) {
             app(\App\Http\Controllers\SPJController::class)->generateSPJDocument($penerimaan->spj->id);
         }

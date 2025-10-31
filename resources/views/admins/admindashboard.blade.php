@@ -9,11 +9,10 @@
     </div>
 </div>
 @endsection
+
 @section('content')
 <div class="container-fluid d-flex justify-content-center align-items-center" style="min-height: 70vh;">
     <div class="dashboard-grid">
-
-        <!-- Data SPJ -->
         <div class="dashboard-card">
             <div class="icon bg-primary">
                 <i class="fas fa-landmark fa-2x"></i>
@@ -53,14 +52,11 @@
                 <div class="value">{{ $spjperludivalidasi }}</div>
             </div>
         </div>
-
-
     </div>
 </div>
 
 @endsection
 
-{{-- SweetAlert (auto tampil dari session) --}}
 @if(session('success'))
     <div data-swal-success="{{ session('success') }}"></div>
 @endif

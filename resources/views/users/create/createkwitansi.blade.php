@@ -39,7 +39,9 @@
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">Sub Kegiatan</label>
-                            <textarea name="sub_kegiatan" class="form-control"  rows="5" required>{{ old('sub_kegiatan') }}</textarea>
+                            <select name="sub_kegiatan" id="sub_kegiatan" class="form-control" required>
+                                <option value="" disabled selected>-- Pilih Sub Kegiatan --</option>
+                            </select>
                         </div>
                     </div>
 
@@ -59,7 +61,7 @@
                         <div class="mb-3">
                             <label class="form-label fw-bold">Uang Terbilang</label>
                             <input type="text" name="uang_terbilang" id="uang_terbilang" class="form-control"
-                                   value="{{ old('uang_terbilang') }} " required>
+                                   value="{{ old('uang_terbilang') }} " readonly>
                         </div>
 
                         <div class="mb-3">
@@ -171,6 +173,30 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const pptkSelect = document.querySelector("select[name='id_pptk']");
+    const subKegiatanSelect = document.getElementById("sub_kegiatan");
+
+    pptkSelect.addEventListener("change", function () {
+        const pptkId = this.value;
+        subKegiatanSelect.innerHTML = `<option value="" disabled selected>Loading...</option>`;
+
+        fetch(`/get-subkegiatan/${pptkId}`)
+            .then(response => response.json())
+            .then(data => {
+                subKegiatanSelect.innerHTML = `<option value="" disabled selected>-- Pilih Sub Kegiatan --</option>`;
+                data.forEach(item => {
+                    subKegiatanSelect.innerHTML += `<option value="${item.subkegiatan}">${item.subkegiatan}</option>`;
+                });
+            })
+            .catch(error => {
+                console.error("Error fetching sub kegiatan:", error);
+                subKegiatanSelect.innerHTML = `<option value="" disabled selected>Gagal memuat data</option>`;
+            });
+    });
+});
+</script>
 
 <!-- Script konversi nominal ke terbilang -->
 <script>

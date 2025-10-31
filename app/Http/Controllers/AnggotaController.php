@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class AnggotaController extends Controller
 {
@@ -19,28 +20,31 @@ class AnggotaController extends Controller
             'password' => 'required|max:255',
             'nama' => 'required|max:255',
             'jabatan' => 'required',
-            'alamat' => 'required',
-            'nomor_tlp' => 'required|max:255',
+            'idinjab' => 'required',
+            'jabatan_atasan' => 'required|max:255',
             'role' => 'required',
+            'status' => 'required',
         ], [
             'nip.required' => 'NIP wajib diisi',
             'nip.unique' => 'NIP sudah terdaftar',
             'nama.required' => 'Nama wajib diisi',
             'jabatan.required' => 'Jabatan wajib diisi',
-            'alamat.required' => 'Alamat wajib diisi',
+            'idinjab.required' => 'Idinjab wajib diisi',
             'password.required' => 'Password wajib diisi',
-            'nomor_tlp.required' => 'Nomor telepon wajib diisi',
+            'jabatan_atasan.required' => 'Jabatan Atasan Langsung wajib diisi',
             'role.required' => 'Role wajib diisi',
+            'status.required' => 'status wajib diisi',
         ]);
 
         User::create([
             'nip' => $request->nip,
             'nama' => $request->nama,
             'jabatan' => $request->jabatan,
-            'alamat' => $request->alamat,
-            'password' => $request->password,
-            'nomor_tlp' => $request->nomor_tlp,
+            'idinjab' => $request->idinjab,
+            'password' => Hash::make($request->password),
+            'jabatan_atasan' => $request->jabatan_atasan,
             'role' => $request->role,
+            'status' => $request->status,
         ]);
 
 
@@ -60,31 +64,45 @@ class AnggotaController extends Controller
         $anggota = User::findOrFail($id);
 
         $request->validate([
-            'nip' => 'required|max:255|unique:users,nip,'.$anggota->id,
+            'nip' => 'required|max:255|unique:users,nip,' . $anggota->id,
             'nama' => 'required|max:255',
             'jabatan' => 'required',
-            'alamat' => 'required',
-            'nomor_tlp' => 'required',
+            'idinjab' => 'required',
+            'jabatan_atasan' => 'required|max:255',
             'role' => 'required',
+            'status' => 'required',
+            'password' => 'nullable|max:255',
+        ], [
+            'nip.required' => 'NIP wajib diisi',
+            'nip.unique' => 'NIP sudah terdaftar',
+            'nama.required' => 'Nama wajib diisi',
+            'jabatan.required' => 'Jabatan wajib diisi',
+            'idinjab.required' => 'Idinjab wajib diisi',
+            'jabatan_atasan.required' => 'Jabatan Atasan Langsung wajib diisi',
+            'role.required' => 'Role wajib diisi',
+            'status.required' => 'Status wajib diisi',
         ]);
 
         $data = [
             'nip' => $request->nip,
             'nama' => $request->nama,
             'jabatan' => $request->jabatan,
-            'alamat' => $request->alamat,
-            'nomor_tlp' => $request->nomor_tlp,
+            'idinjab' => $request->idinjab,
+            'jabatan_atasan' => $request->jabatan_atasan,
             'role' => $request->role,
+            'status' => $request->status,
         ];
 
+        // hanya update password jika diisi
         if ($request->filled('password')) {
-            $data['password'] = bcrypt($request->password);
+            $data['password'] = Hash::make($request->password);
         }
 
         $anggota->update($data);
 
-        return redirect()->route('showanggota')
-                        ->with('success', 'Data anggota berhasil diupdate!');
+        return redirect()
+            ->route('showanggota')
+            ->with('success', 'Data anggota berhasil diperbarui!');
     }
     
     public function destroy($id)

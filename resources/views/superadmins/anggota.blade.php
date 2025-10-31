@@ -42,7 +42,6 @@
                             <th>NIP</th>
                             <th>Nama</th>
                             <th>Jabatan</th>
-                            <th>Alamat</th>
                             <th style="width: 180px;">Aksi</th>
                         </tr>
                     </thead>
@@ -53,7 +52,6 @@
                             <td>{{ $item->NIP }}</td>
                             <td>{{ $item->nama }}</td>
                             <td>{{ $item->jabatan }}</td>
-                            <td>{{ $item->Alamat }}</td>
                             <td>
                                 <a href="{{ route('anggota.edit', $item->id) }}" 
                                        class="btn btn-sm btn-success btn-edit"

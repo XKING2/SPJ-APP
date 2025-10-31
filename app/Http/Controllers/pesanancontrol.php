@@ -35,7 +35,6 @@ class PesananControl extends Controller
             'items.*.jumlah'     => 'required|numeric',
         ]);
 
-        // ✅ Buat pesanan utama
         $pesanan = Pesanan::create([
             'spj_id'          => $validated['spj_id'],
             'kwitansi_id'     => $validated['kwitansi_id'],
@@ -47,11 +46,9 @@ class PesananControl extends Controller
             'surat_dibuat'    => $validated['surat_dibuat'],
         ]);
 
-        // ✅ Hubungkan pesanan ke SPJ
         $spj = SPJ::findOrFail($validated['spj_id']);
         $spj->update(['pesanan_id' => $pesanan->id]);
 
-        // ✅ Simpan item menggunakan relasi
         foreach ($validated['items'] as $item) {
             $pesanan->items()->create([
                 'nama_barang' => $item['nama_barang'],
@@ -67,7 +64,7 @@ class PesananControl extends Controller
             ->with('success', 'Pesanan berhasil Disimpan. Lanjut ke pemeriksaan.');
     }
 
-        public function edit($id)
+    public function edit($id)
     {
         $pesanan = Pesanan::with(['items', 'spj'])->findOrFail($id);
 
@@ -100,8 +97,6 @@ class PesananControl extends Controller
 
         $pesanan = Pesanan::with(['items.penerimaanDetail'])->findOrFail($id);
         $ppnRate = Setting::where('key', 'ppn_rate')->value('value') ?? 10;
-
-        /** 🔹 Sinkronisasi item */
         $formItemIds = collect($validated['items'])->pluck('id')->filter()->toArray();
         $itemsToDelete = $pesanan->items()->whereNotIn('id', $formItemIds)->get();
 
@@ -109,7 +104,6 @@ class PesananControl extends Controller
             $item->delete();
         }
 
-        /** 🔹 Update / Tambah item baru */
         foreach ($validated['items'] as $itemData) {
             if (!empty($itemData['id'])) {
                 $item = $pesanan->items->firstWhere('id', $itemData['id']);
@@ -127,10 +121,8 @@ class PesananControl extends Controller
             }
         }
 
-        /** 🔹 Reload data terbaru */
         $pesanan->load('items.penerimaanDetail');
 
-        /** 🔹 Hitung total per item (jumlah × harga_satuan) */
         foreach ($pesanan->items as $item) {
             if ($item->penerimaanDetail) {
                 $jumlah = $item->jumlah ?? 0;
@@ -141,16 +133,11 @@ class PesananControl extends Controller
             }
         }
 
-        /** 🔹 Hitung ulang subtotal, PPN, Grandtotal, Dibulatkan */
         $subtotal = $pesanan->items->sum(fn($i) => optional($i->penerimaanDetail)->total ?? 0);
         $ppnValue = $subtotal * ($ppnRate / 100);
         $grandtotal = $subtotal + $ppnValue;
         $dibulatkan = round($grandtotal);
-
-        /** 🔹 Konversi ke terbilang */
         $terbilang = $this->terbilang($dibulatkan) . ' rupiah';
-
-        /** 🔹 Update Pesanan utama */
         $pesanan->update([
             'no_surat'         => $validated['no_surat'],
             'nama_pt'          => $validated['nama_pt'],
@@ -164,7 +151,6 @@ class PesananControl extends Controller
             'dibulatkan'       => $dibulatkan,
         ]);
 
-        /** 🔹 Update Penerimaan */
         if ($penerimaan = Penerimaan::where('pesanan_id', $pesanan->id)->first()) {
             $penerimaan->update([
                 'subtotal'   => $subtotal,
@@ -175,7 +161,6 @@ class PesananControl extends Controller
             ]);
         }
 
-                        // Regenerasi dokumen SPJ otomatis
         $spj = SPJ::find($pesanan->spj_id);
 
         if (!$spj) {
@@ -193,9 +178,6 @@ class PesananControl extends Controller
         $spj->save();
 
         Log::info("✅ SPJ #{$spj->id} berhasil diubah ke status: {$spj->status} / {$spj->status2}");
-        
-
-        /** 🔹 Regenerasi SPJ jika ada */
         if ($pesanan->spj_id) {
             app(\App\Http\Controllers\SPJController::class)->generateSPJDocument($pesanan->spj_id);
         }
@@ -237,8 +219,7 @@ class PesananControl extends Controller
         } else {
             $hasil = $this->terbilang(floor($angka / 1000000000000)) . " triliun " . $this->terbilang($angka % 1000000000000);
         }
-
-        // Hilangkan spasi ganda dan rapikan
+        
         return trim(preg_replace('/\s+/', ' ', $hasil));
     }
 

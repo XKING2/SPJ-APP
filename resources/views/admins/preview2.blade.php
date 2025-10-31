@@ -166,108 +166,100 @@
   </div>
 </div>
 
-
-
-
-
 @endsection
-<!-- 🧠 Script Interaksi Modal + AJAX -->
+
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // pastikan meta csrf ada di layout
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
-    if (!csrfToken) console.warn('CSRF token meta tag not found! add <meta name="csrf-token" content="{{ csrf_token() }}"> in your layout.');
+    document.addEventListener('DOMContentLoaded', function() {
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+        if (!csrfToken) console.warn('CSRF token meta tag not found! add <meta name="csrf-token" content="{{ csrf_token() }}"> in your layout.');
 
-    let selectedId = null;
+        let selectedId = null;
 
-    document.querySelectorAll('.status-option').forEach(option => {
-        option.addEventListener('click', function(e) {
-            e.preventDefault();
-            const id = this.dataset.id;
-            const status = this.dataset.status;
-            document.getElementById(`status_${id}`).value = status;
+        document.querySelectorAll('.status-option').forEach(option => {
+            option.addEventListener('click', function(e) {
+                e.preventDefault();
+                const id = this.dataset.id;
+                const status = this.dataset.status;
+                document.getElementById(`status_${id}`).value = status;
 
-            if (status === 'belum_valid') {
-                selectedId = id;
-                document.getElementById('feedback_spj_id').value = id;
-                $('#feedbackModal').modal('show');
-            } else {
-                document.getElementById(`form-${id}`).submit();
-            }
+                if (status === 'belum_valid') {
+                    selectedId = id;
+                    document.getElementById('feedback_spj_id').value = id;
+                    $('#feedbackModal').modal('show');
+                } else {
+                    document.getElementById(`form-${id}`).submit();
+                }
+            });
         });
+
+        document.getElementById('add-feedback').addEventListener('click', function() {
+        const container = document.getElementById('feedback-list');
+        const clone = container.firstElementChild.cloneNode(true);
+        clone.querySelectorAll('select, textarea').forEach(el => el.value = '');
+        container.appendChild(clone);
     });
 
-    document.getElementById('add-feedback').addEventListener('click', function() {
-    const container = document.getElementById('feedback-list');
-    const clone = container.firstElementChild.cloneNode(true);
-    clone.querySelectorAll('select, textarea').forEach(el => el.value = '');
-    container.appendChild(clone);
-});
-
-document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('remove-item')) {
-        const container = document.getElementById('feedback-list');
-        if (container.children.length > 1) {
-            e.target.closest('.feedback-item').remove();
-        } else {
-            Swal.fire('Minimal satu alasan harus ada', '', 'warning');
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('remove-item')) {
+            const container = document.getElementById('feedback-list');
+            if (container.children.length > 1) {
+                e.target.closest('.feedback-item').remove();
+            } else {
+                Swal.fire('Minimal satu alasan harus ada', '', 'warning');
+            }
         }
-    }
-});
+    });
 
-document.getElementById('feedbackForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
+    document.getElementById('feedbackForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const spj_id = document.getElementById('feedback_spj_id').value;
+        const formData = new FormData(this);
+        const fieldNames = formData.getAll('field_name[]').filter(v => v);
+        const messages = formData.getAll('message[]').filter(v => v);
+        if (fieldNames.length === 0 || messages.length === 0) {
+            Swal.fire('Lengkapi Form', 'Minimal satu alasan harus diisi lengkap.', 'warning');
+            return;
+        }
 
-    const spj_id = document.getElementById('feedback_spj_id').value;
-    const formData = new FormData(this);
-
-    // validasi manual
-    const fieldNames = formData.getAll('field_name[]').filter(v => v);
-    const messages = formData.getAll('message[]').filter(v => v);
-    if (fieldNames.length === 0 || messages.length === 0) {
-        Swal.fire('Lengkapi Form', 'Minimal satu alasan harus diisi lengkap.', 'warning');
-        return;
-    }
-
-    try {
-        const res = await fetch(`/spj/${spj_id}/revisi`, {
-            method: 'POST',
-            headers: { 'X-CSRF-TOKEN': csrfToken },
-            body: formData
-        });
-
-        const data = await res.json();
-        $('#feedbackModal').modal('hide');
-
-        if (data.success) {
-            Swal.fire({
-                icon: 'success',
-                title: 'Feedback Dikirim',
-                text: data.message,
-                timer: 1800,
-                showConfirmButton: false
+        try {
+            const res = await fetch(`/spj/${spj_id}/revisi`, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrfToken },
+                body: formData
             });
 
-            const badge = document.querySelector(`#dropdownMenuButton${spj_id}`);
-            if (badge) {
-                badge.className = "badge bg-danger text-white dropdown-toggle border-0";
-                badge.textContent = "Tidak Disetujui";
+            const data = await res.json();
+            $('#feedbackModal').modal('hide');
+
+            if (data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Feedback Dikirim',
+                    text: data.message,
+                    timer: 1800,
+                    showConfirmButton: false
+                });
+
+                const badge = document.querySelector(`#dropdownMenuButton${spj_id}`);
+                if (badge) {
+                    badge.className = "badge bg-danger text-white dropdown-toggle border-0";
+                    badge.textContent = "Tidak Disetujui";
+                }
+
+                document.getElementById(`komentar_${spj_id}`).value = messages.join('; ');
+                document.getElementById(`form-${spj_id}`).submit();
+            } else {
+                Swal.fire('Gagal', data.message || 'Terjadi kesalahan server', 'error');
             }
 
-            document.getElementById(`komentar_${spj_id}`).value = messages.join('; ');
-            document.getElementById(`form-${spj_id}`).submit();
-        } else {
-            Swal.fire('Gagal', data.message || 'Terjadi kesalahan server', 'error');
+        } catch (error) {
+            console.error('Fetch error:', error);
+            $('#feedbackModal').modal('hide');
+            Swal.fire('Terjadi Kesalahan', 'Tidak dapat mengirim feedback ke server.', 'error');
         }
-
-    } catch (error) {
-        console.error('Fetch error:', error);
-        $('#feedbackModal').modal('hide');
-        Swal.fire('Terjadi Kesalahan', 'Tidak dapat mengirim feedback ke server.', 'error');
-    }
-});
-
+    });
 });
 </script>
 

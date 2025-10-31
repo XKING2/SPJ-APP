@@ -14,45 +14,46 @@ class DatabaseSeeder extends Seeder
 
         User::create([
             'nama'      => 'Wahyu Aditya',
-            'spj_id'    => null,
             'NIP'       => '1001',
             'password'  => Hash::make('password123'),
             'jabatan'   => 'Staff',
-            'Alamat'    => 'Jl. Mawar No.3',
-            'nomor_tlp' => '0812777',
+            'idinjab'    => '22140102007300000010002',
+            'jabatan_atasan' => 'Bos Besar',
             'role'      => 'Kasubag',
+            'status'      => 'PNS',
         ]);
 
-         User::create([
+        User::create([
             'nama'      => 'Ari Nindya',
-            'spj_id'    => null,
             'NIP'       => '1002',
             'password'  => Hash::make('password123'),
             'jabatan'   => 'Staff',
-            'Alamat'    => 'Jl. Mawar No.3',
-            'nomor_tlp' => '0812777',
+            'idinjab'    => '22140102007300000010003',
+            'jabatan_atasan' => 'Bos Besar',
             'role'      => 'Bendahara',
+            'status'      => 'PNS',
         ]);
 
-         User::create([
+        User::create([
             'nama'      => 'Budhi',
-            'spj_id'    => null,
             'NIP'       => '1003',
             'password'  => Hash::make('password123'),
             'jabatan'   => 'Staff',
-            'Alamat'    => 'Jl. Mawar No.3',
-            'nomor_tlp' => '0812777',
-            'role'      => 'user',
+            'idinjab'    => '22140102007300000010004',
+            'jabatan_atasan' => 'Bos Besar',
+            'role'      => 'users',
+            'status'      => 'PNS',
         ]);
-         User::create([
+
+        User::create([
             'nama'      => 'Ade',
-            'spj_id'    => null,
             'NIP'       => '1004',
             'password'  => Hash::make('password123'),
             'jabatan'   => 'Staff',
-            'Alamat'    => 'Jl. Mawar No.3',
-            'nomor_tlp' => '0812777',
-            'role'      => 'user',
+            'idinjab'    => '22140102007300000010000',
+            'jabatan_atasan' => 'Bos Besar',
+            'role'      => 'users',
+            'status'      => 'PNS',
         ]);
     }
 

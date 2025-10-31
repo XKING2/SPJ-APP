@@ -64,24 +64,24 @@
 
                     <!-- 🟩 Kolom Kanan -->
                     <div class="col-md-6">
-                        {{-- Nomor Telepon --}}
+                        {{-- Jabatan Atasan Langsung --}}
                         <div class="form-group mb-3">
-                            <label for="nomor_tlp">Nomor Telepon <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control @error('nomor_tlp') is-invalid @enderror" 
-                                id="nomor_tlp" name="nomor_tlp" value="{{ old('nomor_tlp') }}" 
+                            <label for="jabatan_atasan">Jabatan Atasan Langsung <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control @error('jabatan_atasan') is-invalid @enderror" 
+                                id="jabatan_atasan" name="jabatan_atasan" value="{{ old('jabatan_atasan') }}" 
                                 placeholder="Masukkan nomor telepon" required>
-                            @error('nomor_tlp')
+                            @error('jabatan_atasan')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
-                        {{-- Alamat --}}
+                        {{-- idinjab --}}
                         <div class="form-group mb-3">
-                            <label for="alamat">Alamat <span class="text-danger">*</span></label>
-                            <textarea class="form-control @error('alamat') is-invalid @enderror" 
-                                id="alamat" name="alamat" rows="4" 
-                                placeholder="Masukkan alamat lengkap" required>{{ old('alamat') }}</textarea>
-                            @error('alamat')
+                            <label for="idinjab">IDINJAB <span class="text-danger">*</span></label>
+                            <textarea class="form-control @error('idinjab') is-invalid @enderror" 
+                                id="idinjab" name="idinjab" rows="1" 
+                                placeholder="Masukkan Idinjab lengkap" required>{{ old('idinjab') }}</textarea>
+                            @error('idinjab')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -96,6 +96,19 @@
                                 <option value="Kasubag" {{ old('role') == 'Kasubag' ? 'selected' : '' }}>Kasubag</option>
                             </select>
                             @error('role')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        {{-- Status --}}
+                        <div class="form-group mb-3">
+                            <label for="status">Status <span class="text-danger">*</span></label>
+                            <select class="form-control @error('status') is-invalid @enderror" id="status" name="status" required>
+                                <option value="">-- Pilih Status --</option>
+                                <option value="PNS" {{ old('status') == 'PNS' ? 'selected' : '' }}>PNS</option>
+                                <option value="PPPK" {{ old('status') == 'PPPK' ? 'selected' : '' }}>PPPK</option>
+                            </select>
+                            @error('status')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>

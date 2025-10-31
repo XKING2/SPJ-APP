@@ -18,46 +18,39 @@
                 <div class="row">
                     <!-- 🟦 Kolom Kiri -->
                     <div class="col-md-6">
-                        {{-- NIP --}}
-                        <div class="form-group mb-3">
-                            <label for="nip">NIP <span class="text-danger">*</span></label>
-                            <input type="text"
-                                class="form-control @error('nip') is-invalid @enderror"
-                                id="nip"
-                                name="nip"
-                                value="{{ old('nip', $anggota->nip) }}"
-                                placeholder="Masukkan NIP"
-                                required>
-                            @error('nip')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        {{-- Password --}}
-                        <div class="form-group mb-3">
-                            <label for="password">Password <span class="text-danger">*</span></label>
-                            <input type="password"
-                                class="form-control @error('password') is-invalid @enderror"
-                                id="password"
-                                name="password"
-                                placeholder="Masukkan password baru jika ingin mengubah">
-                            <small class="text-muted">Kosongkan jika tidak ingin mengubah password</small>
-                            @error('password')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
 
                         {{-- Nama --}}
                         <div class="form-group mb-3">
                             <label for="nama">Nama <span class="text-danger">*</span></label>
-                            <input type="text"
-                                class="form-control @error('nama') is-invalid @enderror"
-                                id="nama"
-                                name="nama"
-                                value="{{ old('nama', $anggota->nama) }}"
-                                placeholder="Masukkan nama lengkap"
-                                required>
-                            @error('nama')
+                            <input type="text" class="form-control @error('nama') is-invalid @enderror"
+                                id="nama" name="nama" value="{{ old('nama', $anggota->nama) }}" required>
+                            @error('nama') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+
+                        {{-- NIP --}}
+                        <div class="form-group mb-3">
+                            <label for="nip">NIP <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control @error('nip') is-invalid @enderror"
+                                id="nip" name="nip" value="{{ old('nip', $anggota->NIP) }}" required>
+                            @error('nip') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+
+                        {{-- Password --}}
+                        <div class="form-group mb-3">
+                            <label for="password">Password (Opsional)</label>
+                            <div class="input-group">
+                                <input type="password"
+                                    class="form-control @error('password') is-invalid @enderror"
+                                    id="password"
+                                    name="password"
+                                    placeholder="Isi jika ingin ubah password"
+                                    value="{{ old('password') }}">
+                                <button type="button" class="btn btn-outline-secondary" id="togglePassword">
+                                    <i class="bi bi-eye" id="iconToggle"></i>
+                                </button>
+                            </div>
+                            <small class="text-muted">Kosongkan jika tidak ingin mengubah password</small>
+                            @error('password')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
@@ -65,74 +58,64 @@
                         {{-- Jabatan --}}
                         <div class="form-group mb-3">
                             <label for="jabatan">Jabatan <span class="text-danger">*</span></label>
-                            <input type="text"
-                                class="form-control @error('jabatan') is-invalid @enderror"
-                                id="jabatan"
-                                name="jabatan"
-                                value="{{ old('jabatan', $anggota->jabatan) }}"
-                                placeholder="Masukkan jabatan"
-                                required>
-                            @error('jabatan')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <input type="text" class="form-control @error('jabatan') is-invalid @enderror"
+                                id="jabatan" name="jabatan" value="{{ old('jabatan', $anggota->jabatan) }}" required>
+                            @error('jabatan') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                     </div>
 
                     <!-- 🟩 Kolom Kanan -->
                     <div class="col-md-6">
-                        {{-- Alamat --}}
+                        {{-- Jabatan Atasan Langsung --}}
                         <div class="form-group mb-3">
-                            <label for="alamat">Alamat <span class="text-danger">*</span></label>
-                            <textarea class="form-control @error('alamat') is-invalid @enderror"
-                                id="alamat"
-                                name="alamat"
-                                rows="4"
-                                placeholder="Masukkan alamat lengkap"
-                                required>{{ old('alamat', $anggota->alamat) }}</textarea>
-                            @error('alamat')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <label for="jabatan_atasan">Jabatan Atasan Langsung <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control @error('jabatan_atasan') is-invalid @enderror"
+                                id="jabatan_atasan" name="jabatan_atasan"
+                                value="{{ old('jabatan_atasan', $anggota->jabatan_atasan) }}" required>
+                            @error('jabatan_atasan') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
 
-                        {{-- Nomor Telepon --}}
+                        {{-- IDINJAB --}}
                         <div class="form-group mb-3">
-                            <label for="nomor_tlp">Nomor Telepon <span class="text-danger">*</span></label>
-                            <input type="text"
-                                class="form-control @error('nomor_tlp') is-invalid @enderror"
-                                id="nomor_tlp"
-                                name="nomor_tlp"
-                                value="{{ old('nomor_tlp', $anggota->nomor_tlp) }}"
-                                placeholder="Masukkan nomor telepon"
-                                required>
-                            @error('nomor_tlp')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <label for="idinjab">IDINJAB <span class="text-danger">*</span></label>
+                            <textarea class="form-control @error('idinjab') is-invalid @enderror"
+                                id="idinjab" name="idinjab" rows="1" required>{{ old('idinjab', $anggota->idinjab) }}</textarea>
+                            @error('idinjab') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
 
                         {{-- Role --}}
                         <div class="form-group mb-3">
                             <label for="role">Role <span class="text-danger">*</span></label>
-                            <select class="form-control @error('role') is-invalid @enderror"
-                                    id="role" name="role" required>
+                            <select class="form-control @error('role') is-invalid @enderror" id="role" name="role" required>
                                 <option value="">-- Pilih Role --</option>
                                 <option value="user" {{ old('role', $anggota->role) == 'user' ? 'selected' : '' }}>User</option>
-                                <option value="admin" {{ old('role', $anggota->role) == 'admin' ? 'selected' : '' }}>Admin</option>
-                                <option value="superadmin" {{ old('role', $anggota->role) == 'superadmin' ? 'selected' : '' }}>Super Admin</option>
+                                <option value="Bendahara" {{ old('role', $anggota->role) == 'Bendahara' ? 'selected' : '' }}>Bendahara</option>
+                                <option value="Kasubag" {{ old('role', $anggota->role) == 'Kasubag' ? 'selected' : '' }}>Kasubag</option>
                             </select>
-                            @error('role')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            @error('role') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+
+                        {{-- Status --}}
+                        <div class="form-group mb-3">
+                            <label for="status">Status <span class="text-danger">*</span></label>
+                            <select class="form-control @error('status') is-invalid @enderror"
+                                id="status" name="status" required>
+                                <option value="">-- Pilih Status --</option>
+                                <option value="PNS" {{ old('status', $anggota->status) == 'PNS' ? 'selected' : '' }}>PNS</option>
+                                <option value="PPPK" {{ old('status', $anggota->status) == 'PPPK' ? 'selected' : '' }}>PPPK</option>
+                            </select>
+                            @error('status') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                     </div>
                 </div>
 
-                <!-- 🟧 Tombol Aksi -->
+                <!-- Tombol -->
                 <div class="d-flex justify-content-end mt-4 gap-2">
-                    <a href="{{ route('showanggota') }}" class="btn btn-secondary me-2">
+                    <a href="{{ route('showanggota') }}" class="btn btn-secondary">
                         <i class="fas fa-arrow-left"></i> Kembali
                     </a>
                     <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Update
+                        <i class="fas fa-save"></i> Simpan Perubahan
                     </button>
                 </div>
             </form>
@@ -140,20 +123,30 @@
     </div>
 </div>
 
-<!-- Style tambahan agar rapi -->
 <style>
-    .form-group label {
-        font-weight: 600;
-    }
-
-    .form-control, textarea, select {
-        border-radius: 8px;
-    }
-
+    .form-group label { font-weight: 600; }
+    .form-control, textarea, select { border-radius: 8px; }
     @media (max-width: 768px) {
-        .col-md-6 {
-            margin-bottom: 1.5rem;
-        }
+        .col-md-6 { margin-bottom: 1.5rem; }
     }
 </style>
 @endsection
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+
+{{-- Script Show/Hide Password --}}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const pwdInput = document.getElementById('password');
+    const toggleBtn = document.getElementById('togglePassword');
+    const iconToggle = document.getElementById('iconToggle');
+
+    toggleBtn.addEventListener('click', () => {
+        const type = pwdInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        pwdInput.setAttribute('type', type);
+        iconToggle.classList.toggle('bi-eye');
+        iconToggle.classList.toggle('bi-eye-slash');
+    });
+});
+</script>

@@ -30,10 +30,10 @@
                             </select>
                         </div>
 
-                        {{-- Pekerjaan --}}
+                        {{-- Alamat Pihak Kedua --}}
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Pekerjaan yang Dilakukan</label>
-                            <input type="text" name="pekerjaan" class="form-control" value="{{ old('pekerjaan') }}" required>
+                            <label class="form-label fw-bold">Alamat Pihak Kedua</label>
+                            <input name="alamat_pihak_kedua" class="form-control" required>{{ old('alamat_pihak_kedua') }}</input>
                         </div>
 
                         {{-- Hari, Tanggal, Bulan, Tahun Diterima --}}
@@ -70,8 +70,8 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Alamat Pihak Kedua</label>
-                            <textarea name="alamat_pihak_kedua" class="form-control" rows="3" required>{{ old('alamat_pihak_kedua') }}</textarea>
+                            <label class="form-label fw-bold">Pekerjaan yang Dilakukan</label>
+                            <textarea type="text" name="pekerjaan" class="form-control"  rows="3"  value="{{ old('pekerjaan')}}"required></textarea>
                         </div>
                     </div>
                 </div>

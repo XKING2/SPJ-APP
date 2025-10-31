@@ -20,7 +20,6 @@ class AuthController extends Controller
             $user = Auth::user();
             session(['user_id' => $user->id]);
 
-            // Simpan pesan sukses agar nanti ditampilkan JS di Blade
             session()->flash('success', 'Login berhasil! Selamat datang ' . $user->nama);
 
             return match ($user->role) {

@@ -9,8 +9,6 @@ use App\Models\Pesanan;
 use App\Models\Pemeriksaan;
 use App\Models\Penerimaan;
 use App\Models\Kwitansi;
-use App\Models\User;
-use setasign\Fpdi\Fpdi;
 use PhpOffice\PhpWord\TemplateProcessor;
 use Illuminate\Support\Facades\Storage;
 use App\Models\spjfeedback;
@@ -27,7 +25,7 @@ class SPJController extends Controller
 
     public function create(Request $request)
     {
-        $userId = Auth::id() ?? session('user_id'); // backup kalau Auth hilang
+        $userId = Auth::id() ?? session('user_id'); 
 
         if (!$userId) {
             return back()->withErrors(['auth' => 'User belum login']);
@@ -39,7 +37,7 @@ class SPJController extends Controller
             'kwitansi_id'    => $request->kwitansi_id,
             'penerimaan_id'  => $request->penerimaan_id,
             'pemeriksaan_id' => $request->pemeriksaan_id,
-            'user_id'        => $userId, // ✅ integer ID user login
+            'user_id'        => $userId, 
         ]);
 
         if ($request->pesanan_id) {
@@ -86,7 +84,6 @@ class SPJController extends Controller
             $kwitansi    = $spj->kwitansi;
             $pemeriksaan = $spj->pemeriksaan;
 
-            // Path file
             $templatePath = storage_path('app/public/Tamplate_SPJ.docx');
             $outputDocx   = storage_path("app/public/spj_preview_{$spj->id}.docx");
             $outputPdfDir = storage_path('app/public');
@@ -99,7 +96,6 @@ class SPJController extends Controller
             $template = new TemplateProcessor($templatePath);
             
 
-            // 4️⃣ Set nilai dari database
             $template->setValue('no_rekening', $kwitansi->no_rekening ?? '-');
             $template->setValue('no_rekening_tujuan', $kwitansi->no_rekening_tujuan ?? '-');
             $template->setValue('nama_bank', $kwitansi->nama_bank ?? '-');
@@ -113,10 +109,10 @@ class SPJController extends Controller
             $template->setValue('jabatan_penerima', $kwitansi->jabatan_penerima ?? '-');
             $template->setValue('subkegiatan', $kwitansi->pptk->subkegiatan ?? '-');
             $template->setValue('nama_pptk', $kwitansi->pptk->nama_pptk ?? '-');
-            $template->setValue('jabatan_pptk', $kwitansi->pptk->jabatan_pptk ?? '-');
+            $template->setValue('jabatan_pptk', $kwitansi->pptk->gol_pptk ?? '-');
             $template->setValue('nip_pptk', $kwitansi->pptk->nip_pptk ?? '-');
 
-            // Data Pesanan
+            
             if ($pesanan) {
                 $template->setValue('nama_pt',  $pesanan->nama_pt ?? '-');
                 $template->setValue('no_surat', $pesanan->no_surat ?? '-');
@@ -126,7 +122,7 @@ class SPJController extends Controller
                 $template->setValue('surat_dibuat', $pesanan->surat_dibuat ?? '-');
             }
 
-            // Pemeriksaan
+            
             if ($pemeriksaan) {
                 $template->setValue('hari_diterima', $pemeriksaan->hari_diterima ?? '-');
                 $template->setValue('tanggals_diterima', $pemeriksaan->tanggals_diterima ?? '-');
@@ -142,7 +138,7 @@ class SPJController extends Controller
                 $template->setValue('jab_pertama', $pemeriksaan->plt->jabatan_pihak_pertama ?? '-');
             }
 
-            // Data Penerimaan
+           
             if ($penerimaan) {
                 $template->setValue('subtotal', number_format($penerimaan->subtotal ?? 0));
                 $template->setValue('ppn', number_format($penerimaan->ppn ?? 0));
@@ -151,19 +147,17 @@ class SPJController extends Controller
                 $template->setValue('terbilang', $penerimaan->terbilang ?? '-');
             }
 
-            // Ambil daftar barang dari pesanan
+            
             $details = $spj->penerimaan && $spj->penerimaan->details
-            ? $spj->penerimaan->details->load('pesananItem') // pastikan relasi diload
+            ? $spj->penerimaan->details->load('pesananItem') 
             : collect();
 
         if ($details->count() > 0) {
-            // =======================
-            // TABEL 1: DAFTAR BARANG
-            // =======================
+            
             $template->cloneRow('nama_barang1', $details->count());
             foreach ($details as $i => $detail) {
                 $n = $i + 1;
-                $item = $detail->pesananItem; // ambil dari relasi pesanan_item
+                $item = $detail->pesananItem; 
 
                 $template->setValue("no1#{$n}", $n);
                 $template->setValue("nama_barang1#{$n}", $item->nama_barang ?? '-');
@@ -173,9 +167,7 @@ class SPJController extends Controller
                 $template->setValue("total1#{$n}", number_format($detail->total ?? 0, 0, ',', '.'));
             }
 
-            // =======================
-            // TABEL 2: SERAH TERIMA
-            // =======================
+    
             $template->cloneRow('nama_barang2', $details->count());
             foreach ($details as $i => $detail) {
                 $n = $i + 1;
@@ -189,9 +181,7 @@ class SPJController extends Controller
                 $template->setValue("total2#{$n}", number_format($detail->total ?? 0, 0, ',', '.'));
             }
 
-            // =======================
-            // TABEL 3: RINGKASAN
-            // =======================
+          
             $template->cloneRow('nama_barang3', $details->count());
             foreach ($details as $i => $detail) {
                 $n = $i + 1;
@@ -203,7 +193,7 @@ class SPJController extends Controller
                 $template->setValue("satuan3#{$n}", $detail->satuan ?? '-');
             }
         } else {
-            // fallback kalau kosong
+            
             $template->setValue('nama_barang1', '-');
             $template->setValue('jumlah1', '-');
             $template->setValue('satuan1', '-');
@@ -213,10 +203,10 @@ class SPJController extends Controller
 
 
 
-            // Simpan Word
+            
             $template->saveAs($outputDocx);
 
-            // Konversi ke PDF
+            
             $command = "soffice --headless --convert-to pdf --outdir " 
                 . escapeshellarg($outputPdfDir) . " " 
                 . escapeshellarg($outputDocx);
@@ -226,7 +216,7 @@ class SPJController extends Controller
                 throw new Exception("Gagal konversi ke PDF. Pastikan LibreOffice terinstal.");
             }
 
-            // Pastikan file tersimpan di storage/public
+            
             if (file_exists($outputPdf)) {
                 Storage::disk('public')->putFileAs('spj_generated', new \Illuminate\Http\File($outputPdf), "spj_{$spj->id}.pdf");
             }
@@ -240,7 +230,7 @@ class SPJController extends Controller
     {
         $spj = Spj::with(['pesanan', 'feedbacks'])->findOrFail($id);
 
-        // 🧠 Logika baru: jika salah satu status belum valid → tampilkan versi revisi
+        
         if ($spj->status === 'belum_valid' || $spj->status2 === 'belum_valid') {
             $relativePath = "spj_marked/spj_revisi_{$spj->id}.pdf";
         } else {
@@ -250,7 +240,7 @@ class SPJController extends Controller
         $pdfPath = storage_path("app/public/{$relativePath}");
 
         if (!file_exists($pdfPath)) {
-            // fallback otomatis: jika file revisi belum ada, coba tampilkan versi generated
+            
             $fallbackPath = storage_path("app/public/spj_generated/spj_{$spj->id}.pdf");
             if (file_exists($fallbackPath)) {
                 $pdfPath = $fallbackPath;
@@ -269,8 +259,8 @@ class SPJController extends Controller
     {
         $spj = Spj::findOrFail($id);
 
-        // Hanya bisa diajukan kalau masih draft atau belum_valid
-        if (!in_array($spj->status, ['draft', 'belum_valid'])) {
+        
+        if (!in_array($spj->status, ['draft'])) {
             return redirect()->back()->with('error', 'SPJ ini sudah diajukan atau divalidasi.');
         }
 
@@ -283,12 +273,12 @@ class SPJController extends Controller
     {
         $spj = Spj::findOrFail($id);
 
-        // Hanya bisa diajukan kalau sudah valid oleh Bendahara
+        
         if ($spj->status !== 'valid') {
             return back()->with('error', 'SPJ belum divalidasi oleh Bendahara.');
         }
 
-        // Update status2 agar menandakan SPJ telah diajukan ke Kasubag
+        
         $spj->update([
             'status2' => 'diajukan',
         ]);
@@ -299,21 +289,21 @@ class SPJController extends Controller
     public function cetak($id)
     {
         try {
-            // Path file PDF hasil generate sebelumnya
+            
             $pdfPath = storage_path("app/public/spj_preview_{$id}.pdf");
 
-            // 🔍 Jika file belum ada, buat dulu
+            
             if (!file_exists($pdfPath)) {
-                // Panggil fungsi generateSPJDocument untuk membuatnya
+                
                 $this->generateSPJDocument($id);
 
-                // Cek ulang apakah berhasil dibuat
+                
                 if (!file_exists($pdfPath)) {
                     return redirect()->back()->with('error', 'Gagal membuat file PDF SPJ.');
                 }
             }
 
-            // 🖨️ Kirim file sebagai download response
+            
             return response()->download($pdfPath, "SPJ_{$id}.pdf")->deleteFileAfterSend(false);
 
         } catch (\Exception $e) {
@@ -326,9 +316,7 @@ class SPJController extends Controller
     {
         $spj = Spj::findOrFail($id);
 
-        // 1️⃣ Hapus tabel terkait (jika ada relasi yang mengarah ke spj_id)
-        // Tapi karena di struktur kamu arah relasinya terbalik,
-        // maka kita hapus berdasarkan foreign key yang dimiliki spj.
+        
         if ($spj->pesanan_id) {
             \App\Models\Pesanan::where('id', $spj->pesanan_id)->delete();
         }
@@ -344,8 +332,7 @@ class SPJController extends Controller
         if ($spj->kwitansi_id) {
             \App\Models\Kwitansi::where('id', $spj->kwitansi_id)->delete();
         }
-
-        // 2️⃣ Hapus SPJ itu sendiri
+        
         $spj->delete();
 
         return redirect()->back()->with('success', 'SPJ dan seluruh data terkait berhasil dihapus.');

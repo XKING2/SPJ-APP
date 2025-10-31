@@ -2,7 +2,7 @@
 
 @section('pageheads')
 <div class="container">
-    <h4 class="mb-1">Edit Data PPTK</h4>
+    <h4 class="mb-1">Edit Data PPTK & Kegiatan</h4>
 </div>
 @endsection
 
@@ -33,59 +33,84 @@
                 @method('PUT')
 
                 <div class="row">
-                    <!-- Kolom Kiri -->
+                    {{-- Kolom kiri --}}
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label class="form-label fw-bold">Nama PPTK</label>
-                            <input type="text" 
-                                   name="nama_pptk" 
+                            <input type="text" name="nama_pptk" 
                                    class="form-control @error('nama_pptk') is-invalid @enderror"
                                    value="{{ old('nama_pptk', $pptk->nama_pptk) }}">
-                            @error('nama_pptk')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            @error('nama_pptk') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Jabatan PPTK</label>
-                            <input type="text" 
-                                   name="jabatan_pptk" 
-                                   class="form-control @error('jabatan_pptk') is-invalid @enderror"
-                                   value="{{ old('jabatan_pptk', $pptk->jabatan_pptk) }}">
-                            @error('jabatan_pptk')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <label class="form-label fw-bold">Golongan PPTK</label>
+                            <input type="text" name="gol_pptk" 
+                                   class="form-control @error('gol_pptk') is-invalid @enderror"
+                                   value="{{ old('gol_pptk', $pptk->gol_pptk) }}">
+                            @error('gol_pptk') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                     </div>
 
-                    <!-- Kolom Kanan -->
+                    {{-- Kolom kanan --}}
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label class="form-label fw-bold">NIP PPTK</label>
-                            <input type="text" 
-                                   name="nip_pptk" 
+                            <input type="text" name="nip_pptk" 
                                    class="form-control @error('nip_pptk') is-invalid @enderror"
                                    value="{{ old('nip_pptk', $pptk->nip_pptk) }}">
-                            @error('nip_pptk')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            @error('nip_pptk') <div class="invalid-feedback">{{ $message }}</div> @enderror
                         </div>
                     </div>
                 </div>
 
-                <!-- Sub Kegiatan -->
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Sub Kegiatan</label>
-                    <textarea name="subkegiatan" 
-                              class="form-control @error('subkegiatan') is-invalid @enderror" 
-                              rows="3">{{ old('subkegiatan', $pptk->subkegiatan) }}</textarea>
-                    @error('subkegiatan')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+                <hr class="my-4">
+
+                {{-- 🔹 Form Kegiatan --}}
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Program</label>
+                            <input type="text" name="program" 
+                                   class="form-control @error('program') is-invalid @enderror"
+                                   value="{{ old('program', optional($pptk->kegiatan->first())->program) }}">
+                            @error('program') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Kegiatan</label>
+                            <input type="text" name="kegiatan" 
+                                   class="form-control @error('kegiatan') is-invalid @enderror"
+                                   value="{{ old('kegiatan', optional($pptk->kegiatan->first())->kegiatan) }}">
+                            @error('kegiatan') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Kasubag</label>
+                            <input type="text" name="kasubag" 
+                                   class="form-control @error('kasubag') is-invalid @enderror"
+                                   value="{{ old('kasubag', optional($pptk->kegiatan->first())->kasubag) }}">
+                            @error('kasubag') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Tombol -->
-                <div class="d-flex justify-content-end gap-3">
+                {{-- 🔹 Form Subkegiatan Dinamis --}}
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Sub Kegiatan</label>
+                    <div id="subkegiatan-wrapper">
+                        @foreach(old('subkegiatan', $pptk->kegiatan->pluck('subkegiatan')->toArray()) as $sub)
+                            <div class="input-group mb-2">
+                                <input type="text" name="subkegiatan[]" class="form-control" value="{{ $sub }}">
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+
+                {{-- 🔹 Tombol --}}
+                <div class="d-flex justify-content-end gap-3 mt-4">
                     <a href="{{ route('showpptk') }}" class="btn btn-secondary">
                         <i class="bi bi-arrow-left-circle"></i> Kembali
                     </a>
@@ -98,12 +123,27 @@
     </div>
 </div>
 
-{{-- SweetAlert Success/Error --}}
-@if(session('success'))
-    <div data-swal-success="{{ session('success') }}"></div>
-@endif
+{{-- 🔹 Script Dinamis --}}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const wrapper = document.getElementById('subkegiatan-wrapper');
+    const addBtn = document.getElementById('add-subkegiatan');
 
-@if($errors->any())
-    <div data-swal-errors="{{ implode('|', $errors->all()) }}"></div>
-@endif
+    addBtn.addEventListener('click', () => {
+        const inputGroup = document.createElement('div');
+        inputGroup.classList.add('input-group', 'mb-2');
+        inputGroup.innerHTML = `
+            <input type="text" name="subkegiatan[]" class="form-control" placeholder="Masukkan sub kegiatan baru">
+            <button type="button" class="btn btn-danger remove-subkegiatan">Hapus</button>
+        `;
+        wrapper.appendChild(inputGroup);
+    });
+
+    wrapper.addEventListener('click', (e) => {
+        if (e.target.classList.contains('remove-subkegiatan')) {
+            e.target.closest('.input-group').remove();
+        }
+    });
+});
+</script>
 @endsection

@@ -14,23 +14,17 @@ class sidebarcontrol extends Controller
 {
     public function showdashboard1()
     {
-        $user = Auth::user(); // ambil user yang sedang login
-
-        // Hitung total semua SPJ yang dibuat oleh user
+        $user = Auth::user();
         $user_SPJ = Spj::where('user_id', $user->id)->count();
 
-        // Hitung SPJ tervalidasi (status2 = 'valid')
         $spjTervalidasikasubag = Spj::where('user_id', $user->id)
                             ->where('status2', 'valid')
                             ->count();
 
-        // Hitung SPJ belum divalidasi (status2 != 'valid' atau 'belum_valid')
         $spjTervalidasibendahara = Spj::where('user_id', $user->id)
                             ->where('status', 'valid')
                             ->count();
 
-        // Hitung laporan pemeriksaan milik user ini
-        // (Jika tabel pemeriksaan punya kolom user_id)
         $laporan = \App\Models\Pemeriksaan::count() ?? 0;
 
         return view('users.dashboarduser', compact(
@@ -49,8 +43,6 @@ class sidebarcontrol extends Controller
     public function showkwitansi(Request $request)
     {
         $search = $request->input('search');
-
-        // Query data kwitansi
         $query = Kwitansi::query();
 
         if ($search) {
@@ -58,26 +50,14 @@ class sidebarcontrol extends Controller
                 ->orWhere('uang_terbilang', 'like', "%{$search}%")
                 ->orWhere('nama_pt', 'like', "%{$search}%");
         }
-
-        // Pagination 10 data per halaman
         $kwitansis = $query->orderBy('created_at', 'desc')->paginate(10);
-
-        // Kirim data ke view
         return view('users.kwitansi', compact('kwitansis', 'search'));
     
     }
 
-
-
-
-
-
-
     public function showpesanan(Request $request)
     {
         $search = $request->input('search');
-
-        // Query dengan filter pencarian
         $pesanans = Pesanan::when($search, function ($query, $search) {
                 $query->where('nama_pt', 'like', "%{$search}%")
                       ->orWhere('no_surat', 'like', "%{$search}%")
@@ -85,8 +65,6 @@ class sidebarcontrol extends Controller
             })
             ->orderBy('created_at', 'desc')
             ->paginate(10);
-
-        // Kirim ke view
         return view('users.pesanan', compact('pesanans'));
     }
 
@@ -99,11 +77,7 @@ class sidebarcontrol extends Controller
     public function showpemeriksaan(Request $request)
     {
         $search = $request->input('search');
-
-        // Ambil data pemeriksaan dan relasi pesanan
         $query = Pemeriksaan::with('pesanan');
-
-        // 🔍 Filter pencarian (berdasarkan kolom pemeriksaan & pesanan)
         if ($search) {
             $query->where('pekerjaan', 'like', "%{$search}%")
                 ->orWhereHas('pesanan', function ($q) use ($search) {
@@ -113,10 +87,7 @@ class sidebarcontrol extends Controller
                 });
         }
 
-        // 🔢 Pagination (10 per halaman)
         $pemeriksaans = $query->orderBy('created_at', 'desc')->paginate(10);
-
-        // Kirim ke view
         return view('users.pemeriksaan', compact('pemeriksaans'));
     
     }
@@ -125,8 +96,6 @@ class sidebarcontrol extends Controller
     public function showpenerimaan(Request $request)
     {
         $search = $request->input('search');
-
-        // Ambil data penerimaan dan relasi pemeriksaan + pesanan
         $query = Penerimaan::with(['pemeriksaan', 'pesanan']);
 
         // Filter pencarian
@@ -138,11 +107,7 @@ class sidebarcontrol extends Controller
                         ->orWhere('no_surat', 'like', "%{$search}%");
                 });
         }
-
-        // Pagination (10 per halaman)
         $penerimaans = $query->orderBy('created_at', 'desc')->paginate(10);
-
-        // Kirim ke view
         return view('users.penerimaan', compact('penerimaans'));
     
     }
@@ -156,12 +121,9 @@ class sidebarcontrol extends Controller
     {
         $search = $request->input('search');
         $userId = Auth::id() ?? session('user_id');
-
-        // Ambil SPJ milik user login
         $query = Spj::with(['pesanan', 'feedbacks'])
                     ->where('user_id', $userId);
 
-        // Filter pencarian
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('status2', 'like', "%{$search}%")
@@ -173,8 +135,6 @@ class sidebarcontrol extends Controller
         }
 
         $spjs = $query->orderBy('created_at', 'desc')->paginate(10);
-
-        // Cek apakah ada yang ditolak
         $spjDitolak = $spjs->firstWhere('status2', 'belum_valid');
 
         return view('users.reviewSPJ', compact('spjs', 'spjDitolak'));
@@ -184,15 +144,13 @@ class sidebarcontrol extends Controller
     public function showcetakSPJ(Request $request)
     {
         $search = $request->input('search');
-        $userId = Auth::id() ?? session('user_id'); // fallback untuk session manual
+        $userId = Auth::id() ?? session('user_id');
 
-        // 🔒 Ambil hanya SPJ milik user login yang status dan status2 valid
         $query = Spj::with(['user', 'pesanan'])
             ->where('user_id', $userId)
             ->where('status', 'valid')
             ->where('status2', 'valid');
 
-        // 🔍 Filter pencarian
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('status', 'like', "%{$search}%")
@@ -203,11 +161,8 @@ class sidebarcontrol extends Controller
                 });
             });
         }
-
-        // 📑 Urutkan dan paginasi
         $spjs = $query->orderBy('created_at', 'desc')->paginate(10);
 
-        // 🔎 Cek apakah ada SPJ yang belum valid (opsional)
         $spjDitolak = $spjs->firstWhere('status2', 'belum_valid');
 
         return view('users.cetakSPJ', compact('spjs', 'spjDitolak'));

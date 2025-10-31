@@ -23,9 +23,10 @@ class User extends Authenticatable
         'nip',
         'password',
         'jabatan',
-        'alamat',
-        'nomor_tlp',
+        'idinjab',
+        'jabatan_atasan',
         'role',
+        'status',
     ];
 
     

@@ -14,23 +14,31 @@ Carbon::setLocale('id');
 
 class PemeriksaanControl extends Controller
 {
-    /**
-     * Form Tambah Pemeriksaan
-     */
+
     public function create(Request $request)
     {
+    
         $spj = SPJ::findOrFail($request->spj_id);
         $pesanan = Pesanan::findOrFail($request->pesanan_id);
         $plts = Plt::all();
 
-        $tanggal = Carbon::parse($pesanan->tanggal);
-        $hari = ucfirst($tanggal->translatedFormat('l'));
-        $tglAngka = $tanggal->format('d');
-        $bulan = ucfirst($tanggal->translatedFormat('F'));
-        $tahunAngka = $tanggal->format('Y');
+        $tanggalPesanan = $pesanan->tanggal_diterima;
 
-        $tglTeks = $this->angkaKeTeks((int) $tglAngka);
-        $tahunTeks = $this->angkaKeTeks((int) $tahunAngka);
+        // Pastikan nilai tanggal valid
+        if (!$tanggalPesanan) {
+            abort(400, 'Tanggal pesanan tidak ditemukan.');
+        }
+
+        $tanggal_diterima = Carbon::parse($tanggalPesanan);
+
+        $hari = ucfirst($tanggal_diterima->translatedFormat('l')); 
+        $tglAngka = (int)$tanggal_diterima->format('d');            
+        $bulan = ucfirst($tanggal_diterima->translatedFormat('F')); 
+        $tahunAngka = (int)$tanggal_diterima->format('Y');         
+
+        $tglTeks = $this->angkaKeTeks($tglAngka);
+        $tahunTeks = $this->angkaKeTeks($tahunAngka);
+
         $tanggalLengkap = "$hari, $tglTeks $bulan $tahunTeks";
 
         return view('users.create.createpemeriksaan', compact(
@@ -45,20 +53,20 @@ class PemeriksaanControl extends Controller
         ));
     }
 
-    /**
-     * Konversi angka ke teks bahasa Indonesia
-     */
     private function angkaKeTeks($angka)
     {
-        $f = new \NumberFormatter("id", \NumberFormatter::SPELLOUT);
-        $hasil = $f->format($angka);
+    
+        $formatter = new \NumberFormatter("id", \NumberFormatter::SPELLOUT);
+
+        $hasil = $formatter->format($angka);
+
         $hasil = trim(preg_replace('/\s+/', ' ', $hasil));
+
         return ucwords($hasil);
     }
 
-    /**
-     * Simpan Pemeriksaan Baru
-     */
+
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -77,7 +85,7 @@ class PemeriksaanControl extends Controller
 
         $pemeriksaan = Pemeriksaan::create($validated);
 
-        // Update SPJ agar tahu pemeriksaan_id-nya
+        
         $spj = SPJ::findOrFail($validated['spj_id']);
         $spj->update(['pemeriksaan_id' => $pemeriksaan->id]);
 
@@ -89,9 +97,7 @@ class PemeriksaanControl extends Controller
             ->with('success', 'Pemeriksaan berhasil. Lanjut ke penerimaan.');
     }
 
-    /**
-     * Form Edit Pemeriksaan (sama struktur dengan Create)
-     */
+
     public function edit($id)
     {
         $pemeriksaan = Pemeriksaan::with('spj')->findOrFail($id);
@@ -99,7 +105,6 @@ class PemeriksaanControl extends Controller
         $pesanan = $spj ? $spj->pesanan : null;
         $plts = Plt::all();
 
-        // Ambil tanggal dari pesanan (jika ada)
         if ($pesanan && $pesanan->tanggal) {
             $tanggal = Carbon::parse($pesanan->tanggal);
             $hari = ucfirst($tanggal->translatedFormat('l'));
@@ -124,9 +129,7 @@ class PemeriksaanControl extends Controller
         ));
     }
 
-    /**
-     * Update Pemeriksaan
-     */
+
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
@@ -144,7 +147,6 @@ class PemeriksaanControl extends Controller
         $pemeriksaan = Pemeriksaan::findOrFail($id);
         $pemeriksaan->update($validated);
 
-        // Regenerasi dokumen SPJ otomatis
         $spj = SPJ::find($pemeriksaan->spj_id);
 
         if (!$spj) {

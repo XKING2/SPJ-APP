@@ -49,6 +49,7 @@ Route::post('pptks', [settingcontrol::class, 'store'])->name('pptk.store');
 Route::get('/pptk/{id}/edit', [settingcontrol::class, 'editpptk'])->name('pptk.edit');
 Route::put('/pptk/{id}', [settingcontrol::class, 'updatepptk'])->name('pptk.update');
 Route::DELETE('/pptk/{id}', [settingcontrol::class, 'destroy'])->name('pptk.destroy');
+Route::get('/get-subkegiatan/{pptk_id}', [kwitansicontrol::class, 'getSubKegiatan']);
 
 Route::get('/Superadmin/plt', [settingcontrol::class, 'showplt'])->name('showplt');
 Route::get('/Superadmin/plt/create', [settingcontrol::class, 'createplt'])->name('createplt');
