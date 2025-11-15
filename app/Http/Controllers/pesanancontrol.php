@@ -8,15 +8,17 @@ use App\Models\Penerimaan;
 use App\Models\setting;
 use App\Models\SPJ;
 use App\Models\Kwitansi;
+use App\Models\nosurat;
 use Illuminate\Support\Facades\Log;
 
 class PesananControl extends Controller
 {
     public function create(Request $request)
     {
+        $nosurat = Nosurat::orderBy('id', 'desc')->get();
         $spj = SPJ::findOrFail($request->spj_id);
         $kwitansi = Kwitansi::findOrFail($request->kwitansi_id);
-        return view('users.create.createpesanan', compact('spj', 'kwitansi'));
+        return view('users.create.createpesanan', compact('spj', 'kwitansi','nosurat'));
     }
 
     public function store(Request $request)

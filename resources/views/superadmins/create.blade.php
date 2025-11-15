@@ -29,14 +29,19 @@
                         </div>
 
                         {{-- Password --}}
-                        <div class="form-group mb-3">
+                        <div class="form-group mb-3 position-relative">
                             <label for="password">Password <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control @error('password') is-invalid @enderror" 
-                                id="password" name="password" value="{{ old('password') }}" 
-                                placeholder="Masukkan password" required>
-                            @error('password')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <div class="input-group">
+                                <input type="password" class="form-control @error('password') is-invalid @enderror"
+                                    id="password" name="password" value="{{ old('password') }}"
+                                    placeholder="Masukkan password" required>
+                                <button type="button" class="btn btn-outline-secondary" id="togglePassword">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                @error('password')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                            </div>
                         </div>
 
                         {{-- Nama --}}
@@ -69,18 +74,18 @@
                             <label for="jabatan_atasan">Jabatan Atasan Langsung <span class="text-danger">*</span></label>
                             <input type="text" class="form-control @error('jabatan_atasan') is-invalid @enderror" 
                                 id="jabatan_atasan" name="jabatan_atasan" value="{{ old('jabatan_atasan') }}" 
-                                placeholder="Masukkan nomor telepon" required>
+                                placeholder="Masukkan jabatan atasan" required>
                             @error('jabatan_atasan')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
-                        {{-- idinjab --}}
+                        {{-- IDINJAB --}}
                         <div class="form-group mb-3">
                             <label for="idinjab">IDINJAB <span class="text-danger">*</span></label>
-                            <textarea class="form-control @error('idinjab') is-invalid @enderror" 
-                                id="idinjab" name="idinjab" rows="1" 
-                                placeholder="Masukkan Idinjab lengkap" required>{{ old('idinjab') }}</textarea>
+                            <input class="form-control @error('idinjab') is-invalid @enderror" 
+                                id="idinjab" name="idinjab"
+                                placeholder="Masukkan IDINJAB lengkap" required>{{ old('idinjab') }}</input>
                             @error('idinjab')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -91,9 +96,9 @@
                             <label for="role">Role <span class="text-danger">*</span></label>
                             <select class="form-control @error('role') is-invalid @enderror" id="role" name="role" required>
                                 <option value="">-- Pilih Role --</option>
-                                <option value="user" {{ old('role') == 'user' ? 'selected' : '' }}>User</option>
-                                <option value="Bendahara" {{ old('role') == 'Bendahara' ? 'selected' : '' }}>Bendahara</option>
-                                <option value="Kasubag" {{ old('role') == 'Kasubag' ? 'selected' : '' }}>Kasubag</option>
+                                <option value="kasubag" {{ old('role') == 'kasubag' ? 'selected' : '' }}>Kasubag</option>
+                                <option value="users" {{ old('role') == 'users' ? 'selected' : '' }}>User</option>
+                                <option value="bendahara" {{ old('role') == 'bendahara' ? 'selected' : '' }}>Bendahara</option>
                             </select>
                             @error('role')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -129,20 +134,64 @@
     </div>
 </div>
 
-<!-- Style tambahan agar tampil lebih seimbang -->
-<style>
-    .form-group label {
-        font-weight: 600;
-    }
+{{-- 🔹 Script Dinamis --}}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const roleSelect = document.getElementById('role');
+    const groupWrapper = document.getElementById('kasubagGroupWrapper');
 
-    .form-control, textarea, select {
-        border-radius: 8px;
-    }
-
-    @media (max-width: 768px) {
-        .col-md-6 {
-            margin-bottom: 1.5rem;
+    function toggleGroup() {
+        if (roleSelect.value.toLowerCase() === 'kasubag') {
+            groupWrapper.style.display = 'block';
+        } else {
+            groupWrapper.style.display = 'none';
+            document.getElementById('kasubag_group').value = ''; // reset kalau bukan kasubag
         }
     }
+
+    roleSelect.addEventListener('change', toggleGroup);
+
+    // Pastikan tetap tampil kalau user submit gagal (old value masih kasubag)
+    toggleGroup();
+});
+</script>
+
+<style>
+    .form-group label { font-weight: 600; }
+    .form-control, textarea, select { border-radius: 8px; }
+    @media (max-width: 768px) { .col-md-6 { margin-bottom: 1.5rem; } }
 </style>
 @endsection
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const passwordInput = document.getElementById('password');
+    const toggleButton = document.getElementById('togglePassword');
+    const icon = toggleButton.querySelector('i');
+
+    toggleButton.addEventListener('click', function() {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        icon.classList.toggle('fa-eye');
+        icon.classList.toggle('fa-eye-slash');
+    });
+
+    // Script yang sudah ada tetap dijalankan
+    const roleSelect = document.getElementById('role');
+    const groupWrapper = document.getElementById('kasubagGroupWrapper');
+
+    function toggleGroup() {
+        if (roleSelect.value.toLowerCase() === 'kasubag') {
+            groupWrapper.style.display = 'block';
+        } else {
+            groupWrapper.style.display = 'none';
+            document.getElementById('kasubag_group').value = '';
+        }
+    }
+
+    roleSelect.addEventListener('change', toggleGroup);
+    toggleGroup();
+});
+</script>
+

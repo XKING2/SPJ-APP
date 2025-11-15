@@ -21,10 +21,15 @@ class KwitansiControl extends Controller
 
     public function store(Request $request)
     {
+        Log::info('📥 [KwitansiController@store] Mulai proses simpan kwitansi', [
+            'input' => $request->all()
+        ]);
+
+
         $validated = $request->validate([
             'spj_id' => 'required|exists:spjs,id',
             'id_pptk' => 'required|exists:pptk,id',
-            'sub_kegiatan' => 'required|string|max:255',
+            'id_kegiatan' => 'required|exists:kegiatan,id',
             'no_rekening' => 'required|string|max:255',
             'no_rekening_tujuan' => 'required|string|max:255',
             'nama_bank' => 'required|string|max:255',
@@ -37,82 +42,97 @@ class KwitansiControl extends Controller
             'pembayaran' => 'required|string',
         ]);
 
-        $kwitansi = Kwitansi::create($validated);
+            // Simpan kwitansi
+            $kwitansi = Kwitansi::create($validated);
 
-        $spj = SPJ::findOrFail($validated['spj_id']);
-        $spj->update(['kwitansi_id' => $kwitansi->id]);
+            // Ambil data kegiatan dan relasi kasubag
+            $kegiatan = Kegiatan::findOrFail($validated['id_kegiatan']);
 
-        return redirect()
-            ->route('pesanan.create', [
-                'spj_id' => $validated['spj_id'],
-                'kwitansi_id' => $kwitansi->id
-            ])
-            ->with('success', 'Kwitansi berhasil disimpan. Lanjut ke pesanan.');
+            // Update SPJ
+            $spj = SPJ::findOrFail($validated['spj_id']);
+            $spj->update([
+                'kwitansi_id' => $kwitansi->id,
+                'kegiatan_id' => $kegiatan->id,
+            ]);
+
+            return redirect()
+                ->route('pesanan.create', [
+                    'spj_id' => $validated['spj_id'],
+                    'kwitansi_id' => $kwitansi->id
+                ])
+                ->with('success', 'Kwitansi berhasil disimpan dan kegiatan berhasil dihubungkan ke SPJ.');
     }
 
-    // 🔹 Fungsi tambahan untuk ambil sub kegiatan berdasarkan PPTK
-    public function getSubKegiatan($pptk_id)
-    {
-        $kegiatan = kegiatan::where('id_pptk', $pptk_id)
-            ->select('id', 'subkegiatan')
-            ->get();
 
-        return response()->json($kegiatan);
-    }
 
 
     public function edit($id)
     {
         $pptks = pptk::all();
+        $kegiatans = kegiatan::all();
         $kwitansi = Kwitansi::findOrFail($id);
 
-        return view('users.update.updatekwitansi', compact('kwitansi','pptks'));
+        return view('users.update.updatekwitansi', compact('kwitansi','pptks','kegiatans'));
     }
 
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
-            'no_rekening' => 'required|string|max:255',
+            'spj_id' => 'required|exists:spjs,id',
             'id_pptk' => 'required|exists:pptk,id',
+            'id_kegiatan' => 'required|exists:kegiatan,id',
+            'no_rekening' => 'required|string|max:255',
             'no_rekening_tujuan' => 'required|string|max:255',
             'nama_bank' => 'required|string|max:255',
             'penerima_kwitansi' => 'required|string|max:255',
-            'sub_kegiatan' => 'required|string|max:255',
             'telah_diterima_dari' => 'required|string|max:255',
             'jumlah_nominal' => 'required|numeric',
             'uang_terbilang' => 'required|string|max:255',
             'jabatan_penerima' => 'required|string|max:255',
-            'npwp' => 'nullable|string|max:255',
-            'pembayaran' => 'required|string',
+            'npwp' => 'required|string|max:255',
+            'pembayaran' => 'required|string'
         ]);
 
+
+        Log::info('✏️ [KwitansiController@update] Mulai proses update kwitansi', [
+            'kwitansi_id' => $id,
+            'input' => $validated
+        ]);
         $kwitansi = Kwitansi::findOrFail($id);
         $kwitansi->update($validated);
 
-        $spj = Spj::find($kwitansi->spj_id);
+        // 🔹 Ambil kegiatan 
+        $kegiatan = Kegiatan::findOrFail($validated['id_kegiatan']);
 
-        if (!$spj) {
-            Log::error("SPJ dengan ID {$kwitansi->spj_id} tidak ditemukan saat update Kwitansi.");
-            return redirect()->back()->with('error', 'Data SPJ tidak ditemukan.');
-        }
+        // 🔹 Ambil data SPJ terkait
+        $spj = Spj::findOrFail($validated['spj_id']);
 
-        if ($spj) {
-            $spj->feedbacks()->delete();
-            if ($spj->status === 'belum_valid') $spj->status = 'draft';
-            if ($spj->status2 === 'belum_valid') $spj->status2 = 'draft';
-            $spj->save();
-        }
+        // 🔹 Perbarui relasi kegiatan dan kasubag di tabel SPJ
+        $spj->update([
+            'kegiatan_id' => $kegiatan->id,
+            'kwitansi_id' => $kwitansi->id
+        ]);
 
+        // 🔹 Reset feedback & ubah status SPJ bila perlu
+        $spj->feedbacks()->delete();
+        if ($spj->status === 'belum_valid') $spj->status = 'draft';
+        if ($spj->status2 === 'belum_valid') $spj->status2 = 'draft';
         $spj->save();
 
-        Log::info("✅ SPJ #{$spj->id} berhasil diubah ke status: {$spj->status} / {$spj->status2}");
-
-        if ($spj) {
-            app(\App\Http\Controllers\SPJController::class)->generateSPJDocument($spj->id);
-        }
+        // 🔹 Generate ulang dokumen SPJ
+        app(\App\Http\Controllers\SPJController::class)->generateSPJDocument($spj->id);
 
         return redirect()
-            ->route('kwitansi', ['id' => $spj->id ?? null])
-            ->with('success', 'Data Kwitansi berhasil diperbarui dan dokumen SPJ Diperbaharui.');
+            ->route('kwitansi', ['id' => $spj->id])
+            ->with('success', 'Kwitansi dan data SPJ berhasil diperbarui serta dokumen SPJ diperbaharui.');
+    }
+
+
+        // 🔹 AJAX: Ambil daftar subkegiatan berdasarkan PPTK 
+    public function getSubKegiatan($pptk_id) 
+    { 
+        $kegiatan = Kegiatan::where('id_pptk', $pptk_id) ->select('id', 'subkegiatan') 
+        ->get(); return response()
+        ->json($kegiatan); 
     }
 }

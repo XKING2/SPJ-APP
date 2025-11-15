@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\kegiatan;
 use App\Models\User;
+use App\Models\Kasubag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
@@ -10,7 +12,8 @@ class AnggotaController extends Controller
 {
     public function create()
     {
-        return view('superadmins.create');
+        $subKegiatans = Kegiatan::all();
+        return view('superadmins.create', compact('subKegiatans'));
     }
 
     public function store(Request $request)
@@ -33,10 +36,10 @@ class AnggotaController extends Controller
             'password.required' => 'Password wajib diisi',
             'jabatan_atasan.required' => 'Jabatan Atasan Langsung wajib diisi',
             'role.required' => 'Role wajib diisi',
-            'status.required' => 'status wajib diisi',
+            'status.required' => 'Status wajib diisi',
         ]);
 
-        User::create([
+        $user = User::create([
             'nip' => $request->nip,
             'nama' => $request->nama,
             'jabatan' => $request->jabatan,
@@ -47,10 +50,9 @@ class AnggotaController extends Controller
             'status' => $request->status,
         ]);
 
-
-
-        return redirect()->route('showanggota')
-                        ->with('success', 'Data anggota berhasil ditambahkan!');
+        return redirect()
+            ->route('showanggota')
+            ->with('success', 'Data anggota berhasil ditambahkan!');
     }
 
     public function edit($id)
@@ -93,7 +95,6 @@ class AnggotaController extends Controller
             'status' => $request->status,
         ];
 
-        // hanya update password jika diisi
         if ($request->filled('password')) {
             $data['password'] = Hash::make($request->password);
         }

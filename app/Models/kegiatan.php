@@ -7,10 +7,15 @@ use Illuminate\Database\Eloquent\Model;
 class kegiatan extends Model
 {
     protected $table = 'kegiatan';
-    protected $fillable = ['id_pptk', 'program', 'kegiatan', 'subkegiatan','kasubag'];
+    protected $fillable = ['id_pptk', 'program', 'kegiatan', 'subkegiatan'];
 
     public function pptk()
     {
         return $this->belongsTo(Pptk::class, 'id_pptk');
+    }
+
+    public function kwitansi()
+    {
+        return $this->belongsTo(kwitansi::class, 'id_kegiatan');
     }
 }

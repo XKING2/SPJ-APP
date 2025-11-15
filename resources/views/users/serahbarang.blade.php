@@ -19,9 +19,6 @@
                     <input type="text" name="search" class="form-control form-control-sm mr-2" placeholder="Cari...">
                     <button type="submit" class="btn btn-sm btn-secondary">Cari</button>
                 </form>
-                <a href="#" target="_blank" class="btn btn-info btn-sm">
-                    <i class="fas fa-print"></i> Cetak
-                </a>
             </div>
 
             <!-- Table -->
@@ -32,31 +29,32 @@
                             <th style="width: 50px;">No</th>
                             <th>Pihak Pertama </th>
                             <th>Pihak Kedua </th>
-                            <th>Barang Yang Diserahkan</th>
+                            <th>Nomor Surat</th>
                             <th style="width: 180px;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {{-- Contoh data statis --}}
+                    @forelse ($serahbarangs as $index => $item)
                         <tr>
-                            <td>1</td>
-                            <td>Drs. I Wayan Arsana, MAP</td>
-                            <td>Ida Dewa Gede Putra,S.Sos</td>
-                            <td>Velg Supra BLK 160X17 DID</td>
+                            <td>{{ $loop->iteration + ($serahbarangs->currentPage() - 1) * $serahbarangs->perPage() }}</td>
+                            <td>{{ $item->plt->nama_pihak_pertama ?? '-' }}</td>
+                            <td>{{ $item->pihak_kedua->nama_pihak_kedua ?? '-' }}</td>
+                            <td>{{ $item->no_suratsss ?? '-' }}</td>
                             <td>
-                                <a href="#" class="btn btn-sm btn-success">
-                                    <i class="fas fa-edit"></i> Edit
-                                </a>
-                                <button class="btn btn-sm btn-danger" onclick="return confirm('Yakin hapus?')">
-                                    <i class="fas fa-trash"></i> Hapus
-                                </button>
+                                    <!-- Tombol Edit dengan popup konfirmasi -->
+                                    <a href="{{ route('serahbarang.edit', $item->id) }}" 
+                                        class="btn btn-sm btn-success btn-edit"
+                                        data-edit-url="{{ route('serahbarang.edit', $item->id) }}">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </a>
                             </td>
                         </tr>
-                        {{-- Jika tidak ada data --}}
+                    @empty
                         <tr>
                             <td colspan="5" class="text-center">Data tidak tersedia</td>
                         </tr>
-                    </tbody>
+                    @endforelse
+                </tbody>
                 </table>
             </div>
 

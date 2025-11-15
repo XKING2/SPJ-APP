@@ -2,11 +2,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\kwitansi;
 use Illuminate\Http\Request;
 use App\Models\Pemeriksaan;
 use App\Models\SPJ;
 use App\Models\Pesanan;
+use App\Models\pihakkedua;
 use App\Models\Plt;
+use App\Models\nosurat;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
@@ -21,6 +24,9 @@ class PemeriksaanControl extends Controller
         $spj = SPJ::findOrFail($request->spj_id);
         $pesanan = Pesanan::findOrFail($request->pesanan_id);
         $plts = Plt::all();
+        $nosurat = nosurat::latest()->first();
+        $keduas = pihakkedua::all();
+        $kwitansi = Kwitansi::latest()->first();
 
         $tanggalPesanan = $pesanan->tanggal_diterima;
 
@@ -49,7 +55,10 @@ class PemeriksaanControl extends Controller
             'tglTeks',
             'bulan',
             'tahunTeks',
-            'tanggalLengkap'
+            'tanggalLengkap',
+            'kwitansi',
+            'keduas',
+            'nosurat'
         ));
     }
 
@@ -71,8 +80,8 @@ class PemeriksaanControl extends Controller
     {
         $validated = $request->validate([
             'spj_id' => 'required|exists:spjs,id',
-            'id_plt' => 'required|exists:plt,id',
             'pesanan_id' => 'required|exists:pesanans,id',
+            'no_suratssss' => 'required|string|max:255',
             'hari_diterima' => 'required|string|max:50',
             'tanggals_diterima' => 'required|string|max:100',
             'bulan_diterima' => 'required|string|max:100',
@@ -90,7 +99,7 @@ class PemeriksaanControl extends Controller
         $spj->update(['pemeriksaan_id' => $pemeriksaan->id]);
 
         return redirect()
-            ->route('penerimaan.create', [
+            ->route('serahbarang.create', [
                 'spj_id' => $validated['spj_id'],
                 'pemeriksaan_id' => $pemeriksaan->id
             ])
@@ -100,20 +109,32 @@ class PemeriksaanControl extends Controller
 
     public function edit($id)
     {
-        $pemeriksaan = Pemeriksaan::with('spj')->findOrFail($id);
-        $spj = SPJ::find($pemeriksaan->spj_id);
+        // Ambil data pemeriksaan beserta relasi SPJ dan Pesanan
+        $pemeriksaan = Pemeriksaan::with(['spj.pesanan'])->findOrFail($id);
+        $spj = $pemeriksaan->spj;
         $pesanan = $spj ? $spj->pesanan : null;
-        $plts = Plt::all();
 
-        if ($pesanan && $pesanan->tanggal) {
-            $tanggal = Carbon::parse($pesanan->tanggal);
-            $hari = ucfirst($tanggal->translatedFormat('l'));
-            $tglTeks = $this->angkaKeTeks((int) $tanggal->format('d'));
-            $bulan = ucfirst($tanggal->translatedFormat('F'));
-            $tahunTeks = $this->angkaKeTeks((int) $tanggal->format('Y'));
-            $tanggalLengkap = "$hari, $tglTeks $bulan $tahunTeks";
-        } else {
+        // Ambil data tambahan seperti di create()
+        $plts = Plt::all();
+        $keduas = pihakkedua::all();
+        $nosurat = nosurat::latest()->first();
+        $kwitansi = Kwitansi::latest()->first();
+
+        // Tangani tanggal dari pesanan
+        $tanggalPesanan = $pesanan->tanggal_diterima ?? null;
+
+        if (!$tanggalPesanan) {
             $hari = $tglTeks = $bulan = $tahunTeks = $tanggalLengkap = '';
+        } else {
+            $tanggal_diterima = Carbon::parse($tanggalPesanan);
+            $hari = ucfirst($tanggal_diterima->translatedFormat('l')); 
+            $tglAngka = (int)$tanggal_diterima->format('d');            
+            $bulan = ucfirst($tanggal_diterima->translatedFormat('F')); 
+            $tahunAngka = (int)$tanggal_diterima->format('Y');         
+
+            $tglTeks = $this->angkaKeTeks($tglAngka);
+            $tahunTeks = $this->angkaKeTeks($tahunAngka);
+            $tanggalLengkap = "$hari, $tglTeks $bulan $tahunTeks";
         }
 
         return view('users.update.updatepemeriksaan', compact(
@@ -125,23 +146,27 @@ class PemeriksaanControl extends Controller
             'tglTeks',
             'bulan',
             'tahunTeks',
-            'tanggalLengkap'
+            'tanggalLengkap',
+            'kwitansi',
+            'keduas',
+            'nosurat'
         ));
     }
+
 
 
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
-            'id_plt' => 'required|exists:plt,id',
-            'hari_diterima'      => 'required|string|max:50',
-            'tanggals_diterima'  => 'required|string|max:50',
-            'bulan_diterima'     => 'required|string|max:50',
-            'tahun_diterima'     => 'required|string|max:50',
-            'nama_pihak_kedua'   => 'required|string|max:255',
-            'jabatan_pihak_kedua'=> 'required|string|max:255',
-            'alamat_pihak_kedua' => 'required|string|max:255',
-            'pekerjaan'          => 'required|string|max:255',
+            'no_suratssss' => 'required|string|max:255',
+            'hari_diterima' => 'required|string|max:50',
+            'tanggals_diterima' => 'required|string|max:100',
+            'bulan_diterima' => 'required|string|max:100',
+            'tahun_diterima' => 'required|string|max:255',
+            'nama_pihak_kedua' => 'required|string|max:255',
+            'jabatan_pihak_kedua' => 'required|string|max:255',
+            'alamat_pihak_kedua' => 'required|string',
+            'pekerjaan' => 'required|string',
         ]);
 
         $pemeriksaan = Pemeriksaan::findOrFail($id);

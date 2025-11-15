@@ -29,9 +29,9 @@
                     <thead class="thead-light">
                         <tr>
                             <th style="width: 50px;">No</th>
+                            <th>Nomor Surats</th>
+                            <th>Tanggal Surat</th>
                             <th style="width: 560px;">Pekerjaan</th>
-                            <th>Nomor SP</th>
-                            <th>Tanggal SP</th>
                             <th style="width: 180px;">Aksi</th>
                         </tr>
                     </thead>
@@ -39,9 +39,9 @@
                         @forelse ($pemeriksaans as $index => $pemeriksaan)
                             <tr>
                                 <td>{{ $loop->iteration + ($pemeriksaans->currentPage() - 1) * $pemeriksaans->perPage() }}</td>
-                                <td>{{ $pemeriksaan->pekerjaan ?? '-' }}</td>
                                 <td>{{ $pemeriksaan->pesanan->no_surat ?? '-' }}</td>
                                 <td>{{ \Carbon\Carbon::parse($pemeriksaan->surat_dibuat ?? now())->translatedFormat('d F Y') }}</td>
+                                <td>{{ $pemeriksaan->pekerjaan ?? '-' }}</td>  
                                 <td>
                                     <!-- Tombol Edit dengan SweetAlert -->
                                     <a href="{{ route('pemeriksaan.edit', $pemeriksaan->id) }}" 

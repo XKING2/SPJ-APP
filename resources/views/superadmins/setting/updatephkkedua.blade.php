@@ -10,18 +10,19 @@
 <div class="container">
     <div class="card shadow-sm rounded-3">
         <div class="card-body">
-            <form action="{{ route('plt.store') }}" method="POST">
+            <form action="{{ route('kedua.update', $keduas->id) }}" method="POST">
                 @csrf
+                @method('PUT')
                 <div class="row">
                     <!-- Kiri -->
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Nama Pihak Pertama</label>
-                            <input type="text" name="nama_pihak_pertama" class="form-control" value="{{ old('nama_pihak_pertama') }}">
+                            <label class="form-label fw-bold">Nama Pihak Kedua</label>
+                            <input type="text" name="nama_pihak_kedua" class="form-control" value="{{ old('nama_pihak_kedua',$keduas->nama_pihak_kedua ) }}">
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Jabatan Pihak Pertama</label>
-                            <input type="text" name="jabatan_pihak_pertama" class="form-control" value="{{ old('jabatan_pihak_pertama') }}">
+                            <label class="form-label fw-bold">Jabatan Pihak Kedua</label>
+                            <input type="text" name="jabatan_pihak_kedua" class="form-control" value="{{ old('jabatan_pihak_kedua',$keduas->jabatan_pihak_kedua) }}">
                         </div>
                     </div>
 
@@ -29,14 +30,14 @@
 
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="form-label fw-bold">NIP Pihak Pertama</label>
-                            <input type="text" name="nip_pihak_pertama" class="form-control" value="{{ old('nip_pihak_Pertama') }}">
+                            <label class="form-label fw-bold">NIP Pihak Kedua</label>
+                            <input type="text" name="nip_pihak_kedua" class="form-control" value="{{ old('nip_pihak_kedua',$keduas->nip_pihak_kedua) }}">
                         </div>
 
             
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Golongan/Pangkat</label>
-                            <input type="text" name="gol_pihak_pertama" class="form-control" value="{{ old('golongan_pihak_Pertama') }}">
+                            <label class="form-label fw-bold">Golongan/Pangkat Pihak Kedua</label>
+                            <input type="text" name="gol_pihak_kedua" class="form-control" value="{{ old('gol_pihak_kedua',$keduas->gol_pihak_kedua) }}">
                         </div>
                 
                     </div>

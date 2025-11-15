@@ -20,8 +20,37 @@
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label class="form-label fw-bold">No Surat</label>
-                            <input type="text" name="no_surat" class="form-control" value="{{ old('no_surat') }}" required>
+                            <div class="input-group">
+                                <!-- Pilihan nomor awal -->
+                                <select id="prefix_surat" class="form-control text-end" required>
+                                    <option value="" disabled selected>-- Pilih Nomor Awal --</option>
+                                    @foreach ($nosurat as $item)
+                                        <option value="{{ $item->no_awal }}"
+                                            data-dinas="{{ $item->nama_dinas }}"
+                                            data-tahun="{{ $item->tahun }}">
+                                            {{ $item->no_awal }}
+                                        </option>
+                                    @endforeach
+                                </select>
+
+                                <!-- Bagian tengah diisi user -->
+                                <span class="input-group-text">/</span>
+                                <input type="text" id="no_surat_user" name="no_surat_user" 
+                                    class="form-control text-center" placeholder="Nomor Surat" required>
+
+                                <!-- Nama dinas otomatis dari pilihan -->
+                                <span class="input-group-text">/</span>
+                                <input type="text" id="suffix_dinas" class="form-control" readonly>
+
+                                <!-- Tahun otomatis dari pilihan -->
+                                <span class="input-group-text">/</span>
+                                <input type="text" id="suffix_tahun" class="form-control" readonly>
+                            </div>
+
+                            <!-- Hidden input gabungan final -->
+                            <input type="hidden" name="no_surat" id="no_surat">
                         </div>
+
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">Nama PT</label>
@@ -183,6 +212,41 @@ document.addEventListener("DOMContentLoaded", function() {
         rowIndex++;
     });
 });
+</script>
+
+<script>
+    const prefixInput = document.getElementById('prefix_surat');
+    const userInput = document.getElementById('no_surat_user');
+    const dinasInput = document.getElementById('suffix_dinas');
+    const tahunInput = document.getElementById('suffix_tahun');
+    const hiddenInput = document.getElementById('no_surat');
+
+    function updateNoSurat() {
+        const prefix = prefixInput.value.trim();
+        const user = userInput.value.trim();
+        const dinas = dinasInput.value.trim();
+        const tahun = tahunInput.value.trim();
+
+        const fullNo = [prefix, user, dinas, tahun]
+            .filter(part => part !== '')
+            .join('/');
+
+        hiddenInput.value = fullNo;
+    }
+
+    // Saat user mengetik nomor tengah
+    userInput.addEventListener('input', updateNoSurat);
+
+    // Saat user memilih prefix (ambil juga dinas & tahun)
+    prefixInput.addEventListener('change', function() {
+        const selected = this.options[this.selectedIndex];
+        dinasInput.value = selected.getAttribute('data-dinas') || '';
+        tahunInput.value = selected.getAttribute('data-tahun') || '';
+        updateNoSurat();
+    });
+
+    // Jalankan saat halaman dimuat
+    updateNoSurat();
 </script>
 
 <script>

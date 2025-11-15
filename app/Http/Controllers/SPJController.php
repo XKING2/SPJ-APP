@@ -37,7 +37,8 @@ class SPJController extends Controller
             'kwitansi_id'    => $request->kwitansi_id,
             'penerimaan_id'  => $request->penerimaan_id,
             'pemeriksaan_id' => $request->pemeriksaan_id,
-            'user_id'        => $userId, 
+            'user_id'        => $userId,
+            'kegiatan_id'    => $request->kegiatan_id,
         ]);
 
         if ($request->pesanan_id) {
@@ -76,13 +77,17 @@ class SPJController extends Controller
                 'pesanan.items',
                 'penerimaan.details',
                 'kwitansi.pptk',
-                'pemeriksaan.plt'
+                'pemeriksaan',
+                'serah_barang.plt',
+                'serah_barang.pihak_kedua',
+                'kwitansi.kegiatan'
             ])->findOrFail($id);
 
             $pesanan     = $spj->pesanan;
             $penerimaan  = $spj->penerimaan;
             $kwitansi    = $spj->kwitansi;
             $pemeriksaan = $spj->pemeriksaan;
+            $serahbarang = $spj->serah_barang;
 
             $templatePath = storage_path('app/public/Tamplate_SPJ.docx');
             $outputDocx   = storage_path("app/public/spj_preview_{$spj->id}.docx");
@@ -103,14 +108,14 @@ class SPJController extends Controller
             $template->setValue('telah_diterima_dari', $kwitansi->telah_diterima_dari ?? '-');
             $template->setValue('uang_terbilang', $kwitansi->uang_terbilang ?? '-');
             $template->setValue('pembayaran', $kwitansi->pembayaran ?? '-');
-            $template->setValue('sub_kegiatan', $kwitansi->sub_kegiatan ?? '-');
+            $template->setValue('sub_kegiatan', $kwitansi->kegiatan->subkegiatan ?? '-');
             $template->setValue('jumlah_nominal', number_format($kwitansi->jumlah_nominal ?? 0));
             $template->setValue('penerima_kwitansi', $kwitansi->penerima_kwitansi ?? '-');
             $template->setValue('jabatan_penerima', $kwitansi->jabatan_penerima ?? '-');
-            $template->setValue('subkegiatan', $kwitansi->pptk->subkegiatan ?? '-');
             $template->setValue('nama_pptk', $kwitansi->pptk->nama_pptk ?? '-');
             $template->setValue('jabatan_pptk', $kwitansi->pptk->gol_pptk ?? '-');
             $template->setValue('nip_pptk', $kwitansi->pptk->nip_pptk ?? '-');
+
 
             
             if ($pesanan) {
@@ -132,10 +137,18 @@ class SPJController extends Controller
                 $template->setValue('jabatan_pihak_kedua', $pemeriksaan->jabatan_pihak_kedua ?? '-');
                 $template->setValue('alamat_pihak_kedua', $pemeriksaan->alamat_pihak_kedua ?? '-');
                 $template->setValue('pekerjaan', $pemeriksaan->pekerjaan ?? '-');
-                $template->setValue('nama_pertama', $pemeriksaan->plt->nama_pihak_pertama ?? '-');
-                $template->setValue('nip_pertama', $pemeriksaan->plt->nip_pihak_pertama ?? '-');
-                $template->setValue('gol_pertama', $pemeriksaan->plt->gol_pihak_pertama ?? '-');
-                $template->setValue('jab_pertama', $pemeriksaan->plt->jabatan_pihak_pertama ?? '-');
+                
+            }
+
+            if ($serahbarang) {
+                $template->setValue('nama_pertama', $serahbarang->plt->nama_pihak_pertama ?? '-');
+                $template->setValue('nip_pertama', $serahbarang->plt->nip_pihak_pertama ?? '-');
+                $template->setValue('gol_pertama', $serahbarang->plt->gol_pihak_pertama ?? '-');
+                $template->setValue('jab_pertama', $serahbarang->plt->jabatan_pihak_pertama ?? '-');
+                $template->setValue('nama_pengelola', $serahbarang->pihak_kedua->nama_pihak_kedua ?? '-');
+                $template->setValue('nip_pengelola', $serahbarang->pihak_kedua->nip_pihak_kedua ?? '-');
+                $template->setValue('gol_pengelola', $serahbarang->pihak_kedua->gol_pihak_kedua ?? '-');
+                $template->setValue('jabatan_pengelola', $serahbarang->pihak_kedua->jabatan_pihak_kedua ?? '-');
             }
 
            

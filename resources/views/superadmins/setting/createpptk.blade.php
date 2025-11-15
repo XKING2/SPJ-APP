@@ -14,9 +14,11 @@
                 @csrf
 
                 {{-- 🔹 PILIH PPTK YANG SUDAH ADA --}}
-                <div id="selectPptkSection" class="row mb-4 align-items-end">
+                <div id="existingPptkSection" class="row mb-4 align-items-end">
                     <div class="col-md-6">
-                        <label for="pptk_id" class="form-label fw-bold mb-2">Pilih PPTK (Pilih ini Jika Nama PPTK Sama)</label>
+                        <label for="pptk_id" class="form-label fw-bold mb-2">
+                            Pilih PPTK (jika sudah ada)
+                        </label>
                         <select name="pptk_id" id="pptk_id" class="form-control shadow-sm rounded">
                             <option value="">-- Pilih PPTK yang sudah ada --</option>
                             @foreach($pptks as $p)
@@ -32,33 +34,52 @@
                 </div>
 
                 {{-- 🔹 FORM PPTK BARU --}}
-                <div id="pptkForm" style="display: none;">
+                <div id="newPptkForm" style="display: none;">
                     <div class="row">
-                        {{-- Kolom kiri --}}
                         <div class="col-md-6">
+                            {{-- Pilih user dari tabel users --}}
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Pilih Nama dari User</label>
+                                <select id="selectUser" name="user_id" class="form-control" required>
+                                    <option value="" disabled selected>-- Pilih Nama User --</option>
+                                    @foreach ($users as $user)
+                                        <option 
+                                            value="{{ $user->id }}"
+                                            data-nama="{{ $user->nama }}"
+                                            data-nip="{{ $user->NIP }}"
+                                            data-gol="{{ $user->idinjab }}">
+                                            {{ $user->nama }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+
+                            {{-- Nama PPTK otomatis terisi --}}
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Nama PPTK</label>
-                                <input type="text" name="nama_pptk" class="form-control" placeholder="Masukkan nama PPTK">
+                                <input type="text" id="nama_pptk" name="nama_pptk" class="form-control" readonly>
                             </div>
+
+                            {{-- Golongan otomatis --}}
                             <div class="mb-3">
-                                <label class="form-label fw-bold">Golongan PPTK</label>
-                                <input type="text" name="gol_pptk" class="form-control" placeholder="Masukkan golongan PPTK">
+                                <label class="form-label fw-bold">Idinjab PPTK</label>
+                                <input type="text" id="idinjab_pptk" name="idinjab_pptk" class="form-control" readonly>
                             </div>
                         </div>
 
-                        {{-- Kolom kanan --}}
                         <div class="col-md-6">
+                            {{-- NIP otomatis --}}
                             <div class="mb-3">
                                 <label class="form-label fw-bold">NIP PPTK</label>
-                                <input type="text" name="nip_pptk" class="form-control" placeholder="Masukkan NIP PPTK">
+                                <input type="text" id="nip_pptk" name="nip_pptk" class="form-control" readonly>
+                            </div>
+
+                            <div class="text-end mb-3 mt-4">
+                                <button type="button" id="cancelNewPptkBtn" class="btn btn-outline-secondary">
+                                    <i class="bi bi-x-circle"></i> Batal Tambah PPTK
+                                </button>
                             </div>
                         </div>
-                    </div>
-
-                    <div class="text-end mb-3">
-                        <button type="button" id="cancelNewPptkBtn" class="btn btn-outline-secondary">
-                            <i class="bi bi-x-circle"></i> Batal Tambah PPTK
-                        </button>
                     </div>
                 </div>
 
@@ -76,11 +97,8 @@
                             <input type="text" name="kegiatan" class="form-control">
                         </div>
                     </div>
+
                     <div class="col-md-6">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Kasubag</label>
-                            <input type="text" name="kasubag" class="form-control">
-                        </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold">Sub Kegiatan</label>
                             <textarea name="subkegiatan" class="form-control" rows="3"></textarea>
@@ -88,8 +106,11 @@
                     </div>
                 </div>
 
-                <div class="d-flex justify-content-end">
-                    <button type="submit" class="btn btn-success">
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="{{ route('showpptk') }}" class="btn btn-secondary px-4 py-2">
+                        <i class="bi bi-arrow-left-circle"></i> Kembali
+                    </a>
+                    <button type="submit" class="btn btn-success px-4 py-2">
                         <i class="bi bi-save"></i> Simpan
                     </button>
                 </div>
@@ -98,22 +119,42 @@
     </div>
 </div>
 
-{{-- 🔹 Script Dinamis --}}
+{{-- 🔹 SCRIPT DINAMIS --}}
 <script>
-document.getElementById('pptk_id').addEventListener('change', function() {
-    const pptkForm = document.getElementById('pptkForm');
-    pptkForm.style.display = this.value ? 'none' : 'block';
-});
+document.addEventListener('DOMContentLoaded', function () {
+    const existingSection = document.getElementById('existingPptkSection');
+    const newPptkForm = document.getElementById('newPptkForm');
+    const addBtn = document.getElementById('addNewPptkBtn');
+    const cancelBtn = document.getElementById('cancelNewPptkBtn');
+    const selectUser = document.getElementById('selectUser');
 
-document.getElementById('addNewPptkBtn').addEventListener('click', function() {
-    document.getElementById('selectPptkSection').style.display = 'none';
-    document.getElementById('pptkForm').style.display = 'block';
-});
+    const namaPptk = document.getElementById('nama_pptk');
+    const nipPptk = document.getElementById('nip_pptk');
+    const idinjab_pptk = document.getElementById('idinjab_pptk');
 
-document.getElementById('cancelNewPptkBtn').addEventListener('click', function() {
-    document.getElementById('selectPptkSection').style.display = 'flex';
-    document.getElementById('pptkForm').style.display = 'none';
-    document.getElementById('pptk_id').value = '';
+    // 🔹 Klik "Tambah PPTK Baru"
+    addBtn.addEventListener('click', () => {
+        existingSection.style.display = 'none';
+        newPptkForm.style.display = 'block';
+    });
+
+    // 🔹 Klik "Batal Tambah PPTK"
+    cancelBtn.addEventListener('click', () => {
+        newPptkForm.style.display = 'none';
+        existingSection.style.display = 'flex';
+        selectUser.value = '';
+        namaPptk.value = '';
+        nipPptk.value = '';
+        idinjab_pptk.value = '';
+    });
+
+    // 🔹 Saat user pilih nama dari tabel users
+    selectUser.addEventListener('change', function() {
+        const selected = this.options[this.selectedIndex];
+        namaPptk.value = selected.dataset.nama || '';
+        nipPptk.value = selected.dataset.nip || '';
+        idinjab_pptk.value = selected.dataset.gol || '';
+    });
 });
 </script>
 @endsection

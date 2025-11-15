@@ -4,16 +4,6 @@
 @endsection
 @section('content')
 <div class="container-fluid">
-    <!-- Alert Success -->
-    @if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <strong>Berhasil!</strong> {{ session('success') }}
-        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-        </button>
-    </div>
-    @endif
-
     <!-- Card -->
     <div class="card shadow mb-4">
         <div class="card-header py-3 d-flex justify-content-between align-items-center">
@@ -23,14 +13,16 @@
             <!-- Search & Print -->
             <div class="d-flex justify-content-between mb-3">
                 <form action="{{ route('showanggota') }}" method="GET" class="form-inline">
-                    <input type="text" name="search" class="form-control form-control-sm mr-2" placeholder="Cari..." value="{{ $search ?? '' }}">
+                    <input type="text" name="search" class="form-control form-control-sm mr-2" 
+                        placeholder="Cari..." value="{{ $search ?? '' }}">
                     <button type="submit" class="btn btn-sm btn-secondary">Cari</button>
                     @if(isset($search))
                     <a href="{{ route('showanggota') }}" class="btn btn-sm btn-light ml-2">Reset</a>
                     @endif
                 </form>
-                <a href="{{ route('anggota.create') }}" class="btn btn-info btn-sm">
-                    <i class="fas fa-plus"></i> Tambah Anggota
+
+                <a href="{{ route('anggota.create') }}" class="btn btn-info btn-sm px-3 py-1 d-flex align-items-center">
+                    <i class="fas fa-plus mr-1"></i> Tambah Anggota
                 </a>
             </div>
             <!-- Table -->
@@ -57,7 +49,7 @@
                                        class="btn btn-sm btn-success btn-edit"
                                        data-edit-url="{{ route('anggota.edit', $item->id) }}">
                                         <i class="fas fa-edit"></i> Edit
-                                    </a>
+                                </a>
                                 <form action="{{ route('anggota.destroy', $item->id) }}" method="POST" class="d-inline form-delete">
                                     @csrf
                                     @method('DELETE')
@@ -74,6 +66,9 @@
                         @endforelse
                     </tbody>
                 </table>
+            </div>
+            <div class="d-flex justify-content-center mt-3">
+                {{ $anggotas->links('pagination::bootstrap-4') }}
             </div>
         </div>
     </div>

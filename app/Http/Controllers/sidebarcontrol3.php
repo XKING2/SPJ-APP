@@ -5,7 +5,8 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\SPJ;
 use App\Models\User;
-
+use App\Models\Kasubag;
+use Illuminate\Support\Facades\Auth;
 
 
 class sidebarcontrol3 extends Controller
@@ -32,34 +33,41 @@ class sidebarcontrol3 extends Controller
         $anggotas = User::when($search, function($query) use ($search) {
             return $query->where('nama', 'like', "%{$search}%")
                         ->orWhere('NIP', 'like', "%{$search}%")
-                        ->orWhere('jabatan', 'like', "%{$search}%")
-                        ->orWhere('Alamat', 'like', "%{$search}%");
-        })->orderBy('created_at', 'asc')->get();
+                        ->orWhere('jabatan', 'like', "%{$search}%");
+        })
+        ->orderBy('created_at', 'asc')
+        ->paginate(10); // 🔹 tampilkan 10 per halaman
+
+        // Pastikan query search ikut terbawa di pagination
+        $anggotas->appends(['search' => $search]);
 
         return view('superadmins.anggota', compact('anggotas', 'search'));
     }
 
-    public function showvalidasi(Request $request)
+     public function showvalidasi(Request $request)
     {
         $search = $request->input('search');
-        $query = Spj::with(['user'])
-                    ->whereIn('status2', ['diajukan','valid']);
+        $query = Spj::with(['user', 'pesanan'])
+                    ->whereIn('status2', ['diajukan', 'valid','belum_valid']);
+
         if ($search) {
             $query->where(function ($q) use ($search) {
-                $q->where('status2', 'like', "%{$search}%")
-                    ->orWhereHas('pesanan', function ($pesananQuery) use ($search) {
-                        $pesananQuery->where('no_surat', 'like', "%{$search}%")
-                                     ->orWhere('surat_dibuat', 'like', "%{$search}%");
-                    })
-                    ->orWhereHas('user', function ($userQuery) use ($search) {
-                        $userQuery->where('nama', 'like', "%{$search}%");
-                    });
+                $q->where('status', 'like', "%{$search}%")
+                ->orWhereHas('pesanan', function ($pesananQuery) use ($search) {
+                    $pesananQuery->where('no_surat', 'like', "%{$search}%")
+                                ->orWhere('surat_dibuat', 'like', "%{$search}%");
+                })
+                ->orWhereHas('user', function ($userQuery) use ($search) {
+                    $userQuery->where('nama', 'like', "%{$search}%");
+                });
             });
         }
+
         $spjs = $query->orderBy('created_at', 'desc')->paginate(10);
 
         return view('superadmins.validasi', compact('spjs'));
     }
+
 
     public function previewsuper($id)
     {
@@ -83,14 +91,9 @@ class sidebarcontrol3 extends Controller
 
         $validated = $request->validate([
             'status2' => 'required|in:valid,draft,belum_valid',
-            'komentar_kasubag' => 'nullable|string|max:1000',
         ]);
 
-        if ($validated['status2'] === 'belum_valid' && empty(trim($validated['komentar_kasubag'] ?? ''))) {
-            return redirect()->back()->withInput()->withErrors(['komentar_kasubag' => 'Komentar wajib diisi jika SPJ tidak disetujui.']);
-        }
         $spj->status2 = $validated['status2'];
-        $spj->komentar_kasubag = $validated['komentar_kasubag'] ?? null;
         $spj->save();
 
         return redirect()->route('Validasi')->with('success', 'Status validasi Kasubag berhasil diperbarui!');

@@ -17,83 +17,84 @@
                 <input type="hidden" name="spj_id" value="{{ $spj->id }}">
 
                 <div class="row">
-                    <!-- 🟩 Kolom Kiri -->
+                    <!-- Kolom Kiri -->
                     <div class="col-md-6">
-
-                        {{-- Pilih Pihak Pertama --}}
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Pilih Pihak Pertama</label>
-                            <select name="id_plt" class="form-control" required>
-                                <option value="" disabled>-- Pilih Pihak Pertama --</option>
-                                @foreach($plts as $plt)
-                                    <option value="{{ $plt->id }}" 
-                                        {{ old('id_plt', $pemeriksaan->id_plt) == $plt->id ? 'selected' : '' }}>
-                                        {{ $plt->nama_pihak_pertama }}
-                                    </option>
-                                @endforeach
-                            </select>
+                        <label class="form-label fw-bold">No Surat</label>
+                        <div class="input-group">
+                            <!-- Prefix dari tabel (readonly) -->
+                            <input type="text" id="prefix_surat" 
+                                class="form-control text-end" 
+                                value="{{ $nosurat->no_awal ?? '' }}" readonly>
+
+                            <!-- Bagian tengah diisi user -->
+                            <span class="input-group-text">/</span>
+                            <input type="text" id="no_surat_user" name="no_surat_user" 
+                                class="form-control text-center" 
+                                placeholder="Nomor Surat" 
+                                value="{{ $nosurat->no_suratssss ?? '' }}" 
+                                required>
+
+                            <!-- Suffix 1: nama dinas -->
+                            <span class="input-group-text">/</span>
+                            <input type="text" id="suffix_dinas" 
+                                class="form-control" 
+                                value="{{ $nosurat->nama_dinas ?? '' }}" readonly>
+
+                            <!-- Suffix 2: tahun -->
+                            <span class="input-group-text">/</span>
+                            <input type="text" id="suffix_tahun" 
+                                class="form-control" 
+                                value="{{ $nosurat->tahun ?? '' }}" readonly>
                         </div>
 
-                        
+                        <!-- Hidden input gabungan final -->
+                        <input type="hidden" name="no_suratssss" id="no_suratssss">
+                    </div>
+
+                        {{-- Pihak Kedua --}}
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Nama Pihak Kedua</label>
+                            <input type="text" name="nama_pihak_kedua" class="form-control" value="{{ old('nama_pihak_kedua',$pemeriksaan->nama_pihak_kedua) }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Jabatan Pihak Kedua</label>
+                            <input type="text" name="jabatan_pihak_kedua" class="form-control" value="{{ old('jabatan_pihak_kedua',$pemeriksaan->jabatan_pihak_kedua) }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Pekerjaan yang Dilakukan</label>
+                            <textarea name="pekerjaan" class="form-control" rows="3" required>{{ old('pekerjaan', $pemeriksaan->pekerjaan) }}</textarea>
+                        </div>
+
                         {{-- Alamat Pihak Kedua --}}
                         <div class="mb-3">
                             <label class="form-label fw-bold">Alamat Pihak Kedua</label>
-                            <input name="alamat_pihak_kedua" class="form-control" required>{{ old('alamat_pihak_kedua', $pemeriksaan->alamat_pihak_kedua) }}</input>
+                            <input name="alamat_pihak_kedua" class="form-control" required>{{ old('alamat_pihak_kedua',$pemeriksaan->alamat_pihak_kedua) }}</input>
                         </div>
 
-                                                {{-- Hari, Tanggal, Bulan, Tahun Diterima --}}
+                        
+                    </div>
+
+                    <!-- Kolom Kanan -->
+                    <div class="col-md-6">
+                        {{-- Hari, Tanggal, Bulan, Tahun Diterima --}}
                         <div class="mb-3">
                             <label class="form-label fw-bold">Hari Diterima</label>
-                            <input type="text" 
-                                   name="hari_diterima" 
-                                   class="form-control" 
-                                   value="{{ old('hari_diterima', $pemeriksaan->hari_diterima) }}"required>
+                            <input type="text" name="hari_diterima" class="form-control" value="{{ $hari }}" readonly>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold">Tanggal Diterima</label>
-                            <input type="text" 
-                                   name="tanggals_diterima" 
-                                   class="form-control" 
-                                   value="{{ old('tanggals_diterima', $pemeriksaan->tanggals_diterima) }}"required>
+                            <input type="text" name="tanggals_diterima" class="form-control" value="{{ $tglTeks }}" readonly>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold">Bulan Diterima</label>
-                            <input type="text" 
-                                   name="bulan_diterima" 
-                                   class="form-control" 
-                                   value="{{ old('bulan_diterima', $pemeriksaan->bulan_diterima) }}"required>
+                            <input type="text" name="bulan_diterima" class="form-control" value="{{ $bulan }}" readonly>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold">Tahun Diterima</label>
-                            <input type="text" 
-                                   name="tahun_diterima" 
-                                   class="form-control" 
-                                   value="{{ old('tahun_diterima', $pemeriksaan->tahun_diterima) }}" required>
-                        </div>
-                    </div>
-
-                    <!-- 🟦 Kolom Kanan -->
-                    <div class="col-md-6">
-
-                        {{-- Nama Pihak Kedua --}}
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Nama Pihak Kedua</label>
-                            <input type="text" 
-                                   name="nama_pihak_kedua" 
-                                   class="form-control" 
-                                   value="{{ old('nama_pihak_kedua', $pemeriksaan->nama_pihak_kedua) }}" required>
-                        </div>
-
-                        {{-- Jabatan Pihak Kedua --}}
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Jabatan Pihak Kedua</label>
-                            <input type="text" name="jabatan_pihak_kedua" class="form-control" value="{{ old('jabatan_pihak_kedua', $pemeriksaan->jabatan_pihak_kedua) }}" required>
-                        </div>
-
-                        {{-- Pekerjaan --}}
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Pekerjaan yang Dilakukan</label>
-                            <textarea type="text" name="pekerjaan" class="form-control"  rows="3"  value="{{ old('pekerjaan', $pemeriksaan->pekerjaan) }}"required></textarea>
+                            <input type="text" name="tahun_diterima" class="form-control" value="{{ $tahunTeks }}" readonly>
                         </div>
                     </div>
                 </div>
@@ -180,6 +181,30 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+</script>
+
+<script>
+    const prefixInput = document.getElementById('prefix_surat');
+    const userInput = document.getElementById('no_surat_user');
+    const dinasInput = document.getElementById('suffix_dinas');
+    const tahunInput = document.getElementById('suffix_tahun');
+    const hiddenInput = document.getElementById('no_suratssss');
+
+    function updateNoSurat() {
+        const prefix = prefixInput.value.trim();
+        const user = userInput.value.trim();
+        const dinas = dinasInput.value.trim();
+        const tahun = tahunInput.value.trim();
+
+        const fullNo = [prefix, user, dinas, tahun]
+            .filter(part => part !== '')
+            .join('/');
+
+        hiddenInput.value = fullNo;
+    }
+
+    userInput.addEventListener('input', updateNoSurat);
+    updateNoSurat();
 </script>
 
 {{-- Style agar rapi --}}

@@ -76,7 +76,7 @@
                     <div class="bg-white py-2 collapse-inner rounded">
                         <a class="collapse-item {{ Request::routeIs('settings.index') ? 'active' : '' }}" 
                         href="{{ route('settings.index') }}">
-                            Setting PPN
+                            Setting PPN 
                         </a>
                         <a class="collapse-item {{ Request::routeIs('showpptk') ? 'active' : '' }}" 
                         href="{{ route('showpptk') }}">
@@ -84,8 +84,12 @@
                         </a>
                         <a class="collapse-item {{ Request::routeIs('showplt') ? 'active' : '' }}" 
                         href="{{ route('showplt') }}">
-                            Setting Pihak Pertama
-                        </a>
+                            Setting Jabatan
+                        </a> 
+                        <a class="collapse-item {{ Request::routeIs('shownosurat') ? 'active' : '' }}" 
+                        href="{{ route('shownosurat') }}">
+                            Setting Nomor Surat
+                        </a> 
                     </div>
                 </div>
             </li>

@@ -12,6 +12,8 @@ use App\Http\Controllers\sidebarcontrol3;
 use App\Http\Controllers\sidebarcontrol2;
 use App\Http\Controllers\SPJController;
 use App\Http\Controllers\AnggotaController;
+use App\Http\Controllers\chatcontrol;
+use App\Http\Controllers\serahcontrol;
 use App\Http\Controllers\settingcontrol;
 use App\Http\Controllers\spjresponcontrol;
 
@@ -49,7 +51,8 @@ Route::post('pptks', [settingcontrol::class, 'store'])->name('pptk.store');
 Route::get('/pptk/{id}/edit', [settingcontrol::class, 'editpptk'])->name('pptk.edit');
 Route::put('/pptk/{id}', [settingcontrol::class, 'updatepptk'])->name('pptk.update');
 Route::DELETE('/pptk/{id}', [settingcontrol::class, 'destroy'])->name('pptk.destroy');
-Route::get('/get-subkegiatan/{pptk_id}', [kwitansicontrol::class, 'getSubKegiatan']);
+Route::get('/get-subkegiatan/{pptk_id}', [kwitansicontrol::class, 'getSubKegiatan'])->name('get.subkegiatan');
+
 
 Route::get('/Superadmin/plt', [settingcontrol::class, 'showplt'])->name('showplt');
 Route::get('/Superadmin/plt/create', [settingcontrol::class, 'createplt'])->name('createplt');
@@ -57,6 +60,20 @@ Route::post('plt', [settingcontrol::class, 'storeplt'])->name('plt.store');
 Route::get('/plt/{id}/edit', [settingcontrol::class, 'editplt'])->name('plt.edit');
 Route::put('/plt/{id}', [settingcontrol::class, 'updateplt'])->name('plt.update');
 Route::DELETE('/plt/{id}', [settingcontrol::class, 'destroyplt'])->name('plt.destroy');
+
+Route::get('/Superadmin/PihakKedua', [settingcontrol::class, 'showkedua'])->name('showkedua');
+Route::get('/Superadmin/PihakKedua/create', [settingcontrol::class, 'createkedua'])->name('createkedua');
+Route::post('PihakKedua', [settingcontrol::class, 'storekedua'])->name('kedua.store');
+Route::get('/PihakKedua/{id}/edit', [settingcontrol::class, 'editkedua'])->name('kedua.edit');
+Route::put('/PihakKedua/{id}', [settingcontrol::class, 'updatekedua'])->name('kedua.update');
+Route::DELETE('/PihakKedua/{id}', [settingcontrol::class, 'destroykedua'])->name('kedua.destroy');
+
+Route::get('/Superadmin/nosurat', [settingcontrol::class, 'shownosurat'])->name('shownosurat');
+Route::get('/Superadmin/nosurat/create', [settingcontrol::class, 'createnosurat'])->name('createnosurat');
+Route::post('nosurat', [settingcontrol::class, 'storenosurat'])->name('nosurat.store');
+Route::get('/nosurat/{id}/edit', [settingcontrol::class, 'editnosurat'])->name('nosurat.edit');
+Route::put('/nosurat/{id}', [settingcontrol::class, 'updatenosurat'])->name('nosurat.update');
+Route::DELETE('/nosurat/{id}', [settingcontrol::class, 'destroynosurat'])->name('nosurat.destroy');
 
 
 
@@ -67,7 +84,7 @@ Route::post('/admin/verivikasi/{id}/update-status', [sidebarcontrol2::class, 'up
     ->name('updateStatusbendahara');
 Route::get('/spj', [SPJController::class, 'index'])->name('spj.index');
 Route::get('/spj/create', [SPJController::class, 'create'])->name('spj.create');
-// 🔹 Tampilkan preview SPJ (hasil generate PDF)
+
 Route::get('/spj/preview/{id}', [SPJController::class, 'preview'])->name('spj.preview');
 Route::post('/spj/{id}/submit-bendahara', [SpjController::class, 'submitToBendahara'])->name('spj.submitToBendahara');
 Route::post('/spj/{id}/ajukan-kasubag', [SPJController::class, 'ajukanKasubag'])->name('ajukanKasubag');
@@ -112,13 +129,21 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/pemeriksaan/{id}', [PemeriksaanControl::class, 'update'])->name('pemeriksaan.update');
 });
 
-// ========== PENERIMAAN ==========
-Route::get('/penerimaan/create', [PenerimaanControl::class, 'create'])->name('penerimaan.create');
+
+// ========== PEMERIKSAAN ==========
+Route::get('/serahbarang/create', [serahcontrol::class, 'create'])->name('serahbarang.create');
+Route::post('/serahbarang/store', [serahcontrol::class, 'store'])->name('serahbarang.store');
+Route::middleware(['auth'])->group(function () {
+    Route::get('/serahbarang/{id}/edit', [serahcontrol::class, 'edit'])->name('serahbarang.edit');
+    Route::put('/serahbarang/{id}', [serahcontrol::class, 'update'])->name('serahbarang.update');
+});
+
+Route::get('/penerimaan/create/{spj_id}/{pemeriksaan_id}/{id_serahbarang}', [PenerimaanControl::class, 'create'])
+->name('penerimaan.create');
+
 Route::post('/penerimaan/store', [PenerimaanControl::class, 'store'])->name('penerimaan.store');
 Route::get('/penerimaan/{id}/edit', [PenerimaanControl::class, 'edit'])->name('penerimaan.edit');
 Route::put('/penerimaan/{id}', [PenerimaanControl::class, 'update'])->name('penerimaan.update');
-Route::delete('/pesanan/item/{item}', [PesananControl::class, 'destroyItem'])
-    ->name('pesanan.item.destroy');
 
 
 
@@ -126,10 +151,10 @@ Route::delete('/pesanan/item/{item}', [PesananControl::class, 'destroyItem'])
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 
-// 🔒 Logout
+// Logout
 Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// 🧭 Dashboard Routes
+// Dashboard Routes
 Route::middleware(['auth', 'session.timeout', 'role:superadmin'])->group(function () {
     Route::get('/super/dashboard', fn() => view('superadmins.dashboard'))->name('superadmins.dashboard');
 });
@@ -142,3 +167,9 @@ Route::middleware(['auth', 'session.timeout', 'role:user'])->group(function () {
     Route::get('/user/dashboard', fn() => view('users.dashboard'))->name('users.dashboard');
 });
 
+
+Route::middleware('auth')->group(function () {
+    Route::get('/chat/messages/{userId}', [chatcontrol::class, 'getMessages']);
+    Route::post('/chat/send', [chatcontrol::class, 'sendMessage']);
+    Route::post('/chat/read/{userId}', [chatcontrol::class, 'markAsRead']);
+});

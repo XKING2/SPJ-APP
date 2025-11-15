@@ -6,8 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class Penerimaan extends Model
 {
+    protected $table = 'penerimaans';
     protected $fillable = [
-        'spj_id', 'pesanan_id', 'pemeriksaan_id', 'pekerjaan', 'no_surat', 'surat_dibuat',
+        'spj_id', 'pesanan_id', 'id_serahbarang', 'pekerjaan', 'no_surat', 'surat_dibuat',
         'nama_pihak_kedua', 'jabatan_pihak_kedua',
         'subtotal', 'ppn', 'grandtotal', 'dibulatkan', 'terbilang'
     ];
@@ -22,14 +23,19 @@ class Penerimaan extends Model
         return $this->belongsTo(Pesanan::class, 'pesanan_id');
     }
 
-    public function pemeriksaan()
+    public function serahbarang()
     {
-        return $this->belongsTo(Pemeriksaan::class, 'pemeriksaan_id');
+        return $this->belongsTo(serahbarang::class, 'id_serahbarang');
     }
 
     public function details()
     {
         return $this->hasMany(PenerimaanDetail::class, 'penerimaan_id');
+    }
+
+    public function pemeriksaan()
+    {
+        return $this->belongsTo(Pemeriksaan::class, 'id_pemeriksaan');
     }
 }
 

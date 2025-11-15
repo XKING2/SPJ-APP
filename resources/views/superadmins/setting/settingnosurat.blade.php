@@ -1,7 +1,7 @@
 @extends('layouts.main3')
 
 @section('pageheads')
-<h1 class="h3 mb-4 text-gray-800">Kelola Data PPTK</h1>
+<h1 class="h3 mb-4 text-gray-800">Kelola Data Nomor Surat</h1>
 @endsection
 
 @section('content')
@@ -9,54 +9,53 @@
 
     <!-- Card -->
     <div class="card shadow mb-4">
-        <div class="card-header py-3 d-flex justify-content-between align-items-center">
-            <h6 class="m-0 font-weight-bold text-primary">Data PPTK</h6>
-            <a href="{{ route('createpptk') }}" class="btn btn-sm btn-primary shadow-sm">
-                <i class="fas fa-plus fa-sm text-white-50"></i> Tambah PPTK
+         {{-- 🔹 BAGIAN 2: TABEL NOMOR SURAT --}}
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white fw-bold d-flex justify-content-between align-items-center">
+            <span>Daftar Nomor Surat</span>
+            <a href="{{ route('createnosurat') }}" class="btn btn-light btn-sm">
+                <i class="fas fa-plus"></i> Tambah Nomor Surat
             </a>
         </div>
 
         <div class="card-body">
-
-            <!-- Search -->
             <div class="d-flex justify-content-between mb-3">
-                <form action="{{ route('showpptk') }}" method="GET" class="form-inline">
+                <form action="{{ route('showplt') }}" method="GET" class="form-inline">
                     <input type="text" name="search" value="{{ request('search') }}" 
-                           class="form-control form-control-sm me-2" placeholder="Cari...">
+                        class="form-control form-control-sm mr-2" placeholder="Cari...">
                     <button type="submit" class="btn btn-sm btn-secondary">Cari</button>
                 </form>
             </div>
 
-            <!-- Table -->
+            {{-- Table --}}
             <div class="table-responsive">
                 <table class="table table-bordered table-hover text-center align-middle">
                     <thead class="table-light">
                         <tr>
                             <th style="width: 50px;">No</th>
-                            <th>Nama PPTK</th>
-                            <th>Idinjab PPTK</th>
-                            <th>Sub Kegiatan</th>
-                            <th style="width: 180px;">Aksi</th>
+                            <th>Nomor Surat</th>
+                            <th>Nama Dinas</th>
+                            <th>Tahun</th>
+                            <th style="width: 240px;">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @php $no = ($pptks->currentPage() - 1) * $pptks->perPage() + 1; @endphp
-                        @forelse ($pptks as $pptk)
+                        @forelse ($no_surats as $index => $surat)
                             <tr>
-                                <td>{{ $no++ }}</td>
-                                <td>{{ $pptk->nama_pptk ?? '-' }}</td>
-                                <td>{{ $pptk->idinjab_pptk ?? '-' }}</td>
-                                <td>{{ $pptk->subkegiatan ?? '-' }}</td>
+                                <td>{{ $loop->iteration + ($no_surats->currentPage() - 1) * $no_surats->perPage() }}</td>
+                                <td>{{ $surat->no_awal ?? '-' }}</td>
+                                <td>{{ $surat->nama_dinas ?? '-' }}</td>
+                                <td>{{ $surat->tahun ?? '-' }}</td>
                                 <td>
-                                    <a href="{{ route('pptk.edit', $pptk->pptk_id) }}" 
-                                    class="btn btn-sm btn-success btn-edit"
-                                    data-edit-url="{{ route('pptk.edit', $pptk->pptk_id) }}">
+                                    <!-- Tombol Edit dengan popup konfirmasi -->
+                                    <a href="{{ route('nosurat.edit', $surat->id) }}" 
+                                       class="btn btn-sm btn-success btn-edit"
+                                       data-edit-url="{{ route('nosurat.edit', $surat->id) }}">
                                         <i class="fas fa-edit"></i> Edit 
                                     </a>
 
-                                    <form action="{{ route('pptk.destroy', $pptk->kegiatan_id) }}" 
-                                        method="POST" class="d-inline form-delete" 
-                                        data-item-name="{{ $pptk->subkegiatan }}">
+                                    <!-- Form Hapus (akan diproses oleh JS) -->
+                                    <form action="{{ route('nosurat.destroy',$surat->id) }}" method="POST" class="d-inline form-delete" data-item-name="{{ $surat->no_awal }}">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-danger btn-delete">
@@ -71,15 +70,12 @@
                             </tr>
                         @endforelse
                     </tbody>
-
                 </table>
             </div>
 
-            <!-- Pagination -->
+            {{-- Pagination --}}
             <div class="d-flex justify-content-center mt-3">
-                {{ $pptks->links('pagination::bootstrap-4') }}
             </div>
-
         </div>
     </div>
 </div>
@@ -91,28 +87,30 @@
 @if($errors->any())
     <div data-swal-errors="{{ implode('|', $errors->all()) }}"></div>
 @endif
+
 @endsection
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-
-    // ---------- Edit Confirmation ----------
-    document.querySelectorAll('.btn-edit').forEach(button => {
+    // ---------- Tombol Edit ----------
+    const editButtons = document.querySelectorAll('.btn-edit');
+    editButtons.forEach(button => {
         button.addEventListener('click', function(e) {
             e.preventDefault();
-            const editUrl = this.dataset.editUrl;
+            const editUrl = this.getAttribute('data-edit-url');
 
             Swal.fire({
-                title: "Yakin ingin mengedit data ini?",
+                title: "Apakah Anda yakin ingin mengedit data ini?",
                 text: "Perubahan akan mempengaruhi data terkait.",
                 icon: "warning",
                 showCancelButton: true,
                 confirmButtonColor: "#3085d6",
                 cancelButtonColor: "#d33",
-                confirmButtonText: "Ya, edit",
+                confirmButtonText: "Ya, lanjutkan",
                 cancelButtonText: "Batal"
-            }).then(result => {
+            }).then((result) => {
                 if (result.isConfirmed) {
                     window.location.href = editUrl;
                 }
@@ -120,39 +118,41 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // ---------- Delete Confirmation ----------
-    document.querySelectorAll('.form-delete').forEach(form => {
+    // ---------- Tombol Hapus ----------
+    const deleteForms = document.querySelectorAll('.form-delete');
+    deleteForms.forEach(form => {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
-            const itemName = this.dataset.itemName;
 
             Swal.fire({
-                title: "Hapus data?",
-                text: `Data PPTK "${itemName}" akan dihapus permanen.`,
+                title: "Apakah Anda yakin ingin menghapus data ini?",
+                text: "Data yang dihapus tidak dapat dikembalikan!",
                 icon: "warning",
                 showCancelButton: true,
                 confirmButtonColor: "#d33",
                 cancelButtonColor: "#3085d6",
                 confirmButtonText: "Ya, hapus",
                 cancelButtonText: "Batal"
-            }).then(result => {
+            }).then((result) => {
                 if (result.isConfirmed) {
-                    const btn = this.querySelector('button[type="submit"]');
-                    btn.disabled = true;
-                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menghapus...';
-                    this.submit();
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Menghapus...';
+                    }
+                    form.submit();
                 }
             });
         });
     });
 
-    // ---------- SweetAlert Feedback ----------
+    // ---------- Notifikasi sukses / error ----------
     const swalSuccess = document.querySelector('[data-swal-success]');
     if (swalSuccess) {
         Swal.fire({
             icon: 'success',
             title: 'Berhasil!',
-            text: swalSuccess.dataset.swalSuccess,
+            text: swalSuccess.getAttribute('data-swal-success'),
             timer: 2000,
             showConfirmButton: false
         });
@@ -160,10 +160,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const swalErrors = document.querySelector('[data-swal-errors]');
     if (swalErrors) {
+        const messages = swalErrors.getAttribute('data-swal-errors').split('|');
         Swal.fire({
             icon: 'error',
             title: 'Terjadi Kesalahan!',
-            html: swalErrors.dataset.swalErrors.split('|').join('<br>')
+            html: messages.join('<br>'),
         });
     }
 });

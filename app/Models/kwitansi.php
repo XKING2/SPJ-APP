@@ -9,21 +9,17 @@ class kwitansi extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'spj_id', // ✅ tambahkan ini
-        'no_rekening',
-        'id_pptk',
-        'no_rekening_tujuan', 
-        'nama_bank', 
-        'penerima_kwitansi', 
-        'sub_kegiatan', 
-        'telah_diterima_dari', 
-        'jumlah_nominal',
-        'uang_terbilang',
-        'jabatan_penerima',
-        'npwp',
-        'pembayaran',
+   protected $fillable = [
+        'spj_id', 'id_pptk', 'id_kegiatan', 'no_rekening', 'no_rekening_tujuan',
+        'nama_bank', 'penerima_kwitansi', 'telah_diterima_dari',
+        'jumlah_nominal', 'uang_terbilang', 'jabatan_penerima', 'npwp', 'pembayaran'
     ];
+
+
+    public function spj()
+    {
+        return $this->belongsTo(SPJ::class, 'spj_id');
+    }
 
     public function pptk()
     {
@@ -34,5 +30,11 @@ class kwitansi extends Model
     {
         return $this->belongsTo(SPJ::class, 'spj_id');
     }
+
+    public function kegiatan()
+    {
+        return $this->belongsTo(kegiatan::class, 'id_kegiatan');
+    }
+
 
 }

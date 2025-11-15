@@ -7,6 +7,7 @@ use App\Models\kwitansi;
 use App\Models\Pesanan;
 use App\Models\pemeriksaan;
 use App\Models\penerimaan;
+use App\Models\serahbarang;
 use App\Models\SPJ;
 use Illuminate\Support\Facades\Auth;
 
@@ -112,9 +113,27 @@ class sidebarcontrol extends Controller
     
     }
     
-    public function showserahbarang()
+    public function showserahbarang(Request $request)
     {
-        return view('users.serahbarang');
+        $search = $request->input('search');
+
+        // Ambil data serah barang beserta relasi plt (pihak pertama) dan pihak kedua
+        $query = Serahbarang::with(['plt', 'pihak_kedua']);
+
+        // Filter pencarian
+        if ($search) {
+            $query->whereHas('plt', function ($q) use ($search) {
+                    $q->where('nama_pihak_pertama', 'like', "%{$search}%");
+                })
+                ->orWhereHas('pihak_kedua', function ($q) use ($search) {
+                    $q->where('nama_pihak_kedua', 'like', "%{$search}%");
+                })
+                ->orWhere('no_suratsss', 'like', "%{$search}%");
+        }
+
+        $serahbarangs = $query->orderBy('created_at', 'desc')->paginate(10);
+
+        return view('users.serahbarang', compact('serahbarangs'));
     }
 
     public function showreviewSPJ(Request $request)

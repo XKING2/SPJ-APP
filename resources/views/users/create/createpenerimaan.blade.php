@@ -13,7 +13,7 @@
             <form id="form-penerimaan" action="{{ route('penerimaan.store') }}" method="POST" novalidate>
 
                 @csrf
-                <input type="hidden" name="pemeriksaan_id" value="{{ $pemeriksaan->id }}">
+                <input type="hidden" name="id_serahbarang" value="{{ $serahbarang->id }}">
                 <input type="hidden" name="spj_id" value="{{ $spj->id }}">
                 <input type="hidden" name="pesanan_id" value="{{ $pemeriksaan->pesanan->id }}">
                 <input type="hidden" id="ppn_rate" value="{{ $ppnRate }}">
@@ -27,9 +27,33 @@
                                 value="{{ old('pekerjaan', $pemeriksaan->pekerjaan ?? '') }}"required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Nomor SP</label>
-                            <input type="text" name="no_surat" class="form-control"
-                                value="{{ old('no_surat', $pemeriksaan->pesanan->no_surat ?? '') }}"required>
+                            <label class="form-label fw-bold">No Surat</label>
+                            <div class="input-group">
+                                <!-- Prefix dari tabel (readonly) -->
+                                <input type="text" id="prefix_surat" 
+                                    class="form-control text-end" 
+                                    value="{{ $nosurat->no_awal ?? '' }}" readonly>
+
+                                <!-- Bagian tengah diisi user -->
+                                <span class="input-group-text">/</span>
+                                <input type="text" id="no_surat_user" name="no_surat_user" 
+                                    class="form-control text-center" placeholder="Nomor Surat" required>
+
+                                <!-- Suffix 1: nama dinas -->
+                                <span class="input-group-text">/</span>
+                                <input type="text" id="suffix_dinas" 
+                                    class="form-control" 
+                                    value="{{ $nosurat->nama_dinas ?? '' }}" readonly>
+
+                                <!-- Suffix 2: tahun -->
+                                <span class="input-group-text">/</span>
+                                <input type="text" id="suffix_tahun" 
+                                    class="form-control" 
+                                    value="{{ $nosurat->tahun ?? '' }}" readonly>
+                            </div>
+
+                            <!-- Hidden input gabungan final -->
+                            <input type="hidden" name="no_surat" id="no_surat">
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold">Tanggal SP</label>
@@ -313,5 +337,34 @@ document.addEventListener('DOMContentLoaded', function () {
     hargaInputs.forEach(input => input.addEventListener('input', hitungTotal));
     hitungTotal();
 });
+</script>
+
+<script>
+    // Gabungkan seluruh bagian jadi satu string dengan tanda "/"
+    const prefixInput = document.getElementById('prefix_surat');
+    const userInput = document.getElementById('no_surat_user');
+    const dinasInput = document.getElementById('suffix_dinas');
+    const tahunInput = document.getElementById('suffix_tahun');
+    const hiddenInput = document.getElementById('no_surat');
+
+    function updateNoSurat() {
+        const prefix = prefixInput.value.trim();
+        const user = userInput.value.trim();
+        const dinas = dinasInput.value.trim();
+        const tahun = tahunInput.value.trim();
+
+        // Gabungkan dengan tanda /
+        const fullNo = [prefix, user, dinas, tahun]
+            .filter(part => part !== '') // hilangkan kosong
+            .join('/');
+
+        hiddenInput.value = fullNo;
+    }
+
+    // Update setiap kali user mengetik
+    userInput.addEventListener('input', updateNoSurat);
+
+    // Jalankan saat halaman dimuat pertama kali
+    updateNoSurat();
 </script>
 @endsection

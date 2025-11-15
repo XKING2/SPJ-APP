@@ -7,21 +7,24 @@ use App\Models\Penerimaan;
 use App\Models\Pemeriksaan;
 use App\Models\SPJ;
 use App\Models\Setting;
-use Illuminate\Support\Facades\DB;
+use App\Models\nosurat;
 use Illuminate\Support\Facades\Log;
 
 use App\Http\Controllers\SPJController;
+use App\Models\serahbarang;
 
 class PenerimaanControl extends Controller
 {
     public function create(Request $request)
     {
         $spj = SPJ::findOrFail($request->spj_id);
+        $nosurat = nosurat::latest()->first();
         $pemeriksaan = Pemeriksaan::findOrFail($request->pemeriksaan_id);
+        $serahbarang = serahbarang::findOrFail($request->id_serahbarang);
         $ppnRate = Setting::where('key', 'ppn_rate')->value('value') ?? 10;
         $pesananItems = $pemeriksaan->pesanan->items ?? [];
 
-        return view('users.create.createpenerimaan', compact('spj', 'pemeriksaan', 'ppnRate', 'pesananItems'));
+        return view('users.create.createpenerimaan', compact('spj', 'pemeriksaan', 'ppnRate', 'pesananItems','serahbarang','nosurat'));
     }
 
     public function store(Request $request)
@@ -29,7 +32,7 @@ class PenerimaanControl extends Controller
         
         $validated = $request->validate([
             'spj_id' => 'required|exists:spjs,id',
-            'pemeriksaan_id' => 'required|exists:pemeriksaans,id',
+            'id_serahbarang' => 'required|exists:serah_barang,id',
             'pesanan_id' => 'required|exists:pesanans,id',
 
             'no_surat' => 'required|string|max:255',
@@ -55,7 +58,7 @@ class PenerimaanControl extends Controller
 
         $penerimaan = Penerimaan::create([
             'spj_id' => $validated['spj_id'],
-            'pemeriksaan_id' => $validated['pemeriksaan_id'],
+            'id_serahbarang' => $validated['id_serahbarang'],
             'pesanan_id' => $validated['pesanan_id'],
             'pekerjaan' => $request->pekerjaan,
             'no_surat' => $request->no_surat,
@@ -104,12 +107,13 @@ class PenerimaanControl extends Controller
         $spj = $penerimaan->spj;
         $pemeriksaan = $spj->pemeriksaan;
         $pesanan = $spj->pesanan;
+        $nosurat = nosurat::latest()->first();
 
         $barangList = $penerimaan->details->count() > 0
             ? $penerimaan->details
             : ($spj->pesanan->items ?? collect());
 
-        return view('users.update.updatepenerimaan', compact('penerimaan', 'spj', 'pemeriksaan', 'pesanan', 'barangList'));
+        return view('users.update.updatepenerimaan', compact('penerimaan', 'spj', 'pemeriksaan', 'pesanan', 'barangList','nosurat'));
     }
 
     public function update(Request $request, $id)

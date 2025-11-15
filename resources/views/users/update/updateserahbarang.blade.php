@@ -10,9 +10,10 @@
 <div class="container">
     <div class="card shadow-sm rounded-3">
         <div class="card-body">
-            <form action="{{ route('pemeriksaan.store') }}" method="POST" novalidate>
+            <form action="{{ route('serahbarang.update', $serahbarangs->id) }}" method="POST" novalidate>
+
                 @csrf
-                <input type="hidden" name="pesanan_id" value="{{ $pesanan->id }}">
+                @method('PUT')
                 <input type="hidden" name="spj_id" value="{{ $spj->id }}">
 
                 <div class="row">
@@ -45,53 +46,31 @@
                             </div>
 
                             <!-- Hidden input gabungan final -->
-                            <input type="hidden" name="no_suratssss" id="no_suratssss">
-                        </div>
-
-                        {{-- Pihak Kedua --}}
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Nama Pihak Kedua</label>
-                            <input type="text" name="nama_pihak_kedua" class="form-control" value="{{ old('nama_pihak_kedua') }}" required>
+                            <input type="hidden" name="no_suratsss" id="no_suratsss">
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Jabatan Pihak Kedua</label>
-                            <input type="text" name="jabatan_pihak_kedua" class="form-control" value="{{ old('jabatan_pihak_kedua') }}" required>
+                            <label class="form-label fw-bold">Pilih Pihak Pengelola</label>
+                            <select name="id_pihak_kedua" class="form-control" required>
+                                <option value="" disabled selected>-- Pilih Pihak Pengelola --</option>
+                                @foreach($keduas as $kedua)
+                                    <option value="{{ $kedua->id }}">{{ $kedua->nama_pihak_kedua }}</option>
+                                @endforeach
+                            </select>
                         </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Pekerjaan yang Dilakukan</label>
-                            <textarea name="pekerjaan" class="form-control" rows="3" required>{{ old('pekerjaan', $kwitansi->pembayaran ?? '') }}</textarea>
-                        </div>
-
-                        {{-- Alamat Pihak Kedua --}}
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Alamat Pihak Kedua</label>
-                            <input name="alamat_pihak_kedua" class="form-control" required>{{ old('alamat_pihak_kedua') }}</input>
-                        </div>
-
-                        
                     </div>
 
                     <!-- Kolom Kanan -->
                     <div class="col-md-6">
-                        {{-- Hari, Tanggal, Bulan, Tahun Diterima --}}
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Hari Diterima</label>
-                            <input type="text" name="hari_diterima" class="form-control" value="{{ $hari }}" readonly>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Tanggal Diterima</label>
-                            <input type="text" name="tanggals_diterima" class="form-control" value="{{ $tglTeks }}" readonly>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Bulan Diterima</label>
-                            <input type="text" name="bulan_diterima" class="form-control" value="{{ $bulan }}" readonly>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Tahun Diterima</label>
-                            <input type="text" name="tahun_diterima" class="form-control" value="{{ $tahunTeks }}" readonly>
-                        </div>
+                            <label class="form-label fw-bold">Pilih Pihak Pertama</label>
+                            <select name="id_plt" class="form-control" required>
+                                <option value="" disabled selected>-- Pilih Pihak Pertama --</option>
+                                @foreach($plts as $plt)
+                                    <option value="{{ $plt->id }}">{{ $plt->nama_pihak_pertama }}</option>
+                                @endforeach
+                            </select>
+                        </div>    
                     </div>
                 </div>
 
@@ -182,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const userInput = document.getElementById('no_surat_user');
     const dinasInput = document.getElementById('suffix_dinas');
     const tahunInput = document.getElementById('suffix_tahun');
-    const hiddenInput = document.getElementById('no_suratssss');
+    const hiddenInput = document.getElementById('no_suratsss');
 
     function updateNoSurat() {
         const prefix = prefixInput.value.trim();

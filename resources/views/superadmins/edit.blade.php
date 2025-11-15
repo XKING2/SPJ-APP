@@ -88,11 +88,13 @@
                             <label for="role">Role <span class="text-danger">*</span></label>
                             <select class="form-control @error('role') is-invalid @enderror" id="role" name="role" required>
                                 <option value="">-- Pilih Role --</option>
-                                <option value="user" {{ old('role', $anggota->role) == 'user' ? 'selected' : '' }}>User</option>
-                                <option value="Bendahara" {{ old('role', $anggota->role) == 'Bendahara' ? 'selected' : '' }}>Bendahara</option>
-                                <option value="Kasubag" {{ old('role', $anggota->role) == 'Kasubag' ? 'selected' : '' }}>Kasubag</option>
+                                <option value="kasubag" {{ old('role') == 'kasubag' ? 'selected' : '' }}>Kasubag</option>
+                                <option value="users" {{ old('role') == 'users' ? 'selected' : '' }}>User</option>
+                                <option value="bendahara" {{ old('role') == 'bendahara' ? 'selected' : '' }}>Bendahara</option>
                             </select>
-                            @error('role') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                            @error('role')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         {{-- Status --}}
@@ -131,8 +133,6 @@
     }
 </style>
 @endsection
-
-<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
 
 {{-- Script Show/Hide Password --}}

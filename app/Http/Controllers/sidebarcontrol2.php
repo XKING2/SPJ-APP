@@ -63,17 +63,9 @@ class sidebarcontrol2 extends Controller
 
         $validated = $request->validate([
             'status' => 'required|in:valid,draft,belum_valid',
-            'komentar_bendahara' => 'nullable|string|max:1000',
         ]);
 
-        if ($validated['status'] === 'belum_valid' && empty(trim($validated['komentar_bendahara'] ?? ''))) {
-            return redirect()->back()->withInput()->withErrors([
-                'komentar_bendahara' => 'Komentar wajib diisi jika SPJ tidak disetujui.'
-            ]);
-        }
-
         $spj->status = $validated['status'];
-        $spj->komentar_bendahara = $validated['komentar_bendahara'] ?? null;
         $spj->save();
 
         return redirect()->route('verivikasi')->with('success', 'Status validasi Kasubag berhasil diperbarui!');

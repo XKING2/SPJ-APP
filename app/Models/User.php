@@ -27,6 +27,7 @@ class User extends Authenticatable
         'jabatan_atasan',
         'role',
         'status',
+        'id_kegiatan',
     ];
 
     
@@ -63,4 +64,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(Spj::class, 'user_id');
     }
+
+    public function kegiatan()
+    {
+        return $this->belongsTo(Kegiatan::class, 'id_kegiatan');
+    }
+
 }

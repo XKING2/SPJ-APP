@@ -57,18 +57,19 @@
             </a>
         </li>
 
-        <li class="nav-item {{ Request::routeIs('pemeriksaan') || Request::routeIs('penerimaan') ? 'active' : '' }}">
+        <li class="nav-item {{ Request::routeIs('pemeriksaan') || Request::routeIs('serahbarang') || Request::routeIs('penerimaan') ? 'active' : '' }}">
             <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseBeritaAcara"
-                aria-expanded="{{ Request::routeIs('pemeriksaan') || Request::routeIs('penerimaan') ? 'true' : 'false' }}"
+                aria-expanded="{{ Request::routeIs('pemeriksaan') || Request::routeIs('serahbarang') || Request::routeIs('penerimaan') ? 'true' : 'false' }}"
                 aria-controls="collapseBeritaAcara">
                 <i class="fas fa-fw fa-file-alt"></i>
                 <span>Berita Acara</span>
             </a>
             <div id="collapseBeritaAcara"
-                class="collapse {{ Request::routeIs('pemeriksaan') || Request::routeIs('penerimaan') ? 'show' : '' }}"
+                class="collapse {{ Request::routeIs('pemeriksaan') || Request::routeIs('serahbarang') || Request::routeIs('penerimaan') ? 'show' : '' }}"
                 aria-labelledby="headingBeritaAcara" data-parent="#accordionSidebar">
                 <div class="bg-white py-2 collapse-inner rounded">
                     <a class="collapse-item {{ Request::routeIs('pemeriksaan') ? 'active' : '' }}" href="{{ route('pemeriksaan') }}">Pemeriksaan</a>
+                    <a class="collapse-item {{ Request::routeIs('serahbarang') ? 'active' : '' }}" href="{{ route('serahbarang') }}">Serah Barang</a>
                     <a class="collapse-item {{ Request::routeIs('penerimaan') ? 'active' : '' }}" href="{{ route('penerimaan') }}">Penerimaan</a>
                 </div>
             </div>

@@ -34,12 +34,22 @@
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">Yang Menerima Kwitansi</label>
-                            <input type="text" name="penerima_kwitansi" class="form-control"  value="{{ old('penerima_kwitansi') }}" required>
+                            <input type="text" name="penerima_kwitansi" class="form-control" value="{{ old('penerima_kwitansi') }}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Pilih PPTK</label>
+                            <select name="id_pptk" id="id_pptk" class="form-control" required>
+                                <option value="" disabled selected>-- Pilih PPTK --</option>
+                                @foreach($pptks as $pptk)
+                                    <option value="{{ $pptk->id }}">{{ $pptk->nama_pptk }}</option>
+                                @endforeach
+                            </select>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">Sub Kegiatan</label>
-                            <select name="sub_kegiatan" id="sub_kegiatan" class="form-control" required>
+                            <select name="id_kegiatan" id="id_kegiatan" class="form-control" required>
                                 <option value="" disabled selected>-- Pilih Sub Kegiatan --</option>
                             </select>
                         </div>
@@ -49,7 +59,7 @@
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label class="form-label fw-bold">Telah Diterima Dari</label>
-                            <input type="text" name="telah_diterima_dari" class="form-control" value="{{ old('telah_diterima_dari') }}"required>
+                            <input type="text" name="telah_diterima_dari" class="form-control" value="{{ old('telah_diterima_dari') }}" required>
                         </div>
 
                         <div class="mb-3">
@@ -61,27 +71,17 @@
                         <div class="mb-3">
                             <label class="form-label fw-bold">Uang Terbilang</label>
                             <input type="text" name="uang_terbilang" id="uang_terbilang" class="form-control"
-                                   value="{{ old('uang_terbilang') }} " readonly>
+                                   value="{{ old('uang_terbilang') }}" readonly>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">Jabatan Penerima Kwitansi</label>
-                            <input type="text" name="jabatan_penerima" class="form-control" value="{{ old('jabatan_penerima') }}"required>
+                            <input type="text" name="jabatan_penerima" class="form-control" value="{{ old('jabatan_penerima') }}" required>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">NPWP</label>
-                            <input type="text" name="npwp" class="form-control" value="{{ old('npwp') }}"required>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Pilih PPTK</label>
-                            <select name="id_pptk" class="form-control" required>
-                                <option value="" disabled selected>-- Pilih PPTK --</option>
-                                @foreach($pptks as $pptk)
-                                    <option value="{{ $pptk->id }}">{{ $pptk->nama_pptk }}</option>
-                                @endforeach
-                            </select>
+                            <input type="text" name="npwp" class="form-control" value="{{ old('npwp') }}" required>
                         </div>
                     </div>
                 </div>
@@ -103,21 +103,17 @@
     </div>
 </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+{{-- SweetAlert Validasi --}}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('form').forEach(form => {
         form.addEventListener('submit', function (e) {
-            // Cegah submit default dulu
             e.preventDefault();
 
             if (form.dataset.submitting === "true") return;
             if (document.querySelector('.swal2-container')) return;
 
-            window._loaderDisabled = true;
-            hideLoader();
-
-            // 🔍 Cari input yang wajib diisi (required)
             const requiredFields = form.querySelectorAll('[required]');
             const emptyFields = [];
 
@@ -128,7 +124,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            // ⚠️ Jika ada yang kosong, tampilkan SweetAlert error
             if (emptyFields.length > 0) {
                 Swal.fire({
                     title: 'Data Belum Lengkap!',
@@ -146,7 +141,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // ✅ Jika semua terisi, tampilkan konfirmasi submit
             Swal.fire({
                 title: 'Apakah Anda yakin?',
                 text: "Pastikan data yang Anda isi sudah benar sebelum disimpan.",
@@ -160,12 +154,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }).then((result) => {
                 if (result.isConfirmed) {
                     form.dataset.submitting = "true";
-                    window._loaderDisabled = false;
-                    showLoader();
                     HTMLFormElement.prototype.submit.call(form);
-                } else {
-                    hideLoader();
-                    window._loaderDisabled = false;
                 }
             });
         });
@@ -173,32 +162,33 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
+{{-- Script AJAX PPTK → Sub Kegiatan --}}
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    const pptkSelect = document.querySelector("select[name='id_pptk']");
-    const subKegiatanSelect = document.getElementById("sub_kegiatan");
+    const pptkSelect = document.getElementById("id_pptk");
+    const kegiatanSelect = document.getElementById("id_kegiatan");
 
     pptkSelect.addEventListener("change", function () {
         const pptkId = this.value;
-        subKegiatanSelect.innerHTML = `<option value="" disabled selected>Loading...</option>`;
+        kegiatanSelect.innerHTML = `<option value="" disabled selected>Loading...</option>`;
 
         fetch(`/get-subkegiatan/${pptkId}`)
             .then(response => response.json())
             .then(data => {
-                subKegiatanSelect.innerHTML = `<option value="" disabled selected>-- Pilih Sub Kegiatan --</option>`;
+                kegiatanSelect.innerHTML = `<option value="" disabled selected>-- Pilih Sub Kegiatan --</option>`;
                 data.forEach(item => {
-                    subKegiatanSelect.innerHTML += `<option value="${item.subkegiatan}">${item.subkegiatan}</option>`;
+                    kegiatanSelect.innerHTML += `<option value="${item.id}">${item.subkegiatan}</option>`;
                 });
             })
             .catch(error => {
                 console.error("Error fetching sub kegiatan:", error);
-                subKegiatanSelect.innerHTML = `<option value="" disabled selected>Gagal memuat data</option>`;
+                kegiatanSelect.innerHTML = `<option value="" disabled selected>Gagal memuat data</option>`;
             });
     });
 });
 </script>
 
-<!-- Script konversi nominal ke terbilang -->
+{{-- Script konversi nominal ke terbilang --}}
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     const nominalInput = document.getElementById("jumlah_nominal");
@@ -253,3 +243,4 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 </script>
 @endsection
+    

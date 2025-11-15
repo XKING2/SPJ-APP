@@ -65,7 +65,15 @@
     </div>
 </div>
 
+{{-- ==== CHAT WIDGET (React Entry Point) ==== --}}
+<div id="chat-root"
+     style="position: fixed; bottom: 20px; right: 20px; z-index: 99999;">
+</div>
+
+
 @endsection
+
+@vite(['resources/js/app.js'])
 
 {{-- SweetAlert (auto tampil dari session) --}}
 @if(session('success'))
