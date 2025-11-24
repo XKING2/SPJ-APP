@@ -19,6 +19,7 @@
     <link href="{{ asset('css/dashboard.css') }}" rel="stylesheet">
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="{{ asset('css/chats.css') }}" rel="stylesheet">
 
 </head>
 
@@ -299,6 +300,35 @@
     </script>
     <script src="{{asset('js/sb-admin-2.min.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://js.pusher.com/8.0/pusher.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/laravel-echo@1/dist/echo.iife.js"></script>
+
+<script>
+    window.Pusher = Pusher;
+
+    window.Echo = new Echo({
+        broadcaster: 'pusher',
+        key: '{{ env("PUSHER_APP_KEY") }}',
+        cluster: '{{ env("PUSHER_APP_CLUSTER") }}',
+        forceTLS: true,
+        authEndpoint: '/broadcasting/auth', // default Laravel
+        auth: {
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        }
+    });
+
+    const userId = document.querySelector('meta[name="user-id"]').getAttribute('content');
+
+    Echo.private(`chat.${userId}`)
+        .listen('.MessageSent', (e) => {
+            console.log('Pesan diterima:', e);
+            // update UI chat
+        });
+</script>
+
+    @yield('scripts')
     
 
 </body>

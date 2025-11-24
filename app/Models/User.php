@@ -27,7 +27,6 @@ class User extends Authenticatable
         'jabatan_atasan',
         'role',
         'status',
-        'id_kegiatan',
     ];
 
     

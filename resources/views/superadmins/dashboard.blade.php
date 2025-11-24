@@ -54,10 +54,25 @@
             </div>
         </div>
 
+        
+
     </div>
 </div>
 
+<script>
+    let currentUserId = JSON.parse('@json(auth()->id())');
+    window.currentUserId = currentUserId;
+</script>
+
+@include('chats.chat_widget')
+
 @endsection
+
+@section('scripts')
+    <script src="{{ asset('js/chats.js') }}"></script>
+@endsection
+
+
 
 {{-- SweetAlert (auto tampil dari session) --}}
 @if(session('success'))

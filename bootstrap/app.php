@@ -10,23 +10,23 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
         commands: __DIR__.'/../routes/console.php',
+        channels: __DIR__.'/../routes/channels.php',
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // 🧩 Tambahkan middleware global dan alias di sini
+
+        // Middleware web (session, csrf, dll)
         $middleware->web(append: [
-            // Jika kamu ingin session timeout berlaku di semua route web, bisa aktifkan ini:
             SessionTimeout::class,
         ]);
 
+        // Middleware global — CORS aktif di seluruh aplikasi
+        $middleware->append(\App\Http\Middleware\CorsMiddleware::class);
+
+        // Alias middleware
         $middleware->alias([
-            // Middleware untuk autentikasi bawaan Laravel
             'auth' => \Illuminate\Auth\Middleware\Authenticate::class,
-
-            // Middleware kustom untuk peran user
             'role' => RoleMiddleware::class,
-
-            // Middleware kustom untuk sesi per user
             'session.timeout' => SessionTimeout::class,
         ]);
     })

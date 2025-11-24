@@ -7,7 +7,9 @@ use App\Http\Controllers\kwitansicontrol;
 use App\Http\Controllers\pemeriksaancontrol;
 use App\Http\Controllers\penerimaancontrol;
 use App\Http\Controllers\pesanancontrol;
-use App\Http\Controllers\serahterimacontrol;
+use Illuminate\Http\Request;
+use App\Events\MessageSent;
+use App\Events\TestEvent;
 use App\Http\Controllers\sidebarcontrol3;
 use App\Http\Controllers\sidebarcontrol2;
 use App\Http\Controllers\SPJController;
@@ -16,6 +18,7 @@ use App\Http\Controllers\chatcontrol;
 use App\Http\Controllers\serahcontrol;
 use App\Http\Controllers\settingcontrol;
 use App\Http\Controllers\spjresponcontrol;
+use App\Models\User;
 
 
 Route::get('/', function () {
@@ -169,7 +172,19 @@ Route::middleware(['auth', 'session.timeout', 'role:user'])->group(function () {
 
 
 Route::middleware('auth')->group(function () {
-    Route::get('/chat/messages/{userId}', [chatcontrol::class, 'getMessages']);
-    Route::post('/chat/send', [chatcontrol::class, 'sendMessage']);
-    Route::post('/chat/read/{userId}', [chatcontrol::class, 'markAsRead']);
+    Route::get('/chat/contacts', [chatcontrol::class, 'getContacts']);
+    Route::get('/chat/messages/{user}', [chatcontrol::class, 'getMessages']);
+    Route::post('/chat/messages/send', [chatcontrol::class, 'sendMessage']);
+    Route::post('/chat/messages/read/{user}', [chatcontrol::class, 'markAsRead']);
+});
+
+
+Route::get('/test', function () {
+    return view('users.testchat');
+});
+
+// Route untuk trigger event
+Route::get('/send-event', function () {
+    broadcast(new \App\Events\TestEvent('Halo dari Laravel!'));
+    return 'Event dikirim!';
 });

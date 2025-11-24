@@ -13,102 +13,50 @@
         </div>
     </div>
 </div>
+
 @endsection
+
 @section('content')
+
+
 <div class="container-fluid d-flex justify-content-center align-items-center" style="min-height: 70vh;">
     <div class="dashboard-grid">
 
-        <!-- Data SPJ -->
         <div class="dashboard-card">
-            <div class="icon bg-primary">
-                <i class="fas fa-landmark fa-2x"></i>
-            </div>
-            <div class="info">
-                <div class="label">Data SPJ</div>
-                <div class="value">{{$user_SPJ}}</div>
-            </div>
+            <div class="icon bg-primary"><i class="fas fa-landmark fa-2x"></i></div>
+            <div class="info"><div class="label">Data SPJ</div><div class="value">{{$user_SPJ}}</div></div>
         </div>
 
-        <!-- Data SPJ Tervalidasi -->
         <div class="dashboard-card">
-            <div class="icon bg-primary">
-                <i class="fas fa-money-bill-wave fa-2x"></i>
-            </div>
-            <div class="info">
-                <div class="label">Data SPJ Tervalidasi Kasubag</div>
-                <div class="value">{{$spjTervalidasikasubag}}</div>
-            </div>
+            <div class="icon bg-primary"><i class="fas fa-money-bill-wave fa-2x"></i></div>
+            <div class="info"><div class="label">Data SPJ Tervalidasi Kasubag</div><div class="value">{{$spjTervalidasikasubag}}</div></div>
         </div>
 
-        <!-- Laporan -->
         <div class="dashboard-card">
-            <div class="icon bg-primary">
-                <i class="fas fa-chart-bar fa-2x"></i>
-            </div>
-            <div class="info">
-                <div class="label">Laporan</div>
-                <div class="value">{{$laporan}}</div>
-            </div>
+            <div class="icon bg-primary"><i class="fas fa-chart-bar fa-2x"></i></div>
+            <div class="info"><div class="label">Laporan</div><div class="value">{{$laporan}}</div></div>
         </div>
 
-        <!-- Data SPJ Belum Divalidasi -->
         <div class="dashboard-card">
-            <div class="icon bg-primary">
-                <i class="fas fa-clock fa-2x"></i>
-            </div>
-            <div class="info">
-                <div class="label">Data SPJ Divalidasi Bendahara</div>
-                <div class="value">{{$spjTervalidasibendahara}}</div>
-            </div>
+            <div class="icon bg-primary"><i class="fas fa-clock fa-2x"></i></div>
+            <div class="info"><div class="label">Data SPJ Divalidasi Bendahara</div><div class="value">{{$spjTervalidasibendahara}}</div></div>
         </div>
 
     </div>
 </div>
 
-{{-- ==== CHAT WIDGET (React Entry Point) ==== --}}
-<div id="chat-root"
-     style="position: fixed; bottom: 20px; right: 20px; z-index: 99999;">
-</div>
 
+
+<script>
+    let currentUserId = JSON.parse('@json(auth()->id())');
+    window.currentUserId = currentUserId;
+</script>
+
+@include('chats.chat_widget')
 
 @endsection
 
-@vite(['resources/js/app.js'])
+@section('scripts')
+    <script src="{{ asset('js/chats.js') }}"></script>
+@endsection
 
-{{-- SweetAlert (auto tampil dari session) --}}
-@if(session('success'))
-    <div data-swal-success="{{ session('success') }}"></div>
-@endif
-
-@if($errors->any())
-    <div data-swal-errors="{{ implode('|', $errors->all()) }}"></div>
-@endif
-
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const successData = document.querySelector('[data-swal-success]');
-    const errorData = document.querySelector('[data-swal-errors]');
-
-    if (successData) {
-        Swal.fire({
-            icon: 'success',
-            title: 'Berhasil!',
-            text: successData.dataset.swalSuccess,
-            confirmButtonColor: '#3085d6',
-            confirmButtonText: 'OK'
-        });
-    }
-
-    if (errorData) {
-        const errorMessages = errorData.dataset.swalErrors.split('|');
-        Swal.fire({
-            icon: 'error',
-            title: 'Terjadi Kesalahan',
-            html: errorMessages.join('<br>'),
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'Coba Lagi'
-        });
-    }
-});
-</script>
