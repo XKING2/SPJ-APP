@@ -2,7 +2,7 @@
 
 @section('pageheads')
 <div class="container">
-    <h4 class="mb-1">Tambah Data Pemeriksaan</h4>
+    <h4 class="mb-1">Tambah Data Berita Acara Pemeriksaan</h4>
 </div>
 @endsection
 
@@ -51,12 +51,12 @@
                         {{-- Pihak Kedua --}}
                         <div class="mb-3">
                             <label class="form-label fw-bold">Nama Pihak Kedua</label>
-                            <input type="text" name="nama_pihak_kedua" class="form-control" value="{{ old('nama_pihak_kedua') }}" required>
+                            <input type="text" name="nama_pihak_kedua" class="form-control" value="{{ old('nama_pihak_kedua',$kwitansi->penerima_kwitansi ?? '') }}" required>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">Jabatan Pihak Kedua</label>
-                            <input type="text" name="jabatan_pihak_kedua" class="form-control" value="{{ old('jabatan_pihak_kedua') }}" required>
+                            <input type="text" name="jabatan_pihak_kedua" class="form-control" value="{{ old('jabatan_pihak_kedua',$kwitansi->jabatan_penerima ?? '') }}" required>
                         </div>
 
                         <div class="mb-3">
@@ -67,7 +67,7 @@
                         {{-- Alamat Pihak Kedua --}}
                         <div class="mb-3">
                             <label class="form-label fw-bold">Alamat Pihak Kedua</label>
-                            <input name="alamat_pihak_kedua" class="form-control" required>{{ old('alamat_pihak_kedua') }}</input>
+                           <input type="text" name="alamat_pihak_kedua" class="form-control" value="{{ old('alamat_pihak_kedua', $pesanan->alamat_pt ?? '') }}" required>
                         </div>
 
                         

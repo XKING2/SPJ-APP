@@ -242,3 +242,17 @@
 #chat-widget, #chat-toggle-btn {
     user-select: none;
 }
+
+.notif-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: red;
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 50%;
+    padding: 2px 6px;
+    display: none; /* default hidden */
+    z-index: 1000000;
+}

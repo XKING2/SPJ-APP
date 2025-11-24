@@ -21,10 +21,12 @@ class PenerimaanControl extends Controller
         $nosurat = nosurat::latest()->first();
         $pemeriksaan = Pemeriksaan::findOrFail($request->pemeriksaan_id);
         $serahbarang = serahbarang::findOrFail($request->id_serahbarang);
-        $ppnRate = Setting::where('key', 'ppn_rate')->value('value') ?? 10;
+        $ppn_rate = Setting::where('key', 'ppn_rate')->first()->value;
+        $pph_list = Setting::where('key', 'like', 'pph_%')->get();
+
         $pesananItems = $pemeriksaan->pesanan->items ?? [];
 
-        return view('users.create.createpenerimaan', compact('spj', 'pemeriksaan', 'ppnRate', 'pesananItems','serahbarang','nosurat'));
+        return view('users.create.createpenerimaan', compact('spj', 'pemeriksaan', 'ppn_rate', 'pesananItems','serahbarang','nosurat','pph_list'));
     }
 
     public function store(Request $request)
@@ -39,6 +41,7 @@ class PenerimaanControl extends Controller
             'surat_dibuat' => 'required|date',
             'subtotal' => 'required|numeric|min:0',
             'ppn' => 'nullable|numeric|min:0',
+            'pph' => 'nullable|numeric|min:0',
             'grandtotal' => 'required|numeric|min:0',
             'dibulatkan' => 'nullable|numeric|min:0',
             'terbilang' => 'required|string|max:255',
@@ -68,6 +71,7 @@ class PenerimaanControl extends Controller
             'surat_dibuat' => $validated['surat_dibuat'],
             'subtotal' => $validated['subtotal'],
             'ppn' => $ppnValue,
+            'pph' => $validated['pph'] ?? 0,
             'grandtotal' => $grandtotal,
             'dibulatkan' => $validated['dibulatkan'],
             'terbilang' => $validated['terbilang'],

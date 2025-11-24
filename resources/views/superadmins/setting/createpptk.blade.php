@@ -60,7 +60,7 @@
                                 <input type="text" id="nama_pptk" name="nama_pptk" class="form-control" readonly>
                             </div>
 
-                            {{-- Golongan otomatis --}}
+                            
                             <div class="mb-3">
                                 <label class="form-label fw-bold">Idinjab PPTK</label>
                                 <input type="text" id="idinjab_pptk" name="idinjab_pptk" class="form-control" readonly>
@@ -72,6 +72,10 @@
                             <div class="mb-3">
                                 <label class="form-label fw-bold">NIP PPTK</label>
                                 <input type="text" id="nip_pptk" name="nip_pptk" class="form-control" readonly>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Golongan PPTK</label>
+                                <input type="text" id="gol_pptk" name="gol_pptk" class="form-control" required>
                             </div>
 
                             <div class="text-end mb-3 mt-4">
@@ -104,6 +108,12 @@
                             <textarea name="subkegiatan" class="form-control" rows="3"></textarea>
                         </div>
                     </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">No Rek Sub Kegiatan</label>
+                            <input name="no_rek_sub" class="form-control">
+                        </div>
+                    </div>
                 </div>
 
                 <div class="d-flex justify-content-end gap-2">
@@ -132,20 +142,33 @@ document.addEventListener('DOMContentLoaded', function () {
     const nipPptk = document.getElementById('nip_pptk');
     const idinjab_pptk = document.getElementById('idinjab_pptk');
 
+    // 🍀 fungsi untuk hidup/matikan required
+    function toggleNewPptkRequired(enable) {
+        selectUser.required = enable;
+        namaPptk.required = enable;
+        nipPptk.required = enable;
+        idinjab_pptk.required = enable;
+    }
+
     // 🔹 Klik "Tambah PPTK Baru"
     addBtn.addEventListener('click', () => {
         existingSection.style.display = 'none';
         newPptkForm.style.display = 'block';
+        toggleNewPptkRequired(true);  // aktifkan required
     });
 
     // 🔹 Klik "Batal Tambah PPTK"
     cancelBtn.addEventListener('click', () => {
         newPptkForm.style.display = 'none';
         existingSection.style.display = 'flex';
+
+        // kosongkan data
         selectUser.value = '';
         namaPptk.value = '';
         nipPptk.value = '';
         idinjab_pptk.value = '';
+
+        toggleNewPptkRequired(false); // matikan required
     });
 
     // 🔹 Saat user pilih nama dari tabel users
@@ -155,6 +178,12 @@ document.addEventListener('DOMContentLoaded', function () {
         nipPptk.value = selected.dataset.nip || '';
         idinjab_pptk.value = selected.dataset.gol || '';
     });
+
+    // 🔹 Jika user pilih PPTK lama → pastikan form baru tidak required
+    document.getElementById('pptk_id').addEventListener('change', function() {
+        toggleNewPptkRequired(false);
+    });
 });
+
 </script>
 @endsection

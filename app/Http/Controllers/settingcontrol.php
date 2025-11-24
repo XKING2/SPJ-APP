@@ -18,14 +18,32 @@ class settingcontrol extends Controller
     public function index()
     {
         $ppn = Setting::firstOrCreate(['key' => 'ppn_rate'], ['value' => 10]);
-        return view('superadmins.setting.settingppn', compact('ppn'));
+        $pph_list = Setting::where('key', 'like', 'pph_%')
+                    ->pluck('value', 'key')
+                    ->toArray();
+        return view('superadmins.setting.settingppn', compact('ppn','pph_list'));
     }
 
+    
     public function update(Request $request)
     {
-        $request->validate(['ppn_rate' => 'required|numeric|min:0|max:100']);
-        Setting::updateOrCreate(['key' => 'ppn_rate'], ['value' => $request->ppn_rate]);
-        return back()->with('success', 'PPN berhasil diperbarui!');
+        // Update PPN
+        if ($request->has('ppn_rate')) {
+            $request->validate(['ppn_rate' => 'required|numeric|min:0|max:100']);
+            Setting::updateOrCreate(['key' => 'ppn_rate'], ['value' => $request->ppn_rate]);
+        }
+
+        // Update PPh list
+        if ($request->has('pph')) {
+            foreach ($request->pph as $key => $value) {
+                Setting::updateOrCreate(
+                    ['key' => $key],
+                    ['value' => $value]
+                );
+            }
+        }
+
+        return back()->with('success', 'Pengaturan pajak berhasil diperbarui!');
     }
 
 
@@ -102,34 +120,47 @@ class settingcontrol extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'program' => 'required|max:255',
-            'kegiatan' => 'required|max:255',
-            'subkegiatan' => 'required|max:255',
+        // Validasi utama dengan kondisi:
+        $validated = $request->validate([
+            // untuk kegiatan (selalu wajib)
+            'program'     => 'required|max:255',
+            'kegiatan'    => 'required|max:255',
+            'subkegiatan' => 'required|max:1000',
+            'no_rek_sub' => 'required|max:1000',
+
+            // jika pptk_id tidak ada, maka buat PPTK baru
+            'nama_pptk'    => 'required_without:pptk_id|unique:pptk,nama_pptk|max:255',
+            'nip_pptk'     => 'required_without:pptk_id|unique:pptk,nip_pptk|max:255',
+            'idinjab_pptk' => 'required_without:pptk_id|max:255',
+            'gol_pptk'     => 'required_without:pptk_id|max:255',
+
+            // jika user pilih PPTK yang sudah ada, pastikan valid
+            'pptk_id'      => 'nullable|exists:pptk,id'
         ]);
 
-  
-        if ($request->filled('pptk_id')) {
-            $pptk = Pptk::findOrFail($request->pptk_id);
-        } else {
-        
-            $request->validate([
-                'nama_pptk' => 'required|unique:pptk,nama_pptk|max:255',
-                'nip_pptk' => 'required|max:255|unique:pptk,nip_pptk',
-                'idinjab_pptk' => 'required|max:255',
-            ]);
+        // Jika user memilih PPTK yang sudah ada
+        if (!empty($validated['pptk_id'])) {
 
+            $pptk = Pptk::findOrFail($validated['pptk_id']);
+
+        } else {
+
+            // Buat PPTK baru
             $pptk = Pptk::create([
-                'nama_pptk' => $request->nama_pptk,
-                'nip_pptk' => $request->nip_pptk,
-                'idinjab_pptk' => $request->idinjab_pptk,
+                'nama_pptk'    => $validated['nama_pptk'],
+                'nip_pptk'     => $validated['nip_pptk'],
+                'idinjab_pptk' => $validated['idinjab_pptk'],
+                'gol_pptk' => $validated['gol_pptk'],
             ]);
         }
 
+        // Simpan kegiatan melalui relasi
         $pptk->kegiatan()->create([
-            'program' => $request->program,
-            'kegiatan' => $request->kegiatan,
-            'subkegiatan' => $request->subkegiatan,
+            'program'     => $validated['program'],
+            'kegiatan'    => $validated['kegiatan'],
+            'subkegiatan' => $validated['subkegiatan'],
+            'no_rek_sub' => $validated['no_rek_sub'],
+      
         ]);
 
         return redirect()

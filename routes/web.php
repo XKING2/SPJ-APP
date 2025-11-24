@@ -110,6 +110,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/kwitansi/{id}/edit', [KwitansiControl::class, 'edit'])->name('kwitansi.edit');
     Route::put('/kwitansi/{id}', [KwitansiControl::class, 'update'])->name('kwitansi.update');
 });
+Route::get('/get-norek-sub/{id}', [kwitansicontrol::class, 'getNoRekSub']);
 
 
 // ========== PESANAN ==========

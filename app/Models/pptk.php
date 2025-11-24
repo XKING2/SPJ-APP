@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class pptk extends Model
 {
     protected $table = 'pptk';
-    protected $fillable = ['nama_pptk', 'gol_pptk', 'nip_pptk'];
+    protected $fillable = ['nama_pptk', 'idinjab_pptk', 'nip_pptk','gol_pptk'];
 
     public function kwitansis()
     {

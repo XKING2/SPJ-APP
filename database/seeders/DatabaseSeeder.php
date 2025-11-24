@@ -39,7 +39,7 @@ class DatabaseSeeder extends Seeder
             'jabatan'   => 'Staff',
             'idinjab'    => '2301010564',
             'jabatan_atasan' => 'Staff IT',
-            'role'      => 'Kasubag',
+            'role'      => 'Bendahara',
             'status'      => 'PNS',
         ]);
         User::create([
@@ -49,7 +49,7 @@ class DatabaseSeeder extends Seeder
             'jabatan'   => 'Staff',
             'idinjab'    => '2301010564',
             'jabatan_atasan' => 'Staff IT',
-            'role'      => 'Kasubag',
+            'role'      => 'users',
             'status'      => 'PNS',
         ]);
     }

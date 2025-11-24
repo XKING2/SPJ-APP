@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class kegiatan extends Model
 {
     protected $table = 'kegiatan';
-    protected $fillable = ['id_pptk', 'program', 'kegiatan', 'subkegiatan'];
+    protected $fillable = ['id_pptk', 'program', 'kegiatan', 'subkegiatan','no_rek_sub'];
 
     public function pptk()
     {

@@ -11,7 +11,7 @@
 <body>
     <div class="login-box text-center">
         <img src="{{ asset('images/Logo1.png') }}" class="logo" alt="Logo">
-        <h4 class="fw-bold">Sistem E-SPJ</h4>
+        <h4 class="fw-bold"> E-SPJ</h4>
         <form method="POST" action="{{ route('login') }}">
             @csrf
             <div class="mb-3 text-start">

@@ -16,7 +16,8 @@
                 <input type="hidden" name="id_serahbarang" value="{{ $serahbarang->id }}">
                 <input type="hidden" name="spj_id" value="{{ $spj->id }}">
                 <input type="hidden" name="pesanan_id" value="{{ $pemeriksaan->pesanan->id }}">
-                <input type="hidden" id="ppn_rate" value="{{ $ppnRate }}">
+                <input type="hidden" id="ppn_rate" value="{{ $ppn_rate }}">
+                
 
                 <div class="row">
                     <!-- Kolom kiri -->
@@ -114,14 +115,47 @@
                             <th class="text-end">Subtotal</th>
                             <td><input type="number" id="subtotal" name="subtotal" class="form-control" readonly></td>
                         </tr>
+
+                        <!-- Pilih PPN -->
+                       <tr>
+                            <th class="text-end">PPN</th>
+                            <td>
+                                <div class="input-group">
+                                    <input type="number" id="ppn_rate" name="ppn_rate"
+                                        class="form-control" value="{{ $ppn_rate }}" readonly>
+                                    <span class="input-group-text">%</span>
+                                </div>
+
+                                <!-- Output nilai rupiah hasil perhitungan -->
+                                <input type="number" id="ppn" name="ppn" class="form-control mt-1" readonly>
+                            </td>
+                        </tr>
+
                         <tr>
-                            <th class="text-end">PPN ({{ $ppnRate }}%)</th>
-                            <td><input type="number" id="ppn" name="ppn" class="form-control" readonly></td>
+                            <th class="text-end">PPH</th>
+                            <td>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Pilih PPh</label>
+                                    <select id="pph_select" class="form-control">
+                                        <option value="0" data-rate="0">Tidak Ada PPh</option>
+
+                                        @foreach($pph_list as $pph)
+                                            <option value="{{ $pph->key }}" data-rate="{{ $pph->value }}">
+                                                {{ strtoupper(str_replace('_', ' ', $pph->key)) }} - {{ $pph->value }}%
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <!-- HASIL PERHITUNGAN PPH -->
+                               <input type="number" id="pph" name="pph" class="form-control" readonly placeholder="Hasil PPh akan muncul di sini"> 
+                            </td>
                         </tr>
                         <tr>
                             <th class="text-end">Total Harga</th>
                             <td><input type="number" id="grandtotal" name="grandtotal" class="form-control" readonly></td>
                         </tr>
+
                         <tr>
                             <th class="text-end">Dibulatkan</th>
                             <td><input type="number" id="dibulatkan" name="dibulatkan" class="form-control" readonly></td>
@@ -132,7 +166,7 @@
                         <label class="form-label fw-bold">Terbilang :</label>
                         <input type="text" id="terbilang" name="terbilang" class="form-control" readonly>
                     </div>
-                </div>
+
 
                 <div class="d-flex justify-content-end gap-5">
                     <button type="submit" id="submit" class="btn btn-success">
@@ -269,75 +303,91 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const hargaInputs = document.querySelectorAll('.harga');
-    const totalInputs = document.querySelectorAll('.total');
-    const subtotalInput = document.getElementById('subtotal');
-    const ppnInput = document.getElementById('ppn');
-    const grandtotalInput = document.getElementById('grandtotal');
-    const dibulatkanInput = document.getElementById('dibulatkan');
-    const terbilangInput = document.getElementById('terbilang');
-    const ppnRate = parseFloat(document.getElementById('ppn_rate').value) || 10;
+document.addEventListener("DOMContentLoaded", () => {
+    const subtotalInput = document.getElementById("subtotal");
+    const ppnInput = document.getElementById("ppn");
+    const pphSelect = document.getElementById("pph_select");
+    const pphValueInput = document.getElementById("pph");
+    const grandtotalInput = document.getElementById("grandtotal");
+    const dibulatkanInput = document.getElementById("dibulatkan");
+    const terbilangInput = document.getElementById("terbilang");
+    const ppnRate = parseFloat(document.getElementById("ppn_rate").value);
 
-    function terbilangRupiah(angka) {
-        const satuan = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan"];
-        const belasan = ["Sepuluh", "Sebelas", "Dua Belas", "Tiga Belas", "Empat Belas", "Lima Belas", "Enam Belas", "Tujuh Belas", "Delapan Belas", "Sembilan Belas"];
-        const puluhan = ["", "", "Dua Puluh", "Tiga Puluh", "Empat Puluh", "Lima Puluh", "Enam Puluh", "Tujuh Puluh", "Delapan Puluh", "Sembilan Puluh"];
-        const ribuan = ["", "Ribu", "Juta", "Miliar", "Triliun"];
-        if (angka === 0) return "Nol Rupiah";
-        function konversi(num) {
-            let str = "";
-            if (num >= 100) {
-                if (Math.floor(num / 100) === 1) str += "Seratus ";
-                else str += satuan[Math.floor(num / 100)] + " Ratus ";
-                num %= 100;
-            }
-            if (num >= 10 && num <= 19) str += belasan[num - 10] + " ";
-            else if (num >= 20) {
-                str += puluhan[Math.floor(num / 10)] + " ";
-                str += satuan[num % 10] + " ";
-            } else str += satuan[num] + " ";
-            return str.trim();
-        }
-        let result = "";
-        let i = 0;
-        while (angka > 0) {
-            const chunk = angka % 1000;
-            if (chunk > 0) {
-                let chunkStr = konversi(chunk);
-                if (i === 1 && chunk === 1) chunkStr = "Seribu";
-                result = chunkStr + " " + ribuan[i] + " " + result;
-            }
-            angka = Math.floor(angka / 1000);
-            i++;
-        }
-        return result.trim() + " Rupiah";
-    }
-
-    function hitungTotal() {
+    // =============== FUNGSI: Hitung Subtotal Tabel ===============
+    function hitungSubtotal() {
         let subtotal = 0;
-        hargaInputs.forEach((input, i) => {
-            let harga = parseFloat(input.value) || 0;
-            let jumlah = parseFloat(totalInputs[i].closest('tr').querySelector('.jumlah').value) || 0;
-            let total = harga * jumlah;
-            totalInputs[i].value = total;
-            subtotal += total;
+
+        document.querySelectorAll("#barang-table tr").forEach(row => {
+            const qty = parseFloat(row.querySelector(".jumlah")?.value || 0);
+            const harga = parseFloat(row.querySelector(".harga")?.value || 0);
+            const total = row.querySelector(".total");
+
+            const rowTotal = qty * harga;
+            total.value = rowTotal;
+            subtotal += rowTotal;
         });
 
         subtotalInput.value = subtotal;
-        const ppn = subtotal * (ppnRate / 100);
-        ppnInput.value = ppn.toFixed(2);
-        const grandtotal = subtotal + ppn;
-        grandtotalInput.value = grandtotal.toFixed(2);
-        const dibulatkan = Math.round(grandtotal);
-        dibulatkanInput.value = dibulatkan;
-        terbilangInput.value = terbilangRupiah(dibulatkan);
+        return subtotal;
     }
 
-    hargaInputs.forEach(input => input.addEventListener('input', hitungTotal));
-    hitungTotal();
+    // =============== FUNGSI: Konversi Angka → Terbilang IDN ===============
+    function terbilangID(n) {
+        const satuan = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan"];
+        
+        if (n < 10) return satuan[n];
+        if (n < 20) return satuan[n - 10] + " Belas";
+        if (n < 100) return satuan[Math.floor(n / 10)] + " Puluh " + satuan[n % 10];
+        if (n < 200) return "Seratus " + terbilangID(n - 100);
+        if (n < 1000) return satuan[Math.floor(n / 100)] + " Ratus " + terbilangID(n % 100);
+        if (n < 2000) return "Seribu " + terbilangID(n - 1000);
+        if (n < 1000000) return terbilangID(Math.floor(n / 1000)) + " Ribu " + terbilangID(n % 1000);
+        if (n < 1000000000) return terbilangID(Math.floor(n / 1000000)) + " Juta " + terbilangID(n % 1000000);
+        return "";
+    }
+
+    // =============== FUNGSI: Hitung Semua Pajak & Grand Total ===============
+    function hitungPajak() {
+        const subtotal = hitungSubtotal();
+
+        // --- PPN ---
+        const ppn = subtotal * (ppnRate / 100);
+        const ppnRounded = Math.round(ppn);
+        ppnInput.value = ppnRounded;
+
+        // --- PPh ---
+        const rate = parseFloat(pphSelect.selectedOptions[0].dataset.rate);
+        const pph = subtotal * (rate / 100);
+        const pphRounded = Math.round(pph);
+        pphValueInput.value = pphRounded;
+
+        // --- GRAND TOTAL (PPH tidak ikut ditambah) ---
+        const grandtotal = subtotal + ppnRounded;
+        grandtotalInput.value = Math.round(grandtotal);
+
+        // --- DIBULATKAN KE RIBUAN ---
+        const bulat = Math.round(grandtotal / 1000) * 1000;
+        dibulatkanInput.value = bulat;
+
+        // --- TERBILANG ---
+        terbilangInput.value = (terbilangID(bulat).trim() + " Rupiah").replace(/\s+/g, " ");
+    }
+
+    // EVENT: Hitung ulang saat harga diubah
+    document.querySelectorAll(".harga").forEach(input => {
+        input.addEventListener("input", hitungPajak);
+    });
+
+    // EVENT: PPh dropdown berubah
+    pphSelect.addEventListener("change", hitungPajak);
+
+    // Trigger awal
+    hitungPajak();
 });
 </script>
+
+
+
 
 <script>
     // Gabungkan seluruh bagian jadi satu string dengan tanda "/"

@@ -12,7 +12,7 @@ class kwitansi extends Model
    protected $fillable = [
         'spj_id', 'id_pptk', 'id_kegiatan', 'no_rekening', 'no_rekening_tujuan',
         'nama_bank', 'penerima_kwitansi', 'telah_diterima_dari',
-        'jumlah_nominal', 'uang_terbilang', 'jabatan_penerima', 'npwp', 'pembayaran'
+        'jabatan_penerima', 'npwp', 'pembayaran'
     ];
 
 

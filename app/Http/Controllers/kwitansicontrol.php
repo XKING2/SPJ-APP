@@ -25,43 +25,43 @@ class KwitansiControl extends Controller
             'input' => $request->all()
         ]);
 
-
         $validated = $request->validate([
             'spj_id' => 'required|exists:spjs,id',
             'id_pptk' => 'required|exists:pptk,id',
             'id_kegiatan' => 'required|exists:kegiatan,id',
-            'no_rekening' => 'required|string|max:255',
+            'no_rekening' => 'required|string|max:255',   // ⬅️ tambahkan
             'no_rekening_tujuan' => 'required|string|max:255',
             'nama_bank' => 'required|string|max:255',
             'penerima_kwitansi' => 'required|string|max:255',
             'telah_diterima_dari' => 'required|string|max:255',
-            'jumlah_nominal' => 'required|numeric',
-            'uang_terbilang' => 'required|string|max:255',
             'jabatan_penerima' => 'required|string|max:255',
             'npwp' => 'required|string|max:255',
             'pembayaran' => 'required|string',
         ]);
 
-            // Simpan kwitansi
-            $kwitansi = Kwitansi::create($validated);
+        // Ambil langsung dari hidden input (sudah ada titik dari JS)
+        $validated['no_rekening'] = $request->no_rekening;
 
-            // Ambil data kegiatan dan relasi kasubag
-            $kegiatan = Kegiatan::findOrFail($validated['id_kegiatan']);
+        // Simpan kwitansi
+        $kwitansi = Kwitansi::create($validated);
 
-            // Update SPJ
-            $spj = SPJ::findOrFail($validated['spj_id']);
-            $spj->update([
-                'kwitansi_id' => $kwitansi->id,
-                'kegiatan_id' => $kegiatan->id,
-            ]);
+        // Update SPJ
+        $kegiatan = kegiatan::findOrFail($validated['id_kegiatan']);
+        $spj = SPJ::findOrFail($validated['spj_id']);
+        $spj->update([
+            'kwitansi_id' => $kwitansi->id,
+            'kegiatan_id' => $kegiatan->id,
+        ]);
 
-            return redirect()
-                ->route('pesanan.create', [
-                    'spj_id' => $validated['spj_id'],
-                    'kwitansi_id' => $kwitansi->id
-                ])
-                ->with('success', 'Kwitansi berhasil disimpan dan kegiatan berhasil dihubungkan ke SPJ.');
+        return redirect()
+            ->route('pesanan.create', [
+                'spj_id' => $validated['spj_id'],
+                'kwitansi_id' => $kwitansi->id
+            ])
+            ->with('success', 'Kwitansi berhasil disimpan dan kegiatan berhasil dihubungkan ke SPJ.');
     }
+
+
 
 
 
@@ -86,8 +86,6 @@ class KwitansiControl extends Controller
             'nama_bank' => 'required|string|max:255',
             'penerima_kwitansi' => 'required|string|max:255',
             'telah_diterima_dari' => 'required|string|max:255',
-            'jumlah_nominal' => 'required|numeric',
-            'uang_terbilang' => 'required|string|max:255',
             'jabatan_penerima' => 'required|string|max:255',
             'npwp' => 'required|string|max:255',
             'pembayaran' => 'required|string'
@@ -134,5 +132,18 @@ class KwitansiControl extends Controller
         $kegiatan = Kegiatan::where('id_pptk', $pptk_id) ->select('id', 'subkegiatan') 
         ->get(); return response()
         ->json($kegiatan); 
+    }
+
+    public function getNoRekSub($id)
+    {
+        $kegiatan = kegiatan::find($id);
+
+        if (!$kegiatan) {
+            return response()->json(['no_rek_sub' => null]);
+        }
+
+        return response()->json([
+            'no_rek_sub' => $kegiatan->no_rek_sub
+        ]);
     }
 }

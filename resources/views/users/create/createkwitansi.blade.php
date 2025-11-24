@@ -13,30 +13,11 @@
             <form action="{{ route('kwitansis.store') }}" method="POST" novalidate>
                 @csrf
                 <input type="hidden" name="spj_id" value="{{ $spj->id }}">
+                <input type="hidden" name="no_rekening" id="no_rekening">
 
                 <div class="row">
                     <!-- Kolom Kiri -->
                     <div class="col-md-6">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">No Rekening</label>
-                            <input type="text" name="no_rekening" class="form-control" value="{{ old('no_rekening') }}" required>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">No Rekening Tujuan</label>
-                            <input type="text" name="no_rekening_tujuan" class="form-control" value="{{ old('no_rekening_tujuan') }}" required>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Nama Bank</label>
-                            <input type="text" name="nama_bank" class="form-control" value="{{ old('nama_bank') }}" required>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Yang Menerima Kwitansi</label>
-                            <input type="text" name="penerima_kwitansi" class="form-control" value="{{ old('penerima_kwitansi') }}" required>
-                        </div>
-
                         <div class="mb-3">
                             <label class="form-label fw-bold">Pilih PPTK</label>
                             <select name="id_pptk" id="id_pptk" class="form-control" required>
@@ -53,34 +34,68 @@
                                 <option value="" disabled selected>-- Pilih Sub Kegiatan --</option>
                             </select>
                         </div>
+
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">No Rekening</label>
+
+                            <div class="row g-2">
+                                <!-- Kiri -->
+                                <div class="col-6">
+                                    <div class="input-group">
+                                        <input type="text" name="no_rek_sub" id="no_rek_sub" 
+                                            class="form-control" readonly placeholder="Otomatis terisi">
+                                    </div>
+                                </div>
+
+                                <!-- Kanan -->
+                                <div class="col-6">
+                                    <input type="text" name="no_rek_manual" 
+                                        class="form-control" placeholder="Tambahan user">
+                                </div>
+                            </div>
+                        </div>
+
+                        
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Telah Diterima Dari</label>
+                            <select name="telah_diterima_dari" class="form-control" required>
+                                <option value="">-- Pilih --</option>
+                                <option value="Bendahara Umum Daerah Kabupaten Gianyar">Bendahara Umum Daerah Kabupaten Gianyar</option>
+                                <option value="Bendahara Pengeluaran DPMD Gianyar">Bendahara Pengeluaran DPMD Gianyar</option>
+                            </select>
+                        </div>
                     </div>
 
                     <!-- Kolom Kanan -->
                     <div class="col-md-6">
+                        
+
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Telah Diterima Dari</label>
-                            <input type="text" name="telah_diterima_dari" class="form-control" value="{{ old('telah_diterima_dari') }}" required>
+                            <label class="form-label fw-bold">Nama Rekanan</label>
+                            <input type="text" name="penerima_kwitansi" class="form-control" value="{{ old('penerima_kwitansi') }}" required>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Jumlah Nominal</label>
-                            <input type="number" name="jumlah_nominal" id="jumlah_nominal" class="form-control"
-                                   value="{{ old('jumlah_nominal') }}" placeholder="Masukkan jumlah nominal" required>
+                            <label class="form-label fw-bold">Nama Bank Rekanan</label>
+                            <input type="text" name="nama_bank" class="form-control" value="{{ old('nama_bank') }}" required>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Uang Terbilang</label>
-                            <input type="text" name="uang_terbilang" id="uang_terbilang" class="form-control"
-                                   value="{{ old('uang_terbilang') }}" readonly>
+                            <label class="form-label fw-bold">Rekening Bank Rekanan</label>
+                            <input type="text" name="no_rekening_tujuan" class="form-control" value="{{ old('no_rekening_tujuan') }}" required>
                         </div>
 
+                        
+
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Jabatan Penerima Kwitansi</label>
+                            <label class="form-label fw-bold">Jabatan Rekanan</label>
                             <input type="text" name="jabatan_penerima" class="form-control" value="{{ old('jabatan_penerima') }}" required>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold">NPWP</label>
+                            <label class="form-label fw-bold">NPWP Rekanan</label>
                             <input type="text" name="npwp" class="form-control" value="{{ old('npwp') }}" required>
                         </div>
                     </div>
@@ -162,15 +177,20 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
-{{-- Script AJAX PPTK → Sub Kegiatan --}}
 <script>
 document.addEventListener("DOMContentLoaded", function () {
+
     const pptkSelect = document.getElementById("id_pptk");
     const kegiatanSelect = document.getElementById("id_kegiatan");
+    const noRekSubInput = document.getElementById("no_rek_sub");
 
+    /* -----------------------------
+       1️⃣ FETCH SUB KEGIATAN BERDASARKAN PPTK
+       ----------------------------- */
     pptkSelect.addEventListener("change", function () {
         const pptkId = this.value;
         kegiatanSelect.innerHTML = `<option value="" disabled selected>Loading...</option>`;
+        noRekSubInput.value = ""; // reset jika ganti PPTK
 
         fetch(`/get-subkegiatan/${pptkId}`)
             .then(response => response.json())
@@ -185,62 +205,44 @@ document.addEventListener("DOMContentLoaded", function () {
                 kegiatanSelect.innerHTML = `<option value="" disabled selected>Gagal memuat data</option>`;
             });
     });
-});
-</script>
 
-{{-- Script konversi nominal ke terbilang --}}
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const nominalInput = document.getElementById("jumlah_nominal");
-    const terbilangInput = document.getElementById("uang_terbilang");
+    /* -----------------------------
+       2️⃣ FETCH NOMOR REKENING SUB KEGIATAN
+       ----------------------------- */
+    kegiatanSelect.addEventListener("change", function () {
+        const kegiatanId = this.value;
+        noRekSubInput.value = "Loading...";
 
-    nominalInput.addEventListener("input", function () {
-        const angka = parseInt(this.value) || 0;
-        terbilangInput.value = terbilangRupiah(angka);
+        fetch(`/get-norek-sub/${kegiatanId}`)
+            .then(response => response.json())
+            .then(data => {
+                noRekSubInput.value = data.no_rek_sub ?? "";
+            })
+            .catch(err => {
+                console.error("Error fetching no rek:", err);
+                noRekSubInput.value = "";
+            });
     });
 
-    function terbilangRupiah(angka) {
-        const satuan = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan"];
-        const belasan = ["Sepuluh", "Sebelas", "Dua Belas", "Tiga Belas", "Empat Belas", "Lima Belas", "Enam Belas", "Tujuh Belas", "Delapan Belas", "Sembilan Belas"];
-        const puluhan = ["", "", "Dua Puluh", "Tiga Puluh", "Empat Puluh", "Lima Puluh", "Enam Puluh", "Tujuh Puluh", "Delapan Puluh", "Sembilan Puluh"];
-        const ribuan = ["", "Ribu", "Juta", "Miliar", "Triliun"];
-
-        if (angka === 0) return "Nol Rupiah";
-
-        function konversi(num) {
-            let str = "";
-            if (num >= 100) {
-                if (Math.floor(num / 100) === 1) str += "Seratus ";
-                else str += satuan[Math.floor(num / 100)] + " Ratus ";
-                num %= 100;
-            }
-            if (num >= 10 && num <= 19) {
-                str += belasan[num - 10] + " ";
-            } else if (num >= 20) {
-                str += puluhan[Math.floor(num / 10)] + " ";
-                str += satuan[num % 10] + " ";
-            } else {
-                str += satuan[num] + " ";
-            }
-            return str.trim();
-        }
-
-        let result = "";
-        let i = 0;
-        while (angka > 0) {
-            const chunk = angka % 1000;
-            if (chunk > 0) {
-                let chunkStr = konversi(chunk);
-                if (i === 1 && chunk === 1) chunkStr = "Seribu";
-                result = chunkStr + " " + ribuan[i] + " " + result;
-            }
-            angka = Math.floor(angka / 1000);
-            i++;
-        }
-
-        return result.trim() + " Rupiah";
-    }
 });
 </script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const sub = document.getElementById("no_rek_sub");
+    const manual = document.querySelector("input[name='no_rek_manual']");
+    const finalInput = document.getElementById("no_rekening");
+
+    function updateFinal() {
+        let s = sub.value.trim();
+        let m = manual.value.trim();
+        finalInput.value = m ? `${s}.${m}` : s;
+    }
+
+    manual.addEventListener("input", updateFinal);
+    sub.addEventListener("input", updateFinal);
+});
+</script>
+
 @endsection
     

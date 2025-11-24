@@ -53,12 +53,12 @@
 
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Nama PT</label>
+                            <label class="form-label fw-bold">Nama Perusahaan Rekanan</label>
                             <input type="text" name="nama_pt" class="form-control" value="{{ old('nama_pt') }}" required>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Alamat PT</label>
+                            <label class="form-label fw-bold">Alamat Perusahaan Rekanan</label>
                             <input type="text" name="alamat_pt" class="form-control" value="{{ old('alamat_pt') }}" required>
                         </div>
 
@@ -76,7 +76,7 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Nomor Telepon PT</label>
+                            <label class="form-label fw-bold">Nomor Telepon Perusahaan Rekanan</label>
                             <input type="text" name="nomor_tlp_pt" class="form-control" value="{{ old('nomor_tlp_pt') }}" required>
                         </div>
                     </div>
@@ -90,12 +90,16 @@
                             <tr>
                                 <th style="width: 40%">Nama Barang</th>
                                 <th style="width: 25%">Jumlah</th>
+                                <th style="width: 10%">Aksi</th> <!-- kolom baru -->
                             </tr>
                         </thead>
                         <tbody id="items-table">
                             <tr>
                                 <td><input type="text" name="items[0][nama_barang]" class="form-control" required></td>
                                 <td><input type="number" name="items[0][jumlah]" class="form-control" value="1" required></td>
+                                <td class="text-center">
+                                    <button type="button" class="btn btn-sm btn-danger delete-row">X</button>
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -196,21 +200,36 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 <script>
-// Tambah baris barang
 document.addEventListener("DOMContentLoaded", function() {
+
     let rowIndex = 1;
 
+    // Tambah baris barang
     document.getElementById("add-row").addEventListener("click", function() {
         const tableBody = document.getElementById("items-table");
+
         const newRow = `
             <tr>
                 <td><input type="text" name="items[${rowIndex}][nama_barang]" class="form-control" required></td>
                 <td><input type="number" name="items[${rowIndex}][jumlah]" class="form-control" value="1" required></td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-sm btn-danger delete-row">X</button>
+                </td>
             </tr>
         `;
+
         tableBody.insertAdjacentHTML('beforeend', newRow);
         rowIndex++;
     });
+
+    // Hapus baris barang (pakai event delegation)
+    document.getElementById("items-table").addEventListener("click", function(e) {
+        if (e.target.classList.contains("delete-row")) {
+            const row = e.target.closest("tr");
+            row.remove();
+        }
+    });
+
 });
 </script>
 

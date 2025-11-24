@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Models\spjfeedback;
 use Exception;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Carbon;
 
 class SPJController extends Controller
 {
@@ -99,56 +100,65 @@ class SPJController extends Controller
             }
 
             $template = new TemplateProcessor($templatePath);
+
+            $empty = fn($v) => $v ?? '';
             
 
-            $template->setValue('no_rekening', $kwitansi->no_rekening ?? '-');
-            $template->setValue('no_rekening_tujuan', $kwitansi->no_rekening_tujuan ?? '-');
-            $template->setValue('nama_bank', $kwitansi->nama_bank ?? '-');
-            $template->setValue('npwp', $kwitansi->npwp ?? '-');
-            $template->setValue('telah_diterima_dari', $kwitansi->telah_diterima_dari ?? '-');
-            $template->setValue('uang_terbilang', $kwitansi->uang_terbilang ?? '-');
-            $template->setValue('pembayaran', $kwitansi->pembayaran ?? '-');
-            $template->setValue('sub_kegiatan', $kwitansi->kegiatan->subkegiatan ?? '-');
-            $template->setValue('jumlah_nominal', number_format($kwitansi->jumlah_nominal ?? 0));
-            $template->setValue('penerima_kwitansi', $kwitansi->penerima_kwitansi ?? '-');
-            $template->setValue('jabatan_penerima', $kwitansi->jabatan_penerima ?? '-');
-            $template->setValue('nama_pptk', $kwitansi->pptk->nama_pptk ?? '-');
-            $template->setValue('jabatan_pptk', $kwitansi->pptk->gol_pptk ?? '-');
-            $template->setValue('nip_pptk', $kwitansi->pptk->nip_pptk ?? '-');
+            $template->setValue('no_rekening', $kwitansi->no_rekening);
+            $template->setValue('no_rekening_tujuan', $kwitansi->no_rekening_tujuan);
+            $template->setValue('nama_bank', $kwitansi->nama_bank);
+            $template->setValue('npwp', $kwitansi->npwp);
+            $template->setValue('telah_diterima_dari', $kwitansi->telah_diterima_dari);
+            $template->setValue('uang_terbilang',$penerimaan->terbilang);
+            $template->setValue('pembayaran', $kwitansi->pembayaran);
+            $template->setValue('sub_kegiatan', $kwitansi->kegiatan->subkegiatan);
+            $template->setValue('jumlah_nominal', number_format($penerimaan->grandtotal ?? 0));
+            $template->setValue('penerima_kwitansi', $kwitansi->penerima_kwitansi);
+            $template->setValue('jabatan_penerima', $kwitansi->jabatan_penerima);
+            $template->setValue('nama_pptk', $kwitansi->pptk->nama_pptk);
+            $template->setValue('jabatan_pptk', $kwitansi->pptk->gol_pptk);
+            $template->setValue('nip_pptk', $kwitansi->pptk->nip_pptk);
 
 
             
             if ($pesanan) {
-                $template->setValue('nama_pt',  $pesanan->nama_pt ?? '-');
-                $template->setValue('no_surat', $pesanan->no_surat ?? '-');
-                $template->setValue('alamat_pt', $pesanan->alamat_pt ?? '-');
-                $template->setValue('nomor_tlp_pt', $pesanan->nomor_tlp_pt ?? '-');
-                $template->setValue('tanggal_diterima', $pesanan->tanggal_diterima ?? '-');
-                $template->setValue('surat_dibuat', $pesanan->surat_dibuat ?? '-');
+                $template->setValue('nama_pt',  $pesanan->nama_pt);
+                $template->setValue('no_surat', $pesanan->no_surat);
+                $template->setValue('alamat_pt', $pesanan->alamat_pt);
+                $template->setValue('nomor_tlp_pt', $pesanan->nomor_tlp_pt);
+
+                // 🔥 Format tanggal ke DD-MM-YYYY sebelum masuk template
+                $template->setValue('tanggal_diterima', 
+                    Carbon::parse($pesanan->tanggal_diterima)->format('d-m-Y')
+                );
+
+                $template->setValue('surat_dibuat', 
+                    Carbon::parse($pesanan->surat_dibuat)->format('d-m-Y')
+                );
             }
 
             
             if ($pemeriksaan) {
-                $template->setValue('hari_diterima', $pemeriksaan->hari_diterima ?? '-');
-                $template->setValue('tanggals_diterima', $pemeriksaan->tanggals_diterima ?? '-');
-                $template->setValue('bulan_diterima', $pemeriksaan->bulan_diterima ?? '-');
-                $template->setValue('tahun_diterima', $pemeriksaan->tahun_diterima ?? '-');
-                $template->setValue('nama_pihak_kedua', $pemeriksaan->nama_pihak_kedua ?? '-');
-                $template->setValue('jabatan_pihak_kedua', $pemeriksaan->jabatan_pihak_kedua ?? '-');
-                $template->setValue('alamat_pihak_kedua', $pemeriksaan->alamat_pihak_kedua ?? '-');
-                $template->setValue('pekerjaan', $pemeriksaan->pekerjaan ?? '-');
+                $template->setValue('hari_diterima', $pemeriksaan->hari_diterima);
+                $template->setValue('tanggals_diterima', $pemeriksaan->tanggals_diterima);
+                $template->setValue('bulan_diterima', $pemeriksaan->bulan_diterima);
+                $template->setValue('tahun_diterima', $pemeriksaan->tahun_diterima);
+                $template->setValue('nama_pihak_kedua', $pemeriksaan->nama_pihak_kedua);
+                $template->setValue('jabatan_pihak_kedua', $pemeriksaan->jabatan_pihak_kedua);
+                $template->setValue('alamat_pihak_kedua', $pemeriksaan->alamat_pihak_kedua);
+                $template->setValue('pekerjaan', $pemeriksaan->pekerjaan);
                 
             }
 
             if ($serahbarang) {
-                $template->setValue('nama_pertama', $serahbarang->plt->nama_pihak_pertama ?? '-');
-                $template->setValue('nip_pertama', $serahbarang->plt->nip_pihak_pertama ?? '-');
-                $template->setValue('gol_pertama', $serahbarang->plt->gol_pihak_pertama ?? '-');
-                $template->setValue('jab_pertama', $serahbarang->plt->jabatan_pihak_pertama ?? '-');
-                $template->setValue('nama_pengelola', $serahbarang->pihak_kedua->nama_pihak_kedua ?? '-');
-                $template->setValue('nip_pengelola', $serahbarang->pihak_kedua->nip_pihak_kedua ?? '-');
-                $template->setValue('gol_pengelola', $serahbarang->pihak_kedua->gol_pihak_kedua ?? '-');
-                $template->setValue('jabatan_pengelola', $serahbarang->pihak_kedua->jabatan_pihak_kedua ?? '-');
+                $template->setValue('nama_pertama', $serahbarang->plt->nama_pihak_pertama);
+                $template->setValue('nip_pertama', $serahbarang->plt->nip_pihak_pertama);
+                $template->setValue('gol_pertama', $serahbarang->plt->gol_pihak_pertama);
+                $template->setValue('jab_pertama', $serahbarang->plt->jabatan_pihak_pertama);
+                $template->setValue('nama_pengelola', $serahbarang->pihak_kedua->nama_pihak_kedua);
+                $template->setValue('nip_pengelola', $serahbarang->pihak_kedua->nip_pihak_kedua);
+                $template->setValue('gol_pengelola', $serahbarang->pihak_kedua->gol_pihak_kedua);
+                $template->setValue('jabatan_pengelola', $serahbarang->pihak_kedua->jabatan_pihak_kedua);
             }
 
            
@@ -157,7 +167,8 @@ class SPJController extends Controller
                 $template->setValue('ppn', number_format($penerimaan->ppn ?? 0));
                 $template->setValue('grandtotal', number_format($penerimaan->grandtotal ?? 0));
                 $template->setValue('dibulatkan', number_format($penerimaan->dibulatkan ?? 0));
-                $template->setValue('terbilang', $penerimaan->terbilang ?? '-');
+                $template->setValue('terbilang', $penerimaan->terbilang);
+                $template->setValue('pph', $penerimaan->pph);
             }
 
             

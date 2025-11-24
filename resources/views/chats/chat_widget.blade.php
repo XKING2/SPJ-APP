@@ -1,5 +1,6 @@
 <div id="chat-toggle-btn">
     <i class="fas fa-comments"></i>
+    <span id="chat-notif-badge" class="notif-badge">0</span>
 </div>
 
 <div id="chat-widget">

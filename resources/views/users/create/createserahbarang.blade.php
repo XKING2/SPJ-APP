@@ -2,7 +2,7 @@
 
 @section('pageheads')
 <div class="container">
-    <h4 class="mb-1">Tambah Data Serah Barang</h4>
+    <h4 class="mb-1">Tambah Data Berita Acara Serah Terima Barang</h4>
 </div>
 @endsection
 
@@ -49,7 +49,7 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Pilih Pihak Pengelola</label>
+                            <label class="form-label fw-bold">Pilih Pihak Pengurus Barang</label>
                             <select name="id_pihak_kedua" class="form-control" required>
                                 <option value="" disabled selected>-- Pilih Pihak Pengelola --</option>
                                 @foreach($keduas as $kedua)
@@ -62,7 +62,7 @@
                     <!-- Kolom Kanan -->
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Pilih Pihak Pertama</label>
+                            <label class="form-label fw-bold">Pilih Pihak PPK</label>
                             <select name="id_plt" class="form-control" required>
                                 <option value="" disabled selected>-- Pilih Pihak Pertama --</option>
                                 @foreach($plts as $plt)
