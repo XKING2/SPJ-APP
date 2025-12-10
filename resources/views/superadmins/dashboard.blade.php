@@ -70,44 +70,28 @@
 
 @section('scripts')
     <script src="{{ asset('js/chats.js') }}"></script>
+    @if(session('spj_status_list_kasubag'))
+    <script>
+    Swal.fire({
+        title: "SPJ Baru Diajukan",
+        html: `
+            @php
+                $list = session('spj_status_list_kasubag');
+            @endphp
+
+            <ul style="text-align:left">
+                <li>Terdapat <b>{{ $list->count() }}</b> SPJ baru yang perlu divalidasi.</li>
+            </ul>
+        `,
+        icon: "warning",
+        confirmButtonText: "Cek Sekarang"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = "{{ route('Validasi') }}"; 
+            }
+        });
+    </script>
+    @endif
 @endsection
 
 
-
-{{-- SweetAlert (auto tampil dari session) --}}
-@if(session('success'))
-    <div data-swal-success="{{ session('success') }}"></div>
-@endif
-
-@if($errors->any())
-    <div data-swal-errors="{{ implode('|', $errors->all()) }}"></div>
-@endif
-
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const successData = document.querySelector('[data-swal-success]');
-    const errorData = document.querySelector('[data-swal-errors]');
-
-    if (successData) {
-        Swal.fire({
-            icon: 'success',
-            title: 'Berhasil!',
-            text: successData.dataset.swalSuccess,
-            confirmButtonColor: '#3085d6',
-            confirmButtonText: 'OK'
-        });
-    }
-
-    if (errorData) {
-        const errorMessages = errorData.dataset.swalErrors.split('|');
-        Swal.fire({
-            icon: 'error',
-            title: 'Terjadi Kesalahan',
-            html: errorMessages.join('<br>'),
-            confirmButtonColor: '#d33',
-            confirmButtonText: 'Coba Lagi'
-        });
-    }
-});
-</script>

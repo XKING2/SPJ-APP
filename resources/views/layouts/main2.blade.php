@@ -24,16 +24,32 @@
 <body id="page-top">
     <div id="wrapper">
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
-            <a class="sidebar-brand d-flex align-items-center justify-content-start px-3" href="{{ route('userdashboard') }}">
-                <div class="sidebar-brand-icon me-2 d-flex align-items-center justify-content-center"
-                    style="width: 80px; height: 80px;">
-                    <img src="{{ asset('images/logo3.png') }}" alt="Logo E-SPJ"
-                        style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">
-                </div>
-                <div class="sidebar-brand-text text-white fw-bold mx-0" style="font-size: 1.1rem;">
-                    E-SPJ
-                </div>
+            <a class="sidebar-brand d-flex align-items-center px-3" 
+                href="{{ route('userdashboard') }}" style="gap: 12px;">
+
+                    <div class="sidebar-brand-icon d-flex align-items-center justify-content-center"
+                        style="
+                            width: 50px; 
+                            height: 50px;
+                            border-radius: 12px;
+                            overflow: hidden;
+                            flex-shrink: 0;
+                        ">
+                        <img src="{{ asset('images/logo1.png') }}" 
+                            alt="Logo E-SPJ"
+                            style="
+                                width: 100%; 
+                                height: 100%; 
+                                object-fit: cover;
+                            ">
+                    </div>
+
+                    <div class="sidebar-brand-text text-white fw-bold" style="font-size: 1.1rem;">
+                        E-SPJ
+                    </div>
+
             </a>
+
 
             <hr class="sidebar-divider my-0">
 

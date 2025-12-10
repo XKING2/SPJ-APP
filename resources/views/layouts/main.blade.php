@@ -19,84 +19,120 @@
     <link href="{{ asset('css/dashboard.css') }}" rel="stylesheet">
     <link href="{{ asset('css/aksi.css') }}" rel="stylesheet">
     <link href="{{ asset('css/chats.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/dropdown.css') }}" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 
 
 </head>
 
 <body id="page-top">
     <div id="wrapper">
-       <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
-        <a class="sidebar-brand d-flex align-items-center justify-content-start px-3" href="{{ route('userdashboard') }}">
-            <div class="sidebar-brand-icon me-2 d-flex align-items-center justify-content-center"
-                style="width: 80px; height: 80px;">
-                <img src="{{ asset('images/logo3.png') }}" alt="Logo E-SPJ"
-                    style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">
-            </div>
-            <div class="sidebar-brand-text text-white fw-bold mx-0" style="font-size: 1.1rem;">
-                E-SPJ
-            </div>
+       {{-- Sidebar --}}
+<ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+        
+    <a class="sidebar-brand d-flex align-items-center px-3" 
+        href="{{ route('userdashboard') }}" style="gap: 12px;">
+        <div class="sidebar-brand-icon d-flex align-items-center justify-content-center"
+            style="width: 40px; height: 40px; border-radius: 12px; overflow: hidden;">
+            <img src="{{ asset('images/logo1.png') }}" alt="Logo E-SPJ" style="width:100%; height:100%; object-fit:cover;">
+        </div>
+
+        <div class="sidebar-brand-text text-white fw-bold" style="font-size: 1.1rem;">
+            E-SPJ
+        </div>
+    </a>
+
+    <hr class="sidebar-divider my-0">
+
+    <!-- Dashboard -->
+    <li class="nav-item {{ Request::routeIs('userdashboard') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('userdashboard') }}">
+            <i class="fas fa-fw fa-tachometer-alt"></i>
+            <span>Dashboard</span>
         </a>
-        <hr class="sidebar-divider my-0">
+    </li>
 
-        <li class="nav-item {{ Request::routeIs('userdashboard') ? 'active' : '' }}">
-            <a class="nav-link" href="{{ route('userdashboard') }}">
-                <i class="fas fa-fw fa-tachometer-alt"></i>
-                <span>Dashboard</span>
-            </a>
-        </li>
-
-        <li class="nav-item {{ Request::routeIs('kwitansi') ? 'active' : '' }}">
-            <a class="nav-link" href="{{ route('kwitansi') }}">
+    <!-- Kwitansi -->
+    <li class="nav-item {{ Request::routeIs('kwitansi') ? 'active' : '' }}">
+        <a class="nav-link d-flex justify-content-between align-items-center" 
+           href="{{ route('kwitansi') }}">
+            <div>
                 <i class="fas fa-fw fa-receipt"></i>
                 <span>Kwitansi</span>
-            </a>
-        </li>
+            </div>
+        </a>
+    </li>
 
-        <li class="nav-item {{ Request::routeIs('pesanan') ? 'active' : '' }}">
-            <a class="nav-link" href="{{ route('pesanan') }}">
+    <!-- Pesanan -->
+    <li class="nav-item {{ Request::routeIs('pesanan') ? 'active' : '' }}">
+        <a class="nav-link d-flex justify-content-between align-items-center" 
+           href="{{ route('pesanan') }}">
+            <div>
                 <i class="fas fa-fw fa-wrench"></i>
                 <span>Pesanan</span>
-            </a>
-        </li>
-
-        <li class="nav-item {{ Request::routeIs('pemeriksaan') || Request::routeIs('serahbarang') || Request::routeIs('penerimaan') ? 'active' : '' }}">
-            <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseBeritaAcara"
-                aria-expanded="{{ Request::routeIs('pemeriksaan') || Request::routeIs('serahbarang') || Request::routeIs('penerimaan') ? 'true' : 'false' }}"
-                aria-controls="collapseBeritaAcara">
-                <i class="fas fa-fw fa-file-alt"></i>
-                <span>Berita Acara</span>
-            </a>
-            <div id="collapseBeritaAcara"
-                class="collapse {{ Request::routeIs('pemeriksaan') || Request::routeIs('serahbarang') || Request::routeIs('penerimaan') ? 'show' : '' }}"
-                aria-labelledby="headingBeritaAcara" data-parent="#accordionSidebar">
-                <div class="bg-white py-2 collapse-inner rounded">
-                    <a class="collapse-item {{ Request::routeIs('pemeriksaan') ? 'active' : '' }}" href="{{ route('pemeriksaan') }}">Pemeriksaan</a>
-                    <a class="collapse-item {{ Request::routeIs('serahbarang') ? 'active' : '' }}" href="{{ route('serahbarang') }}">Serah Barang</a>
-                    <a class="collapse-item {{ Request::routeIs('penerimaan') ? 'active' : '' }}" href="{{ route('penerimaan') }}">Penerimaan</a>
-                </div>
             </div>
-        </li>
+        </a>
+    </li>
 
-        <li class="nav-item {{ Request::routeIs('reviewSPJ') ? 'active' : '' }}">
-            <a class="nav-link" href="{{ route('reviewSPJ') }}">
-                <i class="fas fa-fw fa-chart-area"></i>
-                <span>Review Data SPJ</span>
-            </a>
-        </li>
+    <!-- Berita Acara -->
+    <li class="nav-item {{ Request::routeIs('pemeriksaan') || Request::routeIs('serahbarang') || Request::routeIs('penerimaan') ? 'active' : '' }}">
+        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseBeritaAcara">
+            <i class="fas fa-fw fa-file-alt"></i>
+            <span>Berita Acara</span>
+        </a>
 
-        <li class="nav-item {{ Request::routeIs('cetakSPJ') ? 'active' : '' }}">
-            <a class="nav-link" href="{{ route('cetakSPJ') }}">
-                <i class="fas fa-fw fa-print"></i>
-                <span>Cetak Data SPJ</span>
-            </a>
-        </li>
+        <div id="collapseBeritaAcara" 
+             class="collapse {{ Request::routeIs('pemeriksaan') || Request::routeIs('serahbarang') || Request::routeIs('penerimaan') ? 'show' : '' }}">
+             
+            <div class="bg-white py-2 collapse-inner rounded">
 
-        <hr class="sidebar-divider d-none d-md-block">
+                <!-- Pemeriksaan -->
+                <a class="collapse-item d-flex justify-content-between 
+                   {{ Request::routeIs('pemeriksaan') ? 'active' : '' }}"
+                   href="{{ route('pemeriksaan') }}">
+                    <span>Pemeriksaan</span>
+                </a>
 
-        <div class="text-center d-none d-md-inline">
-            <button class="rounded-circle border-0" id="sidebarToggle"></button>
+                <!-- Serah Barang / Daftar Barang mapping -->
+                <a class="collapse-item d-flex justify-content-between 
+                   {{ Request::routeIs('serahbarang') ? 'active' : '' }}"
+                   href="{{ route('serahbarang') }}">
+                    <span>Serah Barang</span>
+                </a>
+
+                <!-- Penerimaan -->
+                <a class="collapse-item d-flex justify-content-between 
+                   {{ Request::routeIs('penerimaan') ? 'active' : '' }}"
+                   href="{{ route('penerimaan') }}">
+                    <span>Penerimaan</span>
+                </a>
+
+            </div>
         </div>
-    </ul>
+    </li>
+
+    <li class="nav-item {{ Request::routeIs('reviewSPJ') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('reviewSPJ') }}">
+            <i class="fas fa-fw fa-chart-area"></i>
+            <span>Review Data SPJ</span>
+        </a>
+    </li>
+
+    <li class="nav-item {{ Request::routeIs('cetakSPJ') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('cetakSPJ') }}">
+            <i class="fas fa-fw fa-print"></i>
+            <span>Cetak Data SPJ</span>
+        </a>
+    </li>
+
+    <hr class="sidebar-divider d-none d-md-block">
+
+    <div class="text-center d-none d-md-inline">
+        <button class="rounded-circle border-0" id="sidebarToggle"></button>
+    </div>
+
+</ul>
+
 
         <div id="content-wrapper" class="d-flex flex-column min-vh-100">
             <div id="content">
@@ -250,6 +286,7 @@
     <script src="{{ asset('vendor/jquery/jquery.min.js') }}"></script>
     <script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('vendor/jquery-easing/jquery.easing.min.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
 
             function isSweetAlertOpen() {

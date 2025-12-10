@@ -21,6 +21,11 @@ class SPJ extends Model
         'komentar_kasubag',
         'komentar_bendahara',
         'kegiatan_id',
+        'types',
+        'notified',
+        'notified_bendahara',
+        'notified_kasubag',
+        'notifiedby_kasubag',
     ];
 
     public function pesanan() 

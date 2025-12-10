@@ -17,7 +17,7 @@ class serahcontrol extends Controller
     
         $spj = SPJ::findOrFail($request->spj_id);
         $plts = Plt::all();
-        $nosurat = nosurat::latest()->first();
+        $nosurat = Nosurat::orderBy('id', 'desc')->get();
         $keduas = pihakkedua::all();
         $pemeriksaan = Pemeriksaan::findOrFail($request->pemeriksaan_id);
 

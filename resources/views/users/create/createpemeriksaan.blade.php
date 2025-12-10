@@ -21,27 +21,30 @@
                         <div class="mb-3">
                             <label class="form-label fw-bold">No Surat</label>
                             <div class="input-group">
-                                <!-- Prefix dari tabel (readonly) -->
-                                <input type="text" id="prefix_surat" 
-                                    class="form-control text-end" 
-                                    value="{{ $nosurat->no_awal ?? '' }}" readonly>
+                                <!-- Pilihan nomor awal -->
+                                <select id="prefix_surat" class="form-control text-end" required>
+                                    <option value="" disabled selected>-- Pilih Nomor Awal --</option>
+                                    @foreach ($nosurat as $item)
+                                        <option value="{{ $item->no_awal }}"
+                                            data-dinas="{{ $item->nama_dinas }}"
+                                            data-tahun="{{ $item->tahun }}">
+                                            {{ $item->no_awal }}
+                                        </option>
+                                    @endforeach
+                                </select>
 
                                 <!-- Bagian tengah diisi user -->
                                 <span class="input-group-text">/</span>
                                 <input type="text" id="no_surat_user" name="no_surat_user" 
                                     class="form-control text-center" placeholder="Nomor Surat" required>
 
-                                <!-- Suffix 1: nama dinas -->
+                                <!-- Nama dinas otomatis dari pilihan -->
                                 <span class="input-group-text">/</span>
-                                <input type="text" id="suffix_dinas" 
-                                    class="form-control" 
-                                    value="{{ $nosurat->nama_dinas ?? '' }}" readonly>
+                                <input type="text" id="suffix_dinas" class="form-control" readonly>
 
-                                <!-- Suffix 2: tahun -->
+                                <!-- Tahun otomatis dari pilihan -->
                                 <span class="input-group-text">/</span>
-                                <input type="text" id="suffix_tahun" 
-                                    class="form-control" 
-                                    value="{{ $nosurat->tahun ?? '' }}" readonly>
+                                <input type="text" id="suffix_tahun" class="form-control" readonly>
                             </div>
 
                             <!-- Hidden input gabungan final -->
@@ -177,7 +180,6 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 <script>
-    // Gabungkan seluruh bagian jadi satu string dengan tanda "/"
     const prefixInput = document.getElementById('prefix_surat');
     const userInput = document.getElementById('no_surat_user');
     const dinasInput = document.getElementById('suffix_dinas');
@@ -190,18 +192,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const dinas = dinasInput.value.trim();
         const tahun = tahunInput.value.trim();
 
-        // Gabungkan dengan tanda /
         const fullNo = [prefix, user, dinas, tahun]
-            .filter(part => part !== '') // hilangkan kosong
+            .filter(part => part !== '')
             .join('/');
 
         hiddenInput.value = fullNo;
     }
 
-    // Update setiap kali user mengetik
+    // Saat user mengetik nomor tengah
     userInput.addEventListener('input', updateNoSurat);
 
-    // Jalankan saat halaman dimuat pertama kali
+    // Saat user memilih prefix (ambil juga dinas & tahun)
+    prefixInput.addEventListener('change', function() {
+        const selected = this.options[this.selectedIndex];
+        dinasInput.value = selected.getAttribute('data-dinas') || '';
+        tahunInput.value = selected.getAttribute('data-tahun') || '';
+        updateNoSurat();
+    });
+
+    // Jalankan saat halaman dimuat
     updateNoSurat();
 </script>
 

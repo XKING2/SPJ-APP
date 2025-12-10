@@ -14,7 +14,9 @@ class Pesanan extends Model
         'alamat_pt',
         'tanggal_diterima',
         'surat_dibuat',
-        'nomor_tlp_pt'
+        'nomor_tlp_pt',
+        'jumlah_nominal',
+        'uang_terbilang'
     ];
 
 
@@ -40,5 +42,10 @@ class Pesanan extends Model
             'id',
             'id'
         );
+    }
+
+    public function nosurat()
+    {
+        return $this->belongsTo(Nosurat::class, 'no_surats');
     }
 }

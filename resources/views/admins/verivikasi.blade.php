@@ -1,7 +1,7 @@
 @extends('layouts.main2')
 
 @section('pageheads')
-    <h1 class="h3 mb-4 text-gray-800">Validasi SPJ</h1>
+    <h1 class="h3 mb-4 text-gray-800">Verivikasi SPJ</h1>
 @endsection
 
 @section('content')

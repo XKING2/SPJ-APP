@@ -43,4 +43,14 @@ class spj_feedbacks extends Model
     {
         return $query->where('role', $role);
     }
+
+    public function pesanan()
+    {
+        return $this->belongsTo(Pesanan::class, 'pesanan_id');
+    }
+
+    public function pemeriksaan()
+    {
+        return $this->belongsTo(Pemeriksaan::class, 'pemeriksaan_id');
+    }
 }

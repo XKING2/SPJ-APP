@@ -8,10 +8,12 @@
     <link href="css/costomcss.css" rel="stylesheet">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
+
 <body>
     <div class="login-box text-center">
         <img src="{{ asset('images/Logo1.png') }}" class="logo" alt="Logo">
-        <h4 class="fw-bold"> E-SPJ</h4>
+        <h4 class="fw-bold">E-SPJ</h4>
+
         <form method="POST" action="{{ route('login') }}">
             @csrf
             <div class="mb-3 text-start">
@@ -22,8 +24,10 @@
                 <label class="form-label">Password</label>
                 <input type="password" name="password" class="form-control" placeholder="Masukkan Password" required>
             </div>
+            
             <button type="submit" class="btn btn-primary w-100">Login</button>
         </form>
+
         @if ($errors->any())
             <div class="alert alert-danger mt-3">
                 {{ $errors->first() }}
@@ -32,20 +36,20 @@
     </div>
 </body>
 
+{{-- Flash message untuk login sukses --}}
 @if(session('success'))
     <div data-swal-success="{{ session('success') }}"></div>
 @endif
 
+{{-- Flash message untuk login gagal --}}
 @if($errors->any())
     <div data-swal-errors="{{ implode('|', $errors->all()) }}"></div>
 @endif
-
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-    // ✅ Ambil data flash message sukses dari elemen data
     const successData = document.querySelector('[data-swal-success]');
     const errorData = document.querySelector('[data-swal-errors]');
 
@@ -71,6 +75,5 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 });
 </script>
-
 
 </html>

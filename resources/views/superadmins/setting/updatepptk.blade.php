@@ -27,7 +27,7 @@
                 </div>
             @endif
 
-            {{-- 📝 Form Edit --}}
+            
             <form method="POST" action="{{ route('pptk.update', $pptk->id) }}">
                 @csrf
                 @method('PUT')
@@ -79,6 +79,15 @@
                            class="form-control @error('kegiatan') is-invalid @enderror"
                            value="{{ old('kegiatan', optional($pptk->kegiatan->first())->kegiatan) }}">
                     @error('kegiatan') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                </div>
+
+                <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">No Rek Sub Kegiatan</label>
+                           <input type="text" name="no_rek_sub" 
+                           class="form-control @error('no_rek_sub') is-invalid @enderror"
+                           value="{{ old('no_rek_sub',($pptk->kegiatan->first())->no_rek_sub) }}">
+                        </div>
                 </div>
     
 

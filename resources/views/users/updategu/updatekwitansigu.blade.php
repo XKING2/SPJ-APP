@@ -2,7 +2,7 @@
 
 @section('pageheads')
 <div class="container">
-    <h4 class="mb-1">Tambah Data Kwitansi</h4>
+    <h4 class="mb-1">Edit Data Kwitansi LS</h4>
 </div>
 @endsection
 
@@ -10,10 +10,11 @@
 <div class="container">
     <div class="card shadow-sm rounded-3">
         <div class="card-body">
-            <form action="{{ route('kwitansis.store') }}" method="POST" novalidate>
+            <form action="{{ route('kwitansils.update',$kwitansi->id) }}" method="POST" novalidate>
                 @csrf
-                <input type="hidden" name="spj_id" value="{{ $spj->id }}">
                 <input type="hidden" name="no_rekening" id="no_rekening">
+                <input type="hidden" name="spj_id" value="{{ $kwitansi->spj_id }}">
+                @method('PUT')
 
                 <div class="row">
                     <!-- Kolom Kiri -->
@@ -21,19 +22,30 @@
                         <div class="mb-3">
                             <label class="form-label fw-bold">Pilih PPTK</label>
                             <select name="id_pptk" id="id_pptk" class="form-control" required>
-                                <option value="" disabled selected>-- Pilih PPTK --</option>
+                                <option value="" disabled>-- Pilih PPTK --</option>
                                 @foreach($pptks as $pptk)
-                                    <option value="{{ $pptk->id }}">{{ $pptk->nama_pptk }}</option>
+                                    <option value="{{ $pptk->id }}"
+                                        {{ old('id_pptk', $kwitansi->id_pptk) == $pptk->id ? 'selected' : '' }}>
+                                        {{ $pptk->nama_pptk }}
+                                    </option>
                                 @endforeach
                             </select>
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Sub Kegiatan</label>
+                            <label class="form-label fw-bold">Pilih Sub Kegiatan</label>
                             <select name="id_kegiatan" id="id_kegiatan" class="form-control" required>
-                                <option value="" disabled selected>-- Pilih Sub Kegiatan --</option>
+                                <option value="" disabled>-- Pilih Sub Kegiatan --</option>
+                                @foreach($kegiatans as $kegiatan)
+                                    <option value="{{ $kegiatan->id }}"
+                                        {{ old('id_kegiatan', $kwitansi->id_kegiatan) == $kegiatan->id ? 'selected' : '' }}>
+                                        {{ $kegiatan->nama_kegiatan }}
+                                    </option>
+                                @endforeach
                             </select>
                         </div>
+
+                        
 
 
                         <div class="mb-3">
@@ -56,14 +68,34 @@
                             </div>
                         </div>
 
-                        
-
                         <div class="mb-3">
                             <label class="form-label fw-bold">Telah Diterima Dari</label>
                             <select name="telah_diterima_dari" class="form-control" required>
                                 <option value="">-- Pilih --</option>
-                                <option value="Bendahara Umum Daerah Kabupaten Gianyar">Bendahara Umum Daerah Kabupaten Gianyar</option>
-                                <option value="Bendahara Pengeluaran DPMD Gianyar">Bendahara Pengeluaran DPMD Gianyar</option>
+
+                                <option value="Bendahara Umum Daerah Kabupaten Gianyar"
+                                    {{ old('telah_diterima_dari', $kwitansi->telah_diterima_dari) == 'Bendahara Umum Daerah Kabupaten Gianyar' ? 'selected' : '' }}>
+                                    Bendahara Umum Daerah Kabupaten Gianyar
+                                </option>
+
+                                <option value="Bendahara Pengeluaran DPMD Gianyar"
+                                    {{ old('telah_diterima_dari', $kwitansi->telah_diterima_dari) == 'Bendahara Pengeluaran DPMD Gianyar' ? 'selected' : '' }}>
+                                    Bendahara Pengeluaran DPMD Gianyar
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Pilih Pihak PPK</label>
+                            <select name="id_plt" class="form-control" required>
+                                <option value="" disabled>-- Pilih Pihak Pertama --</option>
+
+                                @foreach($plts as $plt)
+                                    <option value="{{ $plt->id }}"
+                                        {{ old('id_plt', $kwitansi->id_plt) == $plt->id ? 'selected' : '' }}>
+                                        {{ $plt->nama_pihak_pertama }}
+                                    </option>
+                                @endforeach
                             </select>
                         </div>
                     </div>
@@ -74,29 +106,29 @@
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">Nama Rekanan</label>
-                            <input type="text" name="penerima_kwitansi" class="form-control" value="{{ old('penerima_kwitansi') }}" required>
+                            <input type="text" name="penerima_kwitansi" class="form-control" value="{{ old('penerima_kwitansi',$kwitansi->penerima_kwitansi) }}" required>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">Nama Bank Rekanan</label>
-                            <input type="text" name="nama_bank" class="form-control" value="{{ old('nama_bank') }}" required>
+                            <input type="text" name="nama_bank" class="form-control" value="{{ old('nama_bank',$kwitansi->nama_bank) }}" required>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">Rekening Bank Rekanan</label>
-                            <input type="text" name="no_rekening_tujuan" class="form-control" value="{{ old('no_rekening_tujuan') }}" required>
+                            <input type="text" name="no_rekening_tujuan" class="form-control" value="{{ old('no_rekening_tujuan',$kwitansi->no_rekening_tujuan) }}" required>
                         </div>
 
                         
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">Jabatan Rekanan</label>
-                            <input type="text" name="jabatan_penerima" class="form-control" value="{{ old('jabatan_penerima') }}" required>
+                            <input type="text" name="jabatan_penerima" class="form-control" value="{{ old('jabatan_penerima',$kwitansi->jabatan_penerima) }}" required>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">NPWP Rekanan</label>
-                            <input type="text" name="npwp" class="form-control" value="{{ old('npwp') }}" required>
+                            <input type="text" name="npwp" class="form-control" value="{{ old('npwp',$kwitansi->npwp) }}" required>
                         </div>
                     </div>
                 </div>
@@ -104,7 +136,7 @@
                 <!-- Untuk Pembayaran -->
                 <div class="mb-3">
                     <label class="form-label fw-bold">Untuk Pembayaran</label>
-                    <textarea name="pembayaran" class="form-control" rows="3" required>{{ old('pembayaran') }}</textarea>
+                    <textarea name="pembayaran" class="form-control" rows="3" required>{{ old('pembayaran',$kwitansi->pembayaran) }}</textarea>
                 </div>
 
                 <!-- Tombol Simpan -->
@@ -184,13 +216,50 @@ document.addEventListener("DOMContentLoaded", function () {
     const kegiatanSelect = document.getElementById("id_kegiatan");
     const noRekSubInput = document.getElementById("no_rek_sub");
 
-    /* -----------------------------
-       1️⃣ FETCH SUB KEGIATAN BERDASARKAN PPTK
-       ----------------------------- */
+    const selectedPptk = "{{ $kwitansi->id_pptk }}";
+    const selectedKegiatan = "{{ $kwitansi->id_kegiatan }}";
+
+    /* -------------------------------------------------------
+       1️⃣ LOAD SUB KEGIATAN SAAT HALAMAN EDIT DIBUKA
+       ------------------------------------------------------- */
+    function loadSubKegiatanOnEdit() {
+        if (!selectedPptk) return;
+
+        kegiatanSelect.innerHTML = `<option value="" disabled selected>Loading...</option>`;
+
+        fetch(`/get-subkegiatan/${selectedPptk}`)
+            .then(res => res.json())
+            .then(data => {
+                kegiatanSelect.innerHTML = `<option value="" disabled>-- Pilih Sub Kegiatan --</option>`;
+
+                data.forEach(item => {
+                    kegiatanSelect.innerHTML += `
+                        <option value="${item.id}" ${item.id == selectedKegiatan ? "selected" : ""}>
+                            ${item.subkegiatan}
+                        </option>`;
+                });
+
+                // Setelah sub kegiatan terpilih → load nomor rekening
+                if (selectedKegiatan) {
+                    fetch(`/get-norek-sub/${selectedKegiatan}`)
+                        .then(r => r.json())
+                        .then(d => {
+                            noRekSubInput.value = d.no_rek_sub ?? "";
+                        });
+                }
+            });
+    }
+
+    loadSubKegiatanOnEdit(); // ⬅ AUTO LOAD SAAT EDIT page terbuka
+
+
+    /* -------------------------------------------------------
+       2️⃣ FETCH SUB KEGIATAN SAAT PPTK DIGANTI USER
+       ------------------------------------------------------- */
     pptkSelect.addEventListener("change", function () {
         const pptkId = this.value;
         kegiatanSelect.innerHTML = `<option value="" disabled selected>Loading...</option>`;
-        noRekSubInput.value = ""; // reset jika ganti PPTK
+        noRekSubInput.value = "";
 
         fetch(`/get-subkegiatan/${pptkId}`)
             .then(response => response.json())
@@ -199,16 +268,13 @@ document.addEventListener("DOMContentLoaded", function () {
                 data.forEach(item => {
                     kegiatanSelect.innerHTML += `<option value="${item.id}">${item.subkegiatan}</option>`;
                 });
-            })
-            .catch(error => {
-                console.error("Error fetching sub kegiatan:", error);
-                kegiatanSelect.innerHTML = `<option value="" disabled selected>Gagal memuat data</option>`;
             });
     });
 
-    /* -----------------------------
-       2️⃣ FETCH NOMOR REKENING SUB KEGIATAN
-       ----------------------------- */
+
+    /* -------------------------------------------------------
+       3️⃣ FETCH NOMOR REKENING SAAT SUB KEGIATAN DIGANTI
+       ------------------------------------------------------- */
     kegiatanSelect.addEventListener("change", function () {
         const kegiatanId = this.value;
         noRekSubInput.value = "Loading...";
@@ -217,14 +283,11 @@ document.addEventListener("DOMContentLoaded", function () {
             .then(response => response.json())
             .then(data => {
                 noRekSubInput.value = data.no_rek_sub ?? "";
-            })
-            .catch(err => {
-                console.error("Error fetching no rek:", err);
-                noRekSubInput.value = "";
             });
     });
 
 });
+
 </script>
 
 <script>
@@ -245,4 +308,3 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 
 @endsection
-    

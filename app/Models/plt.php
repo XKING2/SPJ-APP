@@ -13,4 +13,9 @@ class plt extends Model
     {
         return $this->hasMany(Pemeriksaan::class, 'id_plt');
     }
+
+        public function kwitansi()
+    {
+        return $this->hasMany(Pemeriksaan::class, 'id_plt');
+    }
 }

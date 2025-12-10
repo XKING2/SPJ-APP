@@ -9,6 +9,7 @@ use App\Models\pemeriksaan;
 use App\Models\penerimaan;
 use App\Models\serahbarang;
 use App\Models\SPJ;
+use App\Helpers\SpjFieldGroups;
 use Illuminate\Support\Facades\Auth;
 
 class sidebarcontrol extends Controller
@@ -32,8 +33,7 @@ class sidebarcontrol extends Controller
             'user_SPJ',
             'spjTervalidasikasubag',
             'spjTervalidasibendahara',
-            'laporan',
-            
+            'laporan',    
         ));
     }
 
@@ -43,6 +43,8 @@ class sidebarcontrol extends Controller
 
     public function showkwitansi(Request $request)
     {
+
+        
         $search = $request->input('search');
         $query = Kwitansi::query();
 
@@ -66,7 +68,7 @@ class sidebarcontrol extends Controller
             })
             ->orderBy('created_at', 'desc')
             ->paginate(10);
-        return view('users.pesanan', compact('pesanans'));
+        return view('users.pesanan', compact('pesanans','search'));
     }
 
     public function showserahterima()
@@ -78,38 +80,52 @@ class sidebarcontrol extends Controller
     public function showpemeriksaan(Request $request)
     {
         $search = $request->input('search');
-        $query = Pemeriksaan::with('pesanan');
-        if ($search) {
-            $query->where('pekerjaan', 'like', "%{$search}%")
-                ->orWhereHas('pesanan', function ($q) use ($search) {
-                    $q->where('no_surat', 'like', "%{$search}%")
-                        ->orWhere('nama_pt', 'like', "%{$search}%")
-                        ->orWhere('alamat_pt', 'like', "%{$search}%");
-                });
-        }
+        $userId = Auth::id();
 
-        $pemeriksaans = $query->orderBy('created_at', 'desc')->paginate(10);
-        return view('users.pemeriksaan', compact('pemeriksaans'));
-    
+        $pemeriksaans = Pemeriksaan::with('spj')
+            ->whereHas('spj', function ($q) use ($userId) {
+                $q->where('user_id', $userId);
+            })
+            ->when($search, function ($q) use ($search) {
+                $q->where(function ($sub) use ($search) {
+                    $sub->where('pekerjaan', 'like', "%{$search}%")
+                        ->orWhere('no_suratssss', 'like', "%{$search}%")
+                        ->orWhere('tanggals_diterima', 'like', "%{$search}%")
+                        ->orWhere('hari_diterima', 'like', "%{$search}%")
+                        ->orWhere('bulan_diterima', 'like', "%{$search}%")
+                        ->orWhere('tahun_diterima', 'like', "%{$search}%")
+                        ->orWhere('nama_pihak_kedua', 'like', "%{$search}%");
+                });
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+
+        return view('users.pemeriksaan', compact('pemeriksaans', 'search'));
     }
+
 
 
     public function showpenerimaan(Request $request)
     {
-        $search = $request->input('search');
-        $query = Penerimaan::with(['pemeriksaan', 'pesanan']);
 
-        // Filter pencarian
-        if ($search) {
-            $query->where('nama_pihak_kedua', 'like', "%{$search}%")
-                ->orWhere('pekerjaan', 'like', "%{$search}%")
-                ->orWhereHas('pesanan', function ($q) use ($search) {
-                    $q->where('nama_pt', 'like', "%{$search}%")
+        $search = $request->input('search');
+        $userId = Auth::id();
+
+        $penerimaans = Penerimaan::with(['pemeriksaan', 'pesanan'])
+            ->whereHas('spj', function ($q) use ($userId) {
+                $q->where('user_id', $userId);
+            })
+            ->when($search, function ($q) use ($search) {
+                $q->where(function ($sub) use ($search) {
+                    $sub->where('nama_pihak_kedua', 'like', "%{$search}%")
+                        ->orWhere('pekerjaan', 'like', "%{$search}%")
+                        ->orWhere('surat_dibuat', 'like', "%{$search}%")
                         ->orWhere('no_surat', 'like', "%{$search}%");
                 });
-        }
-        $penerimaans = $query->orderBy('created_at', 'desc')->paginate(10);
-        return view('users.penerimaan', compact('penerimaans'));
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(10);
+        return view('users.penerimaan', compact('penerimaans','search'));
     
     }
     
@@ -117,47 +133,82 @@ class sidebarcontrol extends Controller
     {
         $search = $request->input('search');
 
-        // Ambil data serah barang beserta relasi plt (pihak pertama) dan pihak kedua
-        $query = Serahbarang::with(['plt', 'pihak_kedua']);
+        $search = $request->input('search');
+        $userId = Auth::id();
 
-        // Filter pencarian
-        if ($search) {
-            $query->whereHas('plt', function ($q) use ($search) {
-                    $q->where('nama_pihak_pertama', 'like', "%{$search}%");
-                })
-                ->orWhereHas('pihak_kedua', function ($q) use ($search) {
-                    $q->where('nama_pihak_kedua', 'like', "%{$search}%");
-                })
-                ->orWhere('no_suratsss', 'like', "%{$search}%");
-        }
+         $query = Serahbarang::with(['plt', 'pihak_kedua'])
+            ->whereHas('spj', function ($q) use ($userId) {
+                $q->where('user_id', $userId);
+            })
+            ->when($search, function ($q) use ($search) {
+                $q->where(function ($sub) use ($search) {
+                    $sub->where('no_suratsss', 'like', "%{$search}%");
+                });
+            });
 
         $serahbarangs = $query->orderBy('created_at', 'desc')->paginate(10);
 
-        return view('users.serahbarang', compact('serahbarangs'));
+        return view('users.serahbarang', compact('serahbarangs','search'));
     }
 
     public function showreviewSPJ(Request $request)
     {
         $search = $request->input('search');
         $userId = Auth::id() ?? session('user_id');
-        $query = Spj::with(['pesanan', 'feedbacks'])
-                    ->where('user_id', $userId);
 
+        // === Eager load relasi yang benar ===
+        $query = Spj::with([
+            'pesanans',
+            'spj_feedbacks',
+            'spj_feedbacks.pesanans',
+            'spj_feedbacks.pemeriksaans'
+        ])->where('user_id', $userId);
+
+        // === Filter pencarian ===
         if ($search) {
             $query->where(function ($q) use ($search) {
                 $q->where('status2', 'like', "%{$search}%")
-                ->orWhereHas('pesanan', function ($pesananQuery) use ($search) {
+                ->orWhereHas('pesanans', function ($pesananQuery) use ($search) {
                     $pesananQuery->where('no_surat', 'like', "%{$search}%")
                                 ->orWhere('surat_dibuat', 'like', "%{$search}%");
                 });
             });
         }
 
+        // === Pagination ===
         $spjs = $query->orderBy('created_at', 'desc')->paginate(10);
-        $spjDitolak = $spjs->firstWhere('status2', 'belum_valid');
 
-        return view('users.reviewSPJ', compact('spjs', 'spjDitolak'));
+        // === Proses feedback (disiapkan untuk Blade/JS) ===
+        foreach ($spjs as $spj) {
+
+            $feedbackArray = [];
+            foreach ($spj->spj_feedbacks as $f) {
+
+                $feedbackArray[] = [
+                    'field'      => $f->field_name,
+                    'message'    => $f->message,
+                    'role'       => $f->role,
+                    'created_at' => $f->created_at->format('d-m-Y H:i'),
+
+                    // Nomor SPJ dari relasi yang BENAR
+                    'pesanan'       => $f->pesanans ? [
+                        'no_surat' => $f->pesanans->no_surat
+                    ] : null,
+
+                    'pemeriksaan'   => $f->pemeriksaans ? [
+                        'no_surat' => $f->pemeriksaans->no_surat
+                    ] : null,
+                ];
+            }
+
+            $spj->feedbackArray = $feedbackArray;
+            $spj->status1 = $spj->status;
+            $spj->status2 = $spj->status2;
+        }
+
+        return view('users.reviewSPJ', compact('spjs','search'));
     }
+
 
 
     public function showcetakSPJ(Request $request)
@@ -180,11 +231,9 @@ class sidebarcontrol extends Controller
                 });
             });
         }
-        $spjs = $query->orderBy('created_at', 'desc')->paginate(10);
+        $spjs = $query->orderBy('created_at', 'desc')->paginate(10); 
 
-        $spjDitolak = $spjs->firstWhere('status2', 'belum_valid');
-
-        return view('users.cetakSPJ', compact('spjs', 'spjDitolak'));
+        return view('users.cetakSPJ', compact('spjs','search'));
     }
 
 }

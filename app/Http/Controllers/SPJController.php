@@ -8,7 +8,7 @@ use App\Models\Spj;
 use App\Models\Pesanan;
 use App\Models\Pemeriksaan;
 use App\Models\Penerimaan;
-use App\Models\Kwitansi;
+use App\Models\spj_feedbacks;
 use PhpOffice\PhpWord\TemplateProcessor;
 use Illuminate\Support\Facades\Storage;
 use App\Models\spjfeedback;
@@ -24,49 +24,46 @@ class SPJController extends Controller
         return view('users.pesanan', compact('spjs'));
     }
 
-    public function create(Request $request)
+    public function store(Request $request)
     {
-        $userId = Auth::id() ?? session('user_id'); 
+         $userId = Auth::id() ?? session('user_id'); 
 
-        if (!$userId) {
-            return back()->withErrors(['auth' => 'User belum login']);
-        }
+    if (!$userId) {
+        return back()->withErrors(['auth' => 'User belum login']);
+    }
 
-        $spj = Spj::create([
-            'status'         => 'draft',
-            'pesanan_id'     => $request->pesanan_id,
-            'kwitansi_id'    => $request->kwitansi_id,
-            'penerimaan_id'  => $request->penerimaan_id,
-            'pemeriksaan_id' => $request->pemeriksaan_id,
-            'user_id'        => $userId,
-            'kegiatan_id'    => $request->kegiatan_id,
-        ]);
+    $typeSpj = $request->types ?? 'gu';
+    if (!in_array($typeSpj, ['gu','ls'])) $typeSpj = 'gu';
 
-        if ($request->pesanan_id) {
-            Pesanan::where('id', $request->pesanan_id)->update(['spj_id' => $spj->id]);
-        }
-        if ($request->kwitansi_id) {
-            Kwitansi::where('id', $request->kwitansi_id)->update(['spj_id' => $spj->id]);
-        }
-        if ($request->penerimaan_id) {
-            Penerimaan::where('id', $request->penerimaan_id)->update(['spj_id' => $spj->id]);
-        }
-        if ($request->pemeriksaan_id) {
-            Pemeriksaan::where('id', $request->pemeriksaan_id)->update(['spj_id' => $spj->id]);
-        }
+    $spj = Spj::create([
+        'status'         => 'draft',
+        'pesanan_id'     => $request->pesanan_id,
+        'kwitansi_id'    => $request->kwitansi_id,
+        'penerimaan_id'  => $request->penerimaan_id,
+        'pemeriksaan_id' => $request->pemeriksaan_id,
+        'user_id'        => $userId,
+        'kegiatan_id'    => $request->kegiatan_id,
+        'types'          => $typeSpj,
+    ]);
 
-        session(['current_spj_id' => $spj->id]);
+    session(['current_spj_id' => $spj->id]);
 
-        return redirect()
-            ->route('kwitansi.create', ['spj_id' => $spj->id])
-            ->with('success', "SPJ berhasil dibuat untuk user ID: {$userId}");
+    if ($typeSpj === 'ls') {
+        return redirect()->route('kwitansils.create', ['spj_id' => $spj->id]);
+    }
+
+    return redirect()->route('kwitansi.create', ['spj_id' => $spj->id]);
     }
 
 
-    public function review($spj_id)
+
+    public function review($spj_id,$id)
     {
+        $feedback = spj_feedbacks::with(['pesanan', 'pemeriksaan'])
+        ->where('spj_id', $id)
+        ->get();
         $spj = Spj::with(['pesanan', 'kwitansi', 'pemeriksaan', 'penerimaan'])->findOrFail($spj_id);
-        return view('users.reviewSPJ', compact('spj'));
+        return view('users.reviewSPJ', compact('spj','feedback'));
     }
 
     
@@ -118,6 +115,7 @@ class SPJController extends Controller
             $template->setValue('nama_pptk', $kwitansi->pptk->nama_pptk);
             $template->setValue('jabatan_pptk', $kwitansi->pptk->gol_pptk);
             $template->setValue('nip_pptk', $kwitansi->pptk->nip_pptk);
+            
 
 
             
@@ -147,6 +145,7 @@ class SPJController extends Controller
                 $template->setValue('jabatan_pihak_kedua', $pemeriksaan->jabatan_pihak_kedua);
                 $template->setValue('alamat_pihak_kedua', $pemeriksaan->alamat_pihak_kedua);
                 $template->setValue('pekerjaan', $pemeriksaan->pekerjaan);
+                $template->setValue('no_suratss', $pemeriksaan->no_suratssss);
                 
             }
 
@@ -159,6 +158,7 @@ class SPJController extends Controller
                 $template->setValue('nip_pengelola', $serahbarang->pihak_kedua->nip_pihak_kedua);
                 $template->setValue('gol_pengelola', $serahbarang->pihak_kedua->gol_pihak_kedua);
                 $template->setValue('jabatan_pengelola', $serahbarang->pihak_kedua->jabatan_pihak_kedua);
+                $template->setValue('no_suratsss', $serahbarang->no_suratsss);
             }
 
            
@@ -169,6 +169,7 @@ class SPJController extends Controller
                 $template->setValue('dibulatkan', number_format($penerimaan->dibulatkan ?? 0));
                 $template->setValue('terbilang', $penerimaan->terbilang);
                 $template->setValue('pph', $penerimaan->pph);
+                $template->setValue('no_suratssss', $penerimaan->no_surat);
             }
 
             
@@ -249,6 +250,120 @@ class SPJController extends Controller
             Log::error('Gagal generate SPJ otomatis: ' . $e->getMessage());
         }
     }
+
+    public function generateSPJDocumentls($id)
+{
+    try {
+        $spj = Spj::with([
+            'pesanan.items',
+            'kwitansi.pptk',
+            'pemeriksaan',
+            'kwitansi.kegiatan',
+            'kwitansi.plt'
+        ])->findOrFail($id);
+
+        $pesanan  = $spj->pesanan;
+        $kwitansi = $spj->kwitansi;
+
+        $templatePath = storage_path('app/public/Tamplate_SPJls.docx');
+        $outputDocx   = storage_path("app/public/spj_preview_{$spj->id}.docx");
+        $outputPdfDir = storage_path('app/public');
+        $outputPdf    = "{$outputPdfDir}/spj_preview_{$spj->id}.pdf";
+
+        if (!file_exists($templatePath)) {
+            throw new Exception('Template SPJ tidak ditemukan.');
+        }
+
+        $template = new TemplateProcessor($templatePath);
+
+        // ==== Isi data kwitansi ====
+        $template->setValue('no_rekening', $kwitansi->no_rekening);
+        $template->setValue('no_rekening_tujuan', $kwitansi->no_rekening_tujuan);
+        $template->setValue('nama_bank', $kwitansi->nama_bank);
+        $template->setValue('npwp', $kwitansi->npwp);
+        $template->setValue('telah_diterima_dari', $kwitansi->telah_diterima_dari);
+        $template->setValue('pembayaran', $kwitansi->pembayaran);
+        $template->setValue('sub_kegiatan', $kwitansi->kegiatan->subkegiatan);
+        $template->setValue('penerima_kwitansi', $kwitansi->penerima_kwitansi);
+        $template->setValue('jabatan_penerima', $kwitansi->jabatan_penerima);
+        $template->setValue('nama_pptk', $kwitansi->pptk->nama_pptk);
+        $template->setValue('jabatan_pptk', $kwitansi->pptk->gol_pptk);
+        $template->setValue('nip_pptk', $kwitansi->pptk->nip_pptk);
+        $template->setValue('nama_pertama', $kwitansi->plt->nama_pihak_pertama);
+        $template->setValue('nip_pertama', $kwitansi->plt->nip_pihak_pertama);
+        $template->setValue('gol_pertama', $kwitansi->plt->gol_pihak_pertama);
+        $template->setValue('jab_pertama', $kwitansi->plt->jabatan_pihak_pertama);
+
+        // ==== Data Pesanan ====
+        if ($pesanan) {
+            $template->setValue('nama_pt',  $pesanan->nama_pt);
+            $template->setValue('no_surat', $pesanan->no_surat);
+            $template->setValue('alamat_pt', $pesanan->alamat_pt);
+            $template->setValue('nomor_tlp_pt', $pesanan->nomor_tlp_pt);
+            $template->setValue('tanggal_diterima',
+                Carbon::parse($pesanan->tanggal_diterima)->format('d-m-Y')
+            );
+
+            $template->setValue('surat_dibuat',
+                Carbon::parse($pesanan->surat_dibuat)->format('d-m-Y')
+            );
+
+            $template->setValue('uang_terbilang', $pesanan->uang_terbilang);
+            $template->setValue('jumlah_nominal', $pesanan->jumlah_nominal);
+        }
+
+        // =====================================================
+        //  🔥 DETAIL BARANG HANYA MENGGUNAKAN PESANAN->ITEMS
+        // =====================================================
+        $items = $pesanan ? $pesanan->items : collect();
+
+        if ($items->count() > 0) {
+            // clone row berdasarkan jumlah items
+            $template->cloneRow('nama_barang3', $items->count());
+
+            foreach ($items as $i => $item) {
+                $n = $i + 1;
+
+                $template->setValue("no3#{$n}", $n);
+                $template->setValue("nama_barang3#{$n}", $item->nama_barang ?? '-');
+                $template->setValue("jumlah3#{$n}", $item->jumlah ?? '-');
+                $template->setValue("satuan3#{$n}", $item->satuan ?? '-'); // jika tidak ada satuan hapus ini
+            }
+        } else {
+
+            // Jika tidak ada item, isi 1 baris default
+            $template->setValue('nama_barang3', '-');
+            $template->setValue('jumlah3', '-');
+            $template->setValue('satuan3', '-');
+        }
+
+        // ==== Save DOCX ====
+        $template->saveAs($outputDocx);
+
+        // ==== Convert to PDF ====
+        $command = "soffice --headless --convert-to pdf --outdir "
+            . escapeshellarg($outputPdfDir) . " "
+            . escapeshellarg($outputDocx);
+
+        exec($command, $output, $returnCode);
+
+        if ($returnCode !== 0) {
+            throw new Exception("Gagal konversi ke PDF. Pastikan LibreOffice terinstal.");
+        }
+
+        if (file_exists($outputPdf)) {
+            Storage::disk('public')->putFileAs(
+                'spj_generated',
+                new \Illuminate\Http\File($outputPdf),
+                "spj_{$spj->id}.pdf"
+            );
+        }
+
+    } catch (Exception $e) {
+        Log::error('Gagal generate SPJ otomatis: ' . $e->getMessage());
+    }
+}
+
 
     public function preview($id)
     {
@@ -333,6 +448,44 @@ class SPJController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Terjadi kesalahan saat mencetak SPJ: ' . $e->getMessage());
         }
+    }
+
+    public function markNotifRead($id, $role)
+    {
+        $spj = Spj::find($id);
+
+        if (!$spj) {
+            return response()->json([
+                'success' => false,
+                'message' => 'SPJ tidak ditemukan'
+            ], 404);
+        }
+
+        switch ($role) {
+            case 'bendahara':
+                $spj->update(['notified_bendahara' => 1]);
+                break;
+
+            case 'kasubag':
+                $spj->update(['notified_kasubag' => 1]);
+                break;
+
+            case 'users':
+                // user klik bell → dianggap baca semua feedback
+                $spj->update([
+                    'notified' => 1,
+                    'notifiedby_kasubag' => 1
+                ]);
+                break;
+
+            default:
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Role tidak valid'
+                ], 400);
+        }
+
+        return response()->json(['success' => true]);
     }
 
 

@@ -10,7 +10,7 @@
 <div class="container">
     <div class="card shadow-sm rounded-3">
         <div class="card-body">
-            <form action="{{ route('pesanan.update', $pesanan->id) }}" method="POST" id="pesananForm" novalidate>
+            <form action="{{ route('pesananls.update', $pesanan->id) }}" method="POST" id="pesananForm" novalidate>
                 @csrf
                 @method('PUT')
 
@@ -20,17 +20,59 @@
                     <!-- Kiri -->
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label class="form-label fw-bold">No Surat</label>
-                            <input type="text" name="no_surat" class="form-control" 
-                                value="{{ old('no_surat', $pesanan->no_surat) }}"required>
+
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <label class="form-label fw-bold m-0">No Surat</label>
+
+                                <!-- Tombol toggle -->
+                                <button type="button" id="toggleNoSurat" class="btn btn-sm btn-secondary">
+                                    + Tambah Nomor Surat
+                                </button>
+                            </div>
+
+                            <!-- WRAPPER agar bisa ditampilkan/sembunyikan -->
+                            <div id="noSuratWrapper" style="display:none;">
+
+                                <div class="input-group mb-2">
+
+                                    <select id="prefix_surat" name="prefix_surat" class="form-control text-end">
+                                        <option value="" disabled selected>-- Pilih Nomor Awal --</option>
+                                        @foreach ($nosurat as $item)
+                                            <option value="{{ $item->no_awal }}"
+                                                data-dinas="{{ $item->nama_dinas }}"
+                                                data-tahun="{{ $item->tahun }}">
+                                                {{ $item->no_awal }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+
+                                    <span class="input-group-text">/</span>
+
+                                    <input type="text" id="no_surat_user" 
+                                        name="no_surat_user" 
+                                        class="form-control text-center" 
+                                        placeholder="Nomor Surat">
+
+                                    <span class="input-group-text">/</span>
+                                    <input type="text" id="suffix_dinas" class="form-control" readonly>
+
+                                    <span class="input-group-text">/</span>
+                                    <input type="text" id="suffix_tahun" class="form-control" readonly>
+
+                                </div>
+
+                                <!-- hidden gabungan final -->
+                                <input type="hidden" name="no_surat" id="no_surat">
+                            </div>
+
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Nama PT</label>
+                            <label class="form-label fw-bold">Nama Perusahaan Rekanan</label>
                             <input type="text" name="nama_pt" class="form-control" 
                                 value="{{ old('nama_pt', $pesanan->nama_pt) }}"required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Alamat PT</label>
+                            <label class="form-label fw-bold">Alamat Perusahaan Rekanan</label>
                             <input type="text" name="alamat_pt" class="form-control" 
                                 value="{{ old('alamat_pt', $pesanan->alamat_pt) }}"required>
                         </div>
@@ -49,11 +91,24 @@
                                 value="{{ old('tanggal_diterima', $pesanan->tanggal_diterima) }}"required>
                         </div>
                         <div class="mb-3">
-                            <label class="form-label fw-bold">Nomor Telpon PT</label>
+                            <label class="form-label fw-bold">Nomor Telpon Perusahaan Rekanan</label>
                             <input type="number" name="nomor_tlp_pt" class="form-control" 
                                 value="{{ old('nomor_tlp_pt', $pesanan->nomor_tlp_pt) }}" required>
                         </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Jumlah Nominal</label>
+                            <input type="number" name="jumlah_nominal" id="jumlah_nominal" class="form-control"
+                                   value="{{ old('jumlah_nominal',$pesanan->jumlah_nominal) }}" placeholder="Masukkan jumlah nominal" required>
+                        </div>
+
+                        <div class="mb-3">
+                                <label class="form-label fw-bold">Uang Terbilang</label>
+                                <input type="text" name="uang_terbilang" id="uang_terbilang" class="form-control"
+                                    value="{{ old('uang_terbilang',$pesanan->uang_terbilang) }} " readonly>
+                        </div>
+
                     </div>
+                   
                 </div>
 
                 <!-- Tabel Barang -->
@@ -226,4 +281,128 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
+
+<script>
+// ==== TOGGLE INPUT NOMOR SURAT ====
+document.addEventListener("DOMContentLoaded", () => {
+    const wrapper = document.getElementById("noSuratWrapper");
+    const btnToggle = document.getElementById("toggleNoSurat");
+
+    const prefix = document.getElementById("prefix_surat");
+    const user = document.getElementById("no_surat_user");
+    const dinas = document.getElementById("suffix_dinas");
+    const tahun = document.getElementById("suffix_tahun");
+    const hidden = document.getElementById("no_surat");
+
+    function updateNoSurat() {
+        const a = prefix.value.trim();
+        const b = user.value.trim();
+        const c = dinas.value.trim();
+        const d = tahun.value.trim();
+
+        const full = [a, b, c, d].filter(x => x !== "").join("/");
+        hidden.value = full;
+    }
+
+    // Event input
+    user.addEventListener("input", updateNoSurat);
+    prefix.addEventListener("change", function() {
+        const opt = this.options[this.selectedIndex];
+        dinas.value = opt.getAttribute("data-dinas") || "";
+        tahun.value = opt.getAttribute("data-tahun") || "";
+        updateNoSurat();
+    });
+
+    // Klik tombol toggle
+    btnToggle.addEventListener("click", () => {
+        if (wrapper.style.display === "none") {
+            
+            // TAMPILKAN
+            wrapper.style.display = "block";
+            btnToggle.innerText = "− Hapus Nomor Surat";
+
+        } else {
+
+            // SEMBUNYIKAN + RESET FIELD
+            wrapper.style.display = "none";
+            btnToggle.innerText = "+ Tambah Nomor Surat";
+
+            prefix.value = "";
+            user.value = "";
+            dinas.value = "";
+            tahun.value = "";
+            hidden.value = "";
+        }
+    });
+});
+
+</script>
+
+<script>
+// ============================================
+// Konversi Angka ke Terbilang Bahasa Indonesia
+// ============================================
+function terbilang(n) {
+    const satuan = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan", "Sepuluh", "Sebelas"];
+
+    n = parseInt(n);
+
+    if (isNaN(n) || n < 0) return "";
+
+    if (n < 12) return satuan[n];
+    if (n < 20) return terbilang(n - 10) + " Belas";
+    if (n < 100) return terbilang(Math.floor(n / 10)) + " Puluh " + terbilang(n % 10);
+    if (n < 200) return "Seratus " + terbilang(n - 100);
+    if (n < 1000) return terbilang(Math.floor(n / 100)) + " Ratus " + terbilang(n % 100);
+    if (n < 2000) return "Seribu " + terbilang(n - 1000);
+    if (n < 1000000) return terbilang(Math.floor(n / 1000)) + " Ribu " + terbilang(n % 1000);
+    if (n < 1000000000) return terbilang(Math.floor(n / 1000000)) + " Juta " + terbilang(n % 1000000);
+    if (n < 1000000000000) return terbilang(Math.floor(n / 1000000000)) + " Miliar " + terbilang(n % 1000000000);
+    if (n < 1000000000000000) return terbilang(Math.floor(n / 1000000000000)) + " Triliun " + terbilang(n % 1000000000000);
+
+    return "";
+}
+
+// ============================================
+// Fungsi untuk mengupdate input terbilang
+// ============================================
+function updateTerbilang() {
+    const inputNominal = document.getElementById("jumlah_nominal");
+    const inputTerbilang = document.getElementById("uang_terbilang");
+
+    if (!inputNominal || !inputTerbilang) return;
+
+    let angka = inputNominal.value.replace(/\D/g, ""); // Hanya angka
+    if (!angka) {
+        inputTerbilang.value = "";
+        return;
+    }
+
+    let hasil = terbilang(angka).trim();
+
+    // Kapitalisasi awal dan tambahkan "Rupiah"
+    if (hasil.length > 0) {
+        hasil = hasil.charAt(0).toUpperCase() + hasil.slice(1) + " Rupiah";
+    }
+
+    // Buang spasi ganda
+    hasil = hasil.replace(/\s+/g, " ").trim();
+
+    inputTerbilang.value = hasil;
+}
+
+// ============================================
+// Jalankan saat halaman selesai dimuat
+// ============================================
+document.addEventListener("DOMContentLoaded", () => {
+    const inputNominal = document.getElementById("jumlah_nominal");
+
+    // 1️⃣ Isi terbilang dari nilai database saat halaman dibuka
+    updateTerbilang();
+
+    // 2️⃣ Update jika user mengubah nominal
+    inputNominal.addEventListener("input", updateTerbilang);
+});
+</script>
+
 @endsection

@@ -86,7 +86,7 @@ Route::get('/admin/verivikasi', [sidebarcontrol2::class, 'showverivikasi'])->nam
 Route::post('/admin/verivikasi/{id}/update-status', [sidebarcontrol2::class, 'updateStatusbendahara'])
     ->name('updateStatusbendahara');
 Route::get('/spj', [SPJController::class, 'index'])->name('spj.index');
-Route::get('/spj/create', [SPJController::class, 'create'])->name('spj.create');
+Route::post('/spj/store', [SPJController::class, 'store'])->name('spj.store');
 
 Route::get('/spj/preview/{id}', [SPJController::class, 'preview'])->name('spj.preview');
 Route::post('/spj/{id}/submit-bendahara', [SpjController::class, 'submitToBendahara'])->name('spj.submitToBendahara');
@@ -105,22 +105,33 @@ Route::post('/spj/{spjId}/revisi', [spjresponcontrol::class, 'store'])
 
 // ========== KWITANSI ==========
 Route::get('/kwitansi/create/{spj_id}', [KwitansiControl::class, 'create'])->name('kwitansi.create');
+Route::get('/kwitansils/create/{spj_id}', [KwitansiControl::class, 'creategu'])->name('kwitansils.create');
 Route::post('/kwitansi/store', [KwitansiControl::class, 'store'])->name('kwitansis.store');
+Route::post('/kwitansils/store', [KwitansiControl::class, 'storels'])->name('kwitansisls.store');
 Route::middleware(['auth'])->group(function () {
     Route::get('/kwitansi/{id}/edit', [KwitansiControl::class, 'edit'])->name('kwitansi.edit');
+    Route::get('/kwitansils/{id}/edit', [KwitansiControl::class, 'editgu'])->name('kwitansils.edit');
     Route::put('/kwitansi/{id}', [KwitansiControl::class, 'update'])->name('kwitansi.update');
+    Route::put('/kwitansils/{id}', [KwitansiControl::class, 'updatels'])->name('kwitansils.update');
 });
+Route::get('/kwitansils/show/ls', [KwitansiControl::class, 'showKwitansiLS'])->name('kwitansils');
+Route::get('/kwitansi/Show/gu', [KwitansiControl::class, 'showKwitansiGU'])->name('kwitansigu');
 Route::get('/get-norek-sub/{id}', [kwitansicontrol::class, 'getNoRekSub']);
-
 
 // ========== PESANAN ==========
 Route::get('/pesanan/create', [PesananControl::class, 'create'])->name('pesanan.create');
+Route::get('/pesananls/create', [PesananControl::class, 'creategu'])->name('pesananls.create');
 Route::post('/pesanan/store', [PesananControl::class, 'store'])->name('pesanan.store');
+Route::post('/pesananls/store', [PesananControl::class, 'storels'])->name('pesananls.store');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/pesanan/{id}/edit', [pesanancontrol::class, 'edit'])->name('pesanan.edit');
+    Route::get('/pesananls/{id}/edit', [pesanancontrol::class, 'editgu'])->name('pesananls.edit');
     Route::put('/pesanan/{id}', [pesanancontrol::class, 'update'])->name('pesanan.update');
+    Route::put('/pesananls/{id}', [pesanancontrol::class, 'updatels'])->name('pesananls.update');
 });
+Route::get('/pesananls/show/ls', [pesanancontrol::class, 'showpesananLs'])->name('pesanangu');
+Route::get('/pesanan/Show/gu', [pesanancontrol::class, 'showpesananGU'])->name('pesananls');
 
 Route::delete('/pesanan/item/{item}', [PesananControl::class, 'destroyItem'])
     ->name('pesanan.item.destroy');
@@ -149,6 +160,7 @@ Route::post('/penerimaan/store', [PenerimaanControl::class, 'store'])->name('pen
 Route::get('/penerimaan/{id}/edit', [PenerimaanControl::class, 'edit'])->name('penerimaan.edit');
 Route::put('/penerimaan/{id}', [PenerimaanControl::class, 'update'])->name('penerimaan.update');
 
+Route::post('/spj-notif-read/{id}/{role}', [SPJController::class, 'markNotifRead'])->name('spj.notif.read');
 
 
 

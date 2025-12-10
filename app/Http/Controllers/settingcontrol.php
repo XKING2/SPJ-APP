@@ -120,53 +120,59 @@ class settingcontrol extends Controller
 
     public function store(Request $request)
     {
-        // Validasi utama dengan kondisi:
-        $validated = $request->validate([
-            // untuk kegiatan (selalu wajib)
-            'program'     => 'required|max:255',
-            'kegiatan'    => 'required|max:255',
-            'subkegiatan' => 'required|max:1000',
-            'no_rek_sub' => 'required|max:1000',
+        // Jika user pilih PPTK lama
+        if ($request->filled('id_pptk')) {
 
-            // jika pptk_id tidak ada, maka buat PPTK baru
-            'nama_pptk'    => 'required_without:pptk_id|unique:pptk,nama_pptk|max:255',
-            'nip_pptk'     => 'required_without:pptk_id|unique:pptk,nip_pptk|max:255',
-            'idinjab_pptk' => 'required_without:pptk_id|max:255',
-            'gol_pptk'     => 'required_without:pptk_id|max:255',
+            $validated = $request->validate([
+                'id_pptk'     => 'required|exists:pptk,id',
+                'program'     => 'required|max:255',
+                'kegiatan'    => 'required|max:255',
+                'subkegiatan' => 'required|max:1000',
+                'no_rek_sub'  => 'required|max:1000',
+            ]);
 
-            // jika user pilih PPTK yang sudah ada, pastikan valid
-            'pptk_id'      => 'nullable|exists:pptk,id'
-        ]);
+            // ambil pptk lama
+            $pptk = Pptk::findOrFail($validated['id_pptk']);
+        }
 
-        // Jika user memilih PPTK yang sudah ada
-        if (!empty($validated['pptk_id'])) {
+        // Jika user membuat PPTK baru
+        else {
 
-            $pptk = Pptk::findOrFail($validated['pptk_id']);
+            $validated = $request->validate([
+                'nama_pptk'    => 'required|max:255|unique:pptk,nama_pptk',
+                'nip_pptk'     => 'required|max:255|unique:pptk,nip_pptk',
+                'idinjab_pptk' => 'required|max:255',
+                'gol_pptk'     => 'required|max:255',
+                'program'      => 'required|max:255',
+                'kegiatan'     => 'required|max:255',
+                'subkegiatan'  => 'required|max:1000',
+                'no_rek_sub'   => 'required|max:1000',
+            ]);
 
-        } else {
-
-            // Buat PPTK baru
+            // buat PPTK baru
             $pptk = Pptk::create([
                 'nama_pptk'    => $validated['nama_pptk'],
                 'nip_pptk'     => $validated['nip_pptk'],
                 'idinjab_pptk' => $validated['idinjab_pptk'],
-                'gol_pptk' => $validated['gol_pptk'],
+                'gol_pptk'     => $validated['gol_pptk'],
             ]);
         }
 
-        // Simpan kegiatan melalui relasi
-        $pptk->kegiatan()->create([
+        // Simpan kegiatan
+        Kegiatan::create([
+            'id_pptk'     => $pptk->id,
             'program'     => $validated['program'],
             'kegiatan'    => $validated['kegiatan'],
             'subkegiatan' => $validated['subkegiatan'],
-            'no_rek_sub' => $validated['no_rek_sub'],
-      
+            'no_rek_sub'  => $validated['no_rek_sub'],
         ]);
 
         return redirect()
             ->route('showpptk')
-            ->with('success', 'Data kegiatan berhasil ditambahkan untuk PPTK ' . $pptk->nama_pptk . '!');
+            ->with('success', 'Data kegiatan berhasil disimpan.');
     }
+
+
 
 
     public function editpptk($id)
@@ -180,29 +186,34 @@ class settingcontrol extends Controller
     {
         $pptk = Pptk::findOrFail($id);
 
-        // ✅ Validasi dasar PPTK
+        // Validasi
         $validated = $request->validate([
             'nama_pptk'   => 'required|max:255|unique:pptk,nama_pptk,' . $id,
             'nip_pptk'    => 'required|max:255|unique:pptk,nip_pptk,' . $id,
             'gol_pptk'    => 'required|max:255',
             'program'     => 'required|max:255',
             'kegiatan'    => 'required|max:255',
+            'no_rek_sub'  => 'required|max:1000',
             'subkegiatan' => 'required|array|min:1',
             'subkegiatan.*' => 'required|string|max:255',
         ]);
 
-        // ✅ Update PPTK utama
+        // Update PPTK
         $pptk->update([
             'nama_pptk' => $validated['nama_pptk'],
             'nip_pptk'  => $validated['nip_pptk'],
             'gol_pptk'  => $validated['gol_pptk'],
         ]);
 
-        // ✅ Tambahkan ulang semua subkegiatan baru
+        // 🔥 HAPUS semua kegiatan lama dulu!
+        $pptk->kegiatan()->delete();
+
+        // Tambahkan ulang semua subkegiatan baru
         foreach ($validated['subkegiatan'] as $sub) {
             $pptk->kegiatan()->create([
                 'program'     => $validated['program'],
                 'kegiatan'    => $validated['kegiatan'],
+                'no_rek_sub'  => $validated['no_rek_sub'],
                 'subkegiatan' => $sub,
             ]);
         }
@@ -211,6 +222,7 @@ class settingcontrol extends Controller
             ->route('showpptk')
             ->with('success', 'Data PPTK & Kegiatan berhasil diperbarui!');
     }
+
 
 
 

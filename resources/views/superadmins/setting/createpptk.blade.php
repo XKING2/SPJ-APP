@@ -16,15 +16,16 @@
                 {{-- 🔹 PILIH PPTK YANG SUDAH ADA --}}
                 <div id="existingPptkSection" class="row mb-4 align-items-end">
                     <div class="col-md-6">
-                        <label for="pptk_id" class="form-label fw-bold mb-2">
+                        <label for="id_pptk" class="form-label fw-bold mb-2">
                             Pilih PPTK (jika sudah ada)
                         </label>
-                        <select name="pptk_id" id="pptk_id" class="form-control shadow-sm rounded">
+                        <select name="id_pptk" id="id_pptk" class="form-control shadow-sm rounded">
                             <option value="">-- Pilih PPTK yang sudah ada --</option>
                             @foreach($pptks as $p)
                                 <option value="{{ $p->id }}">{{ $p->nama_pptk }}</option>
                             @endforeach
                         </select>
+
                     </div>
                     <div class="col-md-6 text-end">
                         <button type="button" id="addNewPptkBtn" class="btn btn-outline-primary mt-3">
@@ -132,58 +133,78 @@
 {{-- 🔹 SCRIPT DINAMIS --}}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    // Elemen utama
+    const selectExisting = document.getElementById('id_pptk');// kamu salah ID tadi
+    const newForm = document.getElementById('newPptkForm');
     const existingSection = document.getElementById('existingPptkSection');
-    const newPptkForm = document.getElementById('newPptkForm');
+
+    // Tombol
     const addBtn = document.getElementById('addNewPptkBtn');
     const cancelBtn = document.getElementById('cancelNewPptkBtn');
-    const selectUser = document.getElementById('selectUser');
 
+    // Field PPTK baru
+    const selectUser = document.getElementById('selectUser');
     const namaPptk = document.getElementById('nama_pptk');
     const nipPptk = document.getElementById('nip_pptk');
-    const idinjab_pptk = document.getElementById('idinjab_pptk');
+    const idinjab = document.getElementById('idinjab_pptk');
+    const golPptk = document.getElementById('gol_pptk');
 
-    // 🍀 fungsi untuk hidup/matikan required
-    function toggleNewPptkRequired(enable) {
-        selectUser.required = enable;
-        namaPptk.required = enable;
-        nipPptk.required = enable;
-        idinjab_pptk.required = enable;
+    // === FUNCTION UTAMA UNTUK VALIDASI ===
+    function togglePptkFields(isNew) {
+        const fields = document.querySelectorAll('#newPptkForm input, #newPptkForm select');
+
+        fields.forEach(f => {
+            if (isNew) {
+                f.disabled = false;
+                f.required = true;  // aktif validasi
+            } else {
+                f.disabled = true;
+                f.required = false; // matikan validasi
+            }
+        });
     }
 
-    // 🔹 Klik "Tambah PPTK Baru"
+    // Default: matikan form PPTK baru
+    togglePptkFields(false);
+
+    // === KLIK TAMBAH PPTK BARU ===
     addBtn.addEventListener('click', () => {
         existingSection.style.display = 'none';
-        newPptkForm.style.display = 'block';
-        toggleNewPptkRequired(true);  // aktifkan required
+        newForm.style.display = 'block';
+        togglePptkFields(true);
     });
 
-    // 🔹 Klik "Batal Tambah PPTK"
+    // === KLIK BATAL TAMBAH PPTK BARU ===
     cancelBtn.addEventListener('click', () => {
-        newPptkForm.style.display = 'none';
+        newForm.style.display = 'none';
         existingSection.style.display = 'flex';
 
-        // kosongkan data
+        // Reset field
         selectUser.value = '';
         namaPptk.value = '';
         nipPptk.value = '';
-        idinjab_pptk.value = '';
+        idinjab.value = '';
+        golPptk.value = '';
 
-        toggleNewPptkRequired(false); // matikan required
+        togglePptkFields(false);
     });
 
-    // 🔹 Saat user pilih nama dari tabel users
-    selectUser.addEventListener('change', function() {
-        const selected = this.options[this.selectedIndex];
-        namaPptk.value = selected.dataset.nama || '';
-        nipPptk.value = selected.dataset.nip || '';
-        idinjab_pptk.value = selected.dataset.gol || '';
+    // === JIKA PILIH PPTK LAMA ===
+    selectExisting.addEventListener('change', () => {
+        newForm.style.display = 'none';
+        existingSection.style.display = 'flex';
+        togglePptkFields(false);  // pastikan field baru tidak required
     });
 
-    // 🔹 Jika user pilih PPTK lama → pastikan form baru tidak required
-    document.getElementById('pptk_id').addEventListener('change', function() {
-        toggleNewPptkRequired(false);
+    // === SAAT USER DIPILIH UNTUK PPTK BARU ===
+    selectUser.addEventListener('change', function () {
+        let opt = this.options[this.selectedIndex];
+        namaPptk.value = opt.dataset.nama || '';
+        nipPptk.value = opt.dataset.nip || '';
+        idinjab.value = opt.dataset.gol || '';
     });
+
 });
-
 </script>
+
 @endsection

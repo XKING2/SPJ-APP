@@ -18,7 +18,7 @@ class PenerimaanControl extends Controller
     public function create(Request $request)
     {
         $spj = SPJ::findOrFail($request->spj_id);
-        $nosurat = nosurat::latest()->first();
+        $nosurat = Nosurat::orderBy('id', 'desc')->get();
         $pemeriksaan = Pemeriksaan::findOrFail($request->pemeriksaan_id);
         $serahbarang = serahbarang::findOrFail($request->id_serahbarang);
         $ppn_rate = Setting::where('key', 'ppn_rate')->first()->value;

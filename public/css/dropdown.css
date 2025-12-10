@@ -1,0 +1,27 @@
+
+/* Pastikan wrapper relatif agar dropdown absolute mengacu kepadanya */
+.select-wrapper { position: relative; }
+
+/* item style */
+.kegiatan-item {
+  padding: 8px 10px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+.kegiatan-item:hover {
+  background-color: #0d6efd;
+  color: #fff;
+}
+
+/* highlight selected */
+.kegiatan-item.selected {
+  background-color: #0b5ed7;
+  color: #fff;
+}
+
+/* small meta text */
+.kegiatan-submeta { font-size: 12px; color: #6c757d; }
+
+/* jangan melebihi wrapper width */
+#kegiatan-dropdown { box-shadow: 0 6px 18px rgba(0,0,0,0.08); }
+

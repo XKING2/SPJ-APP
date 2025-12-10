@@ -24,7 +24,7 @@ class PemeriksaanControl extends Controller
         $spj = SPJ::findOrFail($request->spj_id);
         $pesanan = Pesanan::findOrFail($request->pesanan_id);
         $plts = Plt::all();
-        $nosurat = nosurat::latest()->first();
+        $nosurat = Nosurat::orderBy('id', 'desc')->get();
         $keduas = pihakkedua::all();
         $kwitansi = Kwitansi::latest()->first();
 

@@ -30,29 +30,31 @@
                         <div class="mb-3">
                             <label class="form-label fw-bold">No Surat</label>
                             <div class="input-group">
-                                <!-- Prefix dari tabel (readonly) -->
-                                <input type="text" id="prefix_surat" 
-                                    class="form-control text-end" 
-                                    value="{{ $nosurat->no_awal ?? '' }}" readonly>
+                                <!-- Pilihan nomor awal -->
+                                <select id="prefix_surat" class="form-control text-end" required>
+                                    <option value="" disabled selected>-- Pilih Nomor Awal --</option>
+                                    @foreach ($nosurat as $item)
+                                        <option value="{{ $item->no_awal }}"
+                                            data-dinas="{{ $item->nama_dinas }}"
+                                            data-tahun="{{ $item->tahun }}">
+                                            {{ $item->no_awal }}
+                                        </option>
+                                    @endforeach
+                                </select>
 
                                 <!-- Bagian tengah diisi user -->
                                 <span class="input-group-text">/</span>
                                 <input type="text" id="no_surat_user" name="no_surat_user" 
                                     class="form-control text-center" placeholder="Nomor Surat" required>
 
-                                <!-- Suffix 1: nama dinas -->
+                                <!-- Nama dinas otomatis dari pilihan -->
                                 <span class="input-group-text">/</span>
-                                <input type="text" id="suffix_dinas" 
-                                    class="form-control" 
-                                    value="{{ $nosurat->nama_dinas ?? '' }}" readonly>
+                                <input type="text" id="suffix_dinas" class="form-control" readonly>
 
-                                <!-- Suffix 2: tahun -->
+                                <!-- Tahun otomatis dari pilihan -->
                                 <span class="input-group-text">/</span>
-                                <input type="text" id="suffix_tahun" 
-                                    class="form-control" 
-                                    value="{{ $nosurat->tahun ?? '' }}" readonly>
+                                <input type="text" id="suffix_tahun" class="form-control" readonly>
                             </div>
-
                             <!-- Hidden input gabungan final -->
                             <input type="hidden" name="no_surat" id="no_surat">
                         </div>
@@ -113,11 +115,13 @@
                     <table class="table table-bordered w-50 ms-auto">
                         <tr>
                             <th class="text-end">Subtotal</th>
-                            <td><input type="number" id="subtotal" name="subtotal" class="form-control" readonly></td>
+                            <td>
+                                <input type="number" id="subtotal" name="subtotal" class="form-control d-none" readonly>
+                                <input type="text" id="subtotal_view" class="form-control" readonly>
+                            </td>
                         </tr>
 
-                        <!-- Pilih PPN -->
-                       <tr>
+                        <tr>
                             <th class="text-end">PPN</th>
                             <td>
                                 <div class="input-group">
@@ -126,8 +130,8 @@
                                     <span class="input-group-text">%</span>
                                 </div>
 
-                                <!-- Output nilai rupiah hasil perhitungan -->
-                                <input type="number" id="ppn" name="ppn" class="form-control mt-1" readonly>
+                                <input type="number" id="ppn" name="ppn" class="form-control d-none" readonly>
+                                <input type="text" id="ppn_view" class="form-control mt-1" readonly>
                             </td>
                         </tr>
 
@@ -138,7 +142,6 @@
                                     <label class="form-label fw-bold">Pilih PPh</label>
                                     <select id="pph_select" class="form-control">
                                         <option value="0" data-rate="0">Tidak Ada PPh</option>
-
                                         @foreach($pph_list as $pph)
                                             <option value="{{ $pph->key }}" data-rate="{{ $pph->value }}">
                                                 {{ strtoupper(str_replace('_', ' ', $pph->key)) }} - {{ $pph->value }}%
@@ -147,18 +150,25 @@
                                     </select>
                                 </div>
 
-                                <!-- HASIL PERHITUNGAN PPH -->
-                               <input type="number" id="pph" name="pph" class="form-control" readonly placeholder="Hasil PPh akan muncul di sini"> 
+                                <input type="number" id="pph" name="pph" class="form-control d-none" readonly>
+                                <input type="text" id="pph_view" class="form-control" readonly>
                             </td>
                         </tr>
+
                         <tr>
                             <th class="text-end">Total Harga</th>
-                            <td><input type="number" id="grandtotal" name="grandtotal" class="form-control" readonly></td>
+                            <td>
+                                <input type="number" id="grandtotal" name="grandtotal" class="form-control d-none" readonly>
+                                <input type="text" id="grandtotal_view" class="form-control" readonly>
+                            </td>
                         </tr>
 
                         <tr>
                             <th class="text-end">Dibulatkan</th>
-                            <td><input type="number" id="dibulatkan" name="dibulatkan" class="form-control" readonly></td>
+                            <td>
+                                <input type="number" id="dibulatkan" name="dibulatkan" class="form-control d-none" readonly>
+                                <input type="text" id="dibulatkan_view" class="form-control" readonly>
+                            </td>
                         </tr>
                     </table>
 
@@ -166,6 +176,7 @@
                         <label class="form-label fw-bold">Terbilang :</label>
                         <input type="text" id="terbilang" name="terbilang" class="form-control" readonly>
                     </div>
+
 
 
                 <div class="d-flex justify-content-end gap-5">
@@ -305,15 +316,30 @@ document.addEventListener('DOMContentLoaded', () => {
 <script>
 document.addEventListener("DOMContentLoaded", () => {
     const subtotalInput = document.getElementById("subtotal");
+    const subtotalView = document.getElementById("subtotal_view");
+
     const ppnInput = document.getElementById("ppn");
+    const ppnView = document.getElementById("ppn_view");
+
     const pphSelect = document.getElementById("pph_select");
     const pphValueInput = document.getElementById("pph");
+    const pphView = document.getElementById("pph_view");
+
     const grandtotalInput = document.getElementById("grandtotal");
+    const grandtotalView = document.getElementById("grandtotal_view");
+
     const dibulatkanInput = document.getElementById("dibulatkan");
+    const dibulatkanView = document.getElementById("dibulatkan_view");
+
     const terbilangInput = document.getElementById("terbilang");
     const ppnRate = parseFloat(document.getElementById("ppn_rate").value);
 
-    // =============== FUNGSI: Hitung Subtotal Tabel ===============
+    // =============== FORMAT RUPIAH ===============
+    function formatRupiah(angka) {
+        return angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    }
+
+    // =============== HITUNG SUBTOTAL ===============
     function hitungSubtotal() {
         let subtotal = 0;
 
@@ -328,69 +354,68 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         subtotalInput.value = subtotal;
+        subtotalView.value = formatRupiah(subtotal);
         return subtotal;
     }
 
-    // =============== FUNGSI: Konversi Angka → Terbilang IDN ===============
+    // =============== TERBILANG ===============
     function terbilangID(n) {
-        const satuan = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan"];
+        const s = ["", "Satu", "Dua", "Tiga", "Empat", "Lima", "Enam", "Tujuh", "Delapan", "Sembilan"];
         
-        if (n < 10) return satuan[n];
-        if (n < 20) return satuan[n - 10] + " Belas";
-        if (n < 100) return satuan[Math.floor(n / 10)] + " Puluh " + satuan[n % 10];
+        if (n < 10) return s[n];
+        if (n < 20) return s[n - 10] + " Belas";
+        if (n < 100) return s[Math.floor(n / 10)] + " Puluh " + s[n % 10];
         if (n < 200) return "Seratus " + terbilangID(n - 100);
-        if (n < 1000) return satuan[Math.floor(n / 100)] + " Ratus " + terbilangID(n % 100);
+        if (n < 1000) return s[Math.floor(n / 100)] + " Ratus " + terbilangID(n % 100);
         if (n < 2000) return "Seribu " + terbilangID(n - 1000);
         if (n < 1000000) return terbilangID(Math.floor(n / 1000)) + " Ribu " + terbilangID(n % 1000);
         if (n < 1000000000) return terbilangID(Math.floor(n / 1000000)) + " Juta " + terbilangID(n % 1000000);
         return "";
     }
 
-    // =============== FUNGSI: Hitung Semua Pajak & Grand Total ===============
+    // =============== HITUNG TOTAL ===============
     function hitungPajak() {
         const subtotal = hitungSubtotal();
 
         // --- PPN ---
-        const ppn = subtotal * (ppnRate / 100);
-        const ppnRounded = Math.round(ppn);
-        ppnInput.value = ppnRounded;
+        const ppn = Math.round(subtotal * (ppnRate / 100));
+        ppnInput.value = ppn;
+        ppnView.value = formatRupiah(ppn);
 
         // --- PPh ---
         const rate = parseFloat(pphSelect.selectedOptions[0].dataset.rate);
-        const pph = subtotal * (rate / 100);
-        const pphRounded = Math.round(pph);
-        pphValueInput.value = pphRounded;
+        const pph = Math.round(subtotal * (rate / 100));
+        pphValueInput.value = pph;
+        pphView.value = formatRupiah(pph);
 
-        // --- GRAND TOTAL (PPH tidak ikut ditambah) ---
-        const grandtotal = subtotal + ppnRounded;
-        grandtotalInput.value = Math.round(grandtotal);
+        // --- GRAND TOTAL (tanpa PPh) ---
+        const grand = subtotal + ppn;
+        grandtotalInput.value = grand;
+        grandtotalView.value = formatRupiah(grand);
 
-        // --- DIBULATKAN KE RIBUAN ---
-        const bulat = Math.round(grandtotal / 1000) * 1000;
+        // --- DIBULATKAN ---
+        const bulat = Math.round(grand / 1000) * 1000;
         dibulatkanInput.value = bulat;
+        dibulatkanView.value = formatRupiah(bulat);
 
         // --- TERBILANG ---
         terbilangInput.value = (terbilangID(bulat).trim() + " Rupiah").replace(/\s+/g, " ");
     }
 
-    // EVENT: Hitung ulang saat harga diubah
-    document.querySelectorAll(".harga").forEach(input => {
+    // ================= EVENT =================
+    document.querySelectorAll(".harga, .jumlah").forEach(input => {
         input.addEventListener("input", hitungPajak);
     });
 
-    // EVENT: PPh dropdown berubah
     pphSelect.addEventListener("change", hitungPajak);
 
-    // Trigger awal
+    // FIRST RUN
     hitungPajak();
 });
 </script>
 
 
-
-
 <script>
-    // Gabungkan seluruh bagian jadi satu string dengan tanda "/"
     const prefixInput = document.getElementById('prefix_surat');
     const userInput = document.getElementById('no_surat_user');
     const dinasInput = document.getElementById('suffix_dinas');
@@ -403,18 +428,25 @@ document.addEventListener("DOMContentLoaded", () => {
         const dinas = dinasInput.value.trim();
         const tahun = tahunInput.value.trim();
 
-        // Gabungkan dengan tanda /
         const fullNo = [prefix, user, dinas, tahun]
-            .filter(part => part !== '') // hilangkan kosong
+            .filter(part => part !== '')
             .join('/');
 
         hiddenInput.value = fullNo;
     }
 
-    // Update setiap kali user mengetik
+    // Saat user mengetik nomor tengah
     userInput.addEventListener('input', updateNoSurat);
 
-    // Jalankan saat halaman dimuat pertama kali
+    // Saat user memilih prefix (ambil juga dinas & tahun)
+    prefixInput.addEventListener('change', function() {
+        const selected = this.options[this.selectedIndex];
+        dinasInput.value = selected.getAttribute('data-dinas') || '';
+        tahunInput.value = selected.getAttribute('data-tahun') || '';
+        updateNoSurat();
+    });
+
+    // Jalankan saat halaman dimuat
     updateNoSurat();
 </script>
 @endsection
