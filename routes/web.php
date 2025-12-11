@@ -95,10 +95,11 @@ Route::get('/spj/cetak/{id}', [SPJController::class, 'cetak'])->name('spj.cetak'
 Route::DELETE('/spj/{id}', [SPJController::class, 'destroy'])->name('spj.destroy');
 
 
+Route::get('/spj/{id}/record/{section}', [spjresponcontrol::class, 'getRecord'])
+    ->name('spj.record');
 
 Route::post('/spj/{spjId}/revisi', [spjresponcontrol::class, 'store'])
     ->name('spj.revisi.store');
-
 
 
 

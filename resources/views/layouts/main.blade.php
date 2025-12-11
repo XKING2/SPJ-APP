@@ -21,6 +21,34 @@
     <link href="{{ asset('css/chats.css') }}" rel="stylesheet">
     <link href="{{ asset('css/dropdown.css') }}" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        .badge-notif {
+            background: #ff3b30;
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 8px;
+        }
+        .badge-notif-dashboard {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: red;
+            color: white;
+            font-size: 12px;
+            padding: 3px 7px;
+            border-radius: 50%;
+            font-weight: bold;
+        }
+    </style>
+
+
 
 
 </head>
@@ -28,110 +56,140 @@
 <body id="page-top">
     <div id="wrapper">
        {{-- Sidebar --}}
-<ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion d-flex flex-column" id="accordionSidebar">             
+        <!-- Brand -->
+        <a class="sidebar-brand d-flex align-items-center px-3" 
+            href="{{ route('userdashboard') }}" style="gap: 12px;">
+            <div class="sidebar-brand-icon d-flex align-items-center justify-content-center"
+                style="width: 40px; height: 40px; border-radius: 12px; overflow: hidden;">
+                <img src="{{ asset('images/logo1.png') }}" alt="Logo E-SPJ" style="width:100%; height:100%; object-fit:cover;">
+            </div>
+
+            <div class="sidebar-brand-text text-white fw-bold" style="font-size: 1.1rem;">
+                E-SPJ
+            </div>
+        </a>
+
+        <hr class="sidebar-divider my-0">
+
+            <!-- Dashboard -->
+            <li class="nav-item {{ Request::routeIs('userdashboard') ? 'active' : '' }}">
+                <a class="nav-link" href="{{ route('userdashboard') }}">
+                    <i class="fas fa-fw fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+
+            <li class="nav-item {{ Request::routeIs('kwitansi') ? 'active' : '' }}">
+                <a class="nav-link d-flex justify-content-between align-items-center" 
+                href="{{ route('kwitansi') }}">
+                    <div>
+                        <i class="fas fa-fw fa-receipt"></i>
+                        <span>Kwitansi</span>
+                    </div>
+
+                    @if(!empty($feedbackCount['kwitansi']))
+                        <span class="badge-notif">{{ $feedbackCount['kwitansi'] }}</span>
+                    @endif
+                </a>
+            </li>
+
+            <li class="nav-item {{ Request::routeIs('pesanan') ? 'active' : '' }}">
+                <a class="nav-link d-flex justify-content-between align-items-center" 
+                href="{{ route('pesanan') }}">
+                    <div>
+                        <i class="fas fa-fw fa-wrench"></i>
+                        <span>Pesanan</span>
+                    </div>
+
+                    @if(!empty($feedbackCount['pesanan']))
+                        <span class="badge-notif">{{ $feedbackCount['pesanan'] }}</span>
+                    @endif
+                </a>
+            </li>
+
+
+            <!-- Berita Acara -->
+            <li class="nav-item {{ Request::routeIs('pemeriksaan') || Request::routeIs('serahbarang') || Request::routeIs('penerimaan') ? 'active' : '' }}">
+                <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseBeritaAcara">
+                    <i class="fas fa-fw fa-file-alt"></i>
+                    <span>Berita Acara</span>
+                </a>
+
+                <div id="collapseBeritaAcara" 
+                    class="collapse {{ Request::routeIs('pemeriksaan') || Request::routeIs('serahbarang') || Request::routeIs('penerimaan') ? 'show' : '' }}">
+                    
+                    <div class="bg-white py-2 collapse-inner rounded">
+
+                        <a class="collapse-item d-flex justify-content-between 
+                            {{ Request::routeIs('pemeriksaan') ? 'active' : '' }}"
+                            href="{{ route('pemeriksaan') }}">
+
+                            <span>Pemeriksaan</span>
+
+                            @if(!empty($feedbackCount['pemeriksaan']))
+                                <span class="badge-notif">{{ $feedbackCount['pemeriksaan'] }}</span>
+                            @endif
+                        </a>
+
+                        <a class="collapse-item d-flex justify-content-between 
+                            {{ Request::routeIs('serahbarang') ? 'active' : '' }}"
+                            href="{{ route('serahbarang') }}">
+
+                                <span>Serah Barang</span>
+
+                                @if(!empty($feedbackCount['serah_barang']))
+                                    <span class="badge-notif">{{ $feedbackCount['serah_barang'] }}</span>
+                                @endif
+                            </a>
+
+
+                        <a class="collapse-item d-flex justify-content-between 
+                            {{ Request::routeIs('penerimaan') ? 'active' : '' }}"
+                            href="{{ route('penerimaan') }}">
+
+                                <span>Penerimaan</span>
+
+                                @if(!empty($feedbackCount['penerimaan']))
+                                    <span class="badge-notif">{{ $feedbackCount['penerimaan'] }}</span>
+                                @endif
+                            </a>
+
+
+
+                    </div>
+                </div>
+            </li>
+
+            <li class="nav-item {{ Request::routeIs('reviewSPJ') ? 'active' : '' }}">
+                <a class="nav-link" href="{{ route('reviewSPJ') }}">
+                    <i class="fas fa-fw fa-chart-area"></i>
+                    <span>Review Data SPJ</span>
+                </a>
+            </li>
+
+            <li class="nav-item {{ Request::routeIs('cetakSPJ') ? 'active' : '' }}">
+                <a class="nav-link" href="{{ route('cetakSPJ') }}">
+                    <i class="fas fa-fw fa-print"></i>
+                    <span>Cetak Data SPJ</span>
+                </a>
+            </li>
+
+            <hr class="sidebar-divider d-none d-md-block">
+
+            <div class="text-center d-none d-md-inline">
+                <button class="rounded-circle border-0" id="sidebarToggle"></button>
+            </div>
+
+           <div class="mt-auto pb-10 px-2 mx-auto text-center">
+                <div class="sidebar-brand-icon d-flex align-items-center justify-content-center"
+                    style="width: 200px; height: 200px;">
+                    <img src="{{ asset('images/berahlak.png') }}" 
+                        alt="Logo E-SPJ"
+                        style="width: 100%; height: 100%; object-fit: contain;">
+           </div>
         
-    <a class="sidebar-brand d-flex align-items-center px-3" 
-        href="{{ route('userdashboard') }}" style="gap: 12px;">
-        <div class="sidebar-brand-icon d-flex align-items-center justify-content-center"
-            style="width: 40px; height: 40px; border-radius: 12px; overflow: hidden;">
-            <img src="{{ asset('images/logo1.png') }}" alt="Logo E-SPJ" style="width:100%; height:100%; object-fit:cover;">
-        </div>
-
-        <div class="sidebar-brand-text text-white fw-bold" style="font-size: 1.1rem;">
-            E-SPJ
-        </div>
-    </a>
-
-    <hr class="sidebar-divider my-0">
-
-    <!-- Dashboard -->
-    <li class="nav-item {{ Request::routeIs('userdashboard') ? 'active' : '' }}">
-        <a class="nav-link" href="{{ route('userdashboard') }}">
-            <i class="fas fa-fw fa-tachometer-alt"></i>
-            <span>Dashboard</span>
-        </a>
-    </li>
-
-    <!-- Kwitansi -->
-    <li class="nav-item {{ Request::routeIs('kwitansi') ? 'active' : '' }}">
-        <a class="nav-link d-flex justify-content-between align-items-center" 
-           href="{{ route('kwitansi') }}">
-            <div>
-                <i class="fas fa-fw fa-receipt"></i>
-                <span>Kwitansi</span>
-            </div>
-        </a>
-    </li>
-
-    <!-- Pesanan -->
-    <li class="nav-item {{ Request::routeIs('pesanan') ? 'active' : '' }}">
-        <a class="nav-link d-flex justify-content-between align-items-center" 
-           href="{{ route('pesanan') }}">
-            <div>
-                <i class="fas fa-fw fa-wrench"></i>
-                <span>Pesanan</span>
-            </div>
-        </a>
-    </li>
-
-    <!-- Berita Acara -->
-    <li class="nav-item {{ Request::routeIs('pemeriksaan') || Request::routeIs('serahbarang') || Request::routeIs('penerimaan') ? 'active' : '' }}">
-        <a class="nav-link collapsed" href="#" data-toggle="collapse" data-target="#collapseBeritaAcara">
-            <i class="fas fa-fw fa-file-alt"></i>
-            <span>Berita Acara</span>
-        </a>
-
-        <div id="collapseBeritaAcara" 
-             class="collapse {{ Request::routeIs('pemeriksaan') || Request::routeIs('serahbarang') || Request::routeIs('penerimaan') ? 'show' : '' }}">
-             
-            <div class="bg-white py-2 collapse-inner rounded">
-
-                <!-- Pemeriksaan -->
-                <a class="collapse-item d-flex justify-content-between 
-                   {{ Request::routeIs('pemeriksaan') ? 'active' : '' }}"
-                   href="{{ route('pemeriksaan') }}">
-                    <span>Pemeriksaan</span>
-                </a>
-
-                <!-- Serah Barang / Daftar Barang mapping -->
-                <a class="collapse-item d-flex justify-content-between 
-                   {{ Request::routeIs('serahbarang') ? 'active' : '' }}"
-                   href="{{ route('serahbarang') }}">
-                    <span>Serah Barang</span>
-                </a>
-
-                <!-- Penerimaan -->
-                <a class="collapse-item d-flex justify-content-between 
-                   {{ Request::routeIs('penerimaan') ? 'active' : '' }}"
-                   href="{{ route('penerimaan') }}">
-                    <span>Penerimaan</span>
-                </a>
-
-            </div>
-        </div>
-    </li>
-
-    <li class="nav-item {{ Request::routeIs('reviewSPJ') ? 'active' : '' }}">
-        <a class="nav-link" href="{{ route('reviewSPJ') }}">
-            <i class="fas fa-fw fa-chart-area"></i>
-            <span>Review Data SPJ</span>
-        </a>
-    </li>
-
-    <li class="nav-item {{ Request::routeIs('cetakSPJ') ? 'active' : '' }}">
-        <a class="nav-link" href="{{ route('cetakSPJ') }}">
-            <i class="fas fa-fw fa-print"></i>
-            <span>Cetak Data SPJ</span>
-        </a>
-    </li>
-
-    <hr class="sidebar-divider d-none d-md-block">
-
-    <div class="text-center d-none d-md-inline">
-        <button class="rounded-circle border-0" id="sidebarToggle"></button>
-    </div>
-
-</ul>
+        </ul>
 
 
         <div id="content-wrapper" class="d-flex flex-column min-vh-100">

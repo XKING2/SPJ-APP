@@ -14,8 +14,14 @@
 
 
 <div class="dashboard-grid mt-3">
+
         <form action="{{ route('pesanangu') }}" method="GET" class="dashboard-card">
-            <button type="submit" class="btn w-100 d-flex p-0" style="background:none;border:none;">
+            <button type="submit" class="btn w-100 d-flex p-0" style="background:none;border:none; position:relative;">
+
+                @if($notifGU == 1)
+                    <span class="badge-notif-dashboard">1</span>
+                @endif
+
                 <div class="icon bg-primary">
                     <i class="fas fa-file-invoice-dollar fa-2x"></i>
                 </div>
@@ -27,17 +33,25 @@
         </form>
 
         <form action="{{ route('pesananls') }}" method="GET" class="dashboard-card">
-            <button type="submit" class="btn w-100 d-flex p-0" style="background:none;border:none;">
+            <button type="submit" class="btn w-100 d-flex p-0" style="background:none;border:none; position:relative;">
+
+                @if($notifLS == 1)
+                    <span class="badge-notif-dashboard">1</span>
+                @endif
+
                 <div class="icon bg-success">
                     <i class="fas fa-file-contract fa-2x"></i>
                 </div>
                 <div class="info">
-                    <div class="label">Lihat Data Pesanan Ls</div>
+                    <div class="label">Lihat Data Pesanan LS</div>
                     <div class="value">Langsung</div>
                 </div>
             </button>
         </form>
-</div>
+
+
+
+    </div>
 
 
 

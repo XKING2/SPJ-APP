@@ -35,139 +35,133 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($spjs as $spj)
-                            <tr>
-                                <td>{{ $loop->iteration + ($spjs->currentPage() - 1) * $spjs->perPage() }}</td>
+                        @forelse($spjs as $spj)
+                        @php
+                            $feedbackArray = [];
+                            foreach ($spj->feedbacks as $f) {
+                                $feedbackArray[] = [
+                                    'field' => $f->field_name,
+                                    'message' => $f->message,
+                                    'role' => $f->role,
+                                    'created_at' => $f->created_at->format('d-m-Y H:i'),
+                                ];
+                            }
 
-                                <!-- Nomor SPJ -->
-                                <td>{{ $spj->pesanan->no_surat ?? '-' }}</td>
+                            $status1 = $spj->status;
+                            $status2 = $spj->status2;
+                        @endphp
 
-                                <!-- Tanggal dibuat -->
-                                <td>{{ \Carbon\Carbon::parse($spj->pesanan->surat_dibuat ?? now())->translatedFormat('d F Y') }}</td>
+                        <tr>
+                            <td>{{ $loop->iteration + ($spjs->currentPage() - 1) * $spjs->perPage() }}</td>
+                            <td>{{ $spj->pesanan->no_surat ?? '-' }}</td>
+                            <td>{{ \Carbon\Carbon::parse($spj->pesanan->surat_dibuat ?? now())->translatedFormat('d F Y') }}</td>
 
-                                <!-- ambil variabel dari controller -->
-                                @php
-                                    $feedbackArray = $spj->feedbackArray;
-                                    $status1 = $spj->status1;
-                                    $status2 = $spj->status2;
-                                @endphp
+                            <!-- Status Bendahara -->
+                            <td>
+                                @if($status1 === 'valid')
+                                    <span class="badge badge-success">Disetujui</span>
+                                @elseif($status1 === 'belum_valid')
+                                    <span class="badge badge-danger">Tidak Disetujui</span>
+                                    @if(count($feedbackArray) > 0)
+                                        <button type="button"
+                                            class="btn btn-link p-0 ml-1 alasan-btn position-relative"
+                                            data-feedback='@json($feedbackArray)'
+                                            title="Lihat alasan penolakan (Bendahara)">
+                                            <i class="fas fa-bell text-warning"></i>
+                                            <span class="notif-badge position-absolute badge badge-danger">
+                                                {{ count($feedbackArray) }}
+                                            </span>
+                                        </button>
+                                    @endif
+                                @elseif($status1 === 'diajukan')
+                                    <span class="badge badge-info">Diajukan</span>
+                                @else
+                                    <span class="badge badge-warning">Menunggu</span>
+                                @endif
+                            </td>
 
-                                <!-- Status Bendahara -->
-                                <td>
-                                    @if($status1 === 'valid')
-                                        <span class="badge badge-success">Disetujui</span>
+                            <!-- Status Kasubag -->
+                            <td>
+                                @if($status2 === 'valid')
+                                    <span class="badge badge-success">Disetujui</span>
+                                @elseif($status2 === 'belum_valid')
+                                    <span class="badge badge-danger">Tidak Disetujui</span>
+                                    @if(count($feedbackArray) > 0)
+                                        <button type="button"
+                                            class="btn btn-link p-0 ml-1 alasan-btn position-relative"
+                                            data-feedback='@json($feedbackArray)'
+                                            title="Lihat alasan penolakan (Kasubag)">
+                                            <i class="fas fa-bell text-warning"></i>
+                                            <span class="notif-badge position-absolute badge badge-danger">
+                                                {{ count($feedbackArray) }}
+                                            </span>
+                                        </button>
+                                    @endif
+                                @elseif($status2 === 'diajukan')
+                                    <span class="badge badge-info">Diajukan</span>
+                                @else
+                                    <span class="badge badge-warning">Menunggu</span>
+                                @endif
+                            </td>
+                            <!-- Aksi -->
+                            <td>
+                                <div class="d-flex flex-column align-items-center justify-content-center gap-5">
 
-                                    @elseif($status1 === 'belum_valid')
-                                        <span class="badge badge-danger">Tidak Disetujui</span>
+                                    <!-- 🔹 Baris atas -->
+                                    <div class="d-flex flex-wrap justify-content-center align-items-center gap-5">
+                                        <a href="{{ route('spj.preview', $spj->id) }}" class="btn btn-sm btn-info action-btn">
+                                            <i class="fas fa-eye"></i> Preview
+                                        </a>
 
-                                        @if(count($feedbackArray) > 0)
-                                            <button type="button"
-                                                class="btn btn-link p-0 ml-1 alasan-btn position-relative"
-                                                data-feedback='@json($feedbackArray)'
-                                                title="Lihat alasan penolakan (Bendahara)">
-                                                <i class="fas fa-bell text-warning"></i>
-                                                <span class="notif-badge position-absolute badge badge-danger">
-                                                    {{ count($feedbackArray) }}
-                                                </span>
-                                            </button>
+                                        @if(
+                                            ($status1 === 'draft' && $status2 === 'draft') ||
+                                            ($status1 === 'belum_valid' || $status2 === 'belum_valid')
+                                        )
+                                            <form action="{{ route('spj.destroy', $spj->id) }}" method="POST" class="form-delete d-inline-block">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="btn btn-sm btn-danger action-btn">
+                                                    <i class="fas fa-trash"></i> Hapus
+                                                </button>
+                                            </form>
                                         @endif
 
-                                    @elseif($status1 === 'diajukan')
-                                        <span class="badge badge-info">Diajukan</span>
-
-                                    @else
-                                        <span class="badge badge-warning">Menunggu</span>
-                                    @endif
-                                </td>
-
-                                <!-- Status Kasubag -->
-                                <td>
-                                    @if($status2 === 'valid')
-                                        <span class="badge badge-success">Disetujui</span>
-
-                                    @elseif($status2 === 'belum_valid')
-                                        <span class="badge badge-danger">Tidak Disetujui</span>
-
-                                        @if(count($feedbackArray) > 0)
-                                            <button type="button"
-                                                class="btn btn-link p-0 ml-1 alasan-btn position-relative"
-                                                data-feedback='@json($feedbackArray)'
-                                                title="Lihat alasan penolakan (Kasubag)">
-                                                <i class="fas fa-bell text-warning"></i>
-                                                <span class="notif-badge position-absolute badge badge-danger">
-                                                    {{ count($feedbackArray) }}
-                                                </span>
-                                            </button>
-                                        @endif
-
-                                    @elseif($status2 === 'diajukan')
-                                        <span class="badge badge-info">Diajukan</span>
-
-                                    @else
-                                        <span class="badge badge-warning">Menunggu</span>
-                                    @endif
-                                </td>
-
-                                <!-- Aksi -->
-                                <td>
-                                    <div class="d-flex flex-column align-items-center justify-content-center gap-5">
-
-                                        <div class="d-flex flex-wrap justify-content-center align-items-center gap-5">
-                                            <a href="{{ route('spj.preview', $spj->id) }}" class="btn btn-sm btn-info action-btn">
-                                                <i class="fas fa-eye"></i> Preview
+                                        @if($status1 === 'valid' && $status2 === 'valid')
+                                            <a href="{{ route('spj.cetak', $spj->id) }}" target="_blank" class="btn btn-sm btn-secondary action-btn">
+                                                <i class="fas fa-print"></i> Cetak
                                             </a>
-
-                                            @if(
-                                                ($status1 === 'draft' && $status2 === 'draft') ||
-                                                ($status1 === 'belum_valid' || $status2 === 'belum_valid')
-                                            )
-                                                <form action="{{ route('spj.destroy', $spj->id) }}" method="POST" class="form-delete d-inline-block">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-danger action-btn">
-                                                        <i class="fas fa-trash"></i> Hapus
-                                                    </button>
-                                                </form>
-                                            @endif
-
-                                            @if($status1 === 'valid' && $status2 === 'valid')
-                                                <a href="{{ route('spj.cetak', $spj->id) }}" target="_blank" class="btn btn-sm btn-secondary">
-                                                    <i class="fas fa-print"></i> Cetak
-                                                </a>
-                                            @endif
-                                        </div>
-
-                                        <div class="d-flex flex-wrap justify-content-center align-items-center gap-5">
-                                            @if($status1 === 'draft' || $status1 === 'belum_valid')
-                                                <form action="{{ route('spj.submitToBendahara', $spj->id) }}" method="POST">
-                                                    @csrf
-                                                    <button type="submit" class="btn btn-sm btn-success action-btn">
-                                                        <i class="fas fa-paper-plane"></i> Ajukan Ke Bendahara
-                                                    </button>
-                                                </form>
-                                            @endif
-
-                                            @if($status1 === 'valid' && ($status2 === null || $status2 === 'belum_valid'))
-                                                <form action="{{ route('ajukanKasubag', $spj->id) }}" method="POST">
-                                                    @csrf
-                                                    <button type="submit" class="btn btn-sm btn-primary action-btn">
-                                                        <i class="fas fa-paper-plane"></i> Ajukan Ke Kasubag
-                                                    </button>
-                                                </form>
-                                            @endif
-                                        </div>
-
+                                        @endif
                                     </div>
-                                </td>
-                            </tr>
 
+                                    <!-- 🔹 Baris bawah -->
+                                    <div class="d-flex flex-wrap justify-content-center align-items-center gap-5">
+                                        @if($status1 === 'draft' || $status1 === 'belum_valid')
+                                            <form action="{{ route('spj.submitToBendahara', $spj->id) }}" method="POST" class="d-inline-block">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-success action-btn">
+                                                    <i class="fas fa-paper-plane"></i> Ajukan Ke Bendahara
+                                                </button>
+                                            </form>
+                                        @endif
+
+                                        @if($status1 === 'valid' && ($status2 === null || $status2 === 'belum_valid'))
+                                            <form action="{{ route('ajukanKasubag', $spj->id) }}" method="POST" class="d-inline-block">
+                                                @csrf
+                                                <button type="submit" class="btn btn-sm btn-primary action-btn">
+                                                    <i class="fas fa-paper-plane"></i> Ajukan Ke Kasubag
+                                                </button>
+                                            </form>
+                                        @endif
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
                         @empty
-                            <tr>
-                                <td colspan="6" class="text-center text-muted py-3">Tidak ada data SPJ</td>
-                            </tr>
+                        <tr>
+                            <td colspan="6" class="text-center text-muted py-3">Tidak ada data SPJ</td>
+                        </tr>
                         @endforelse
                     </tbody>
-
                 </table>
             </div>
 
@@ -194,7 +188,7 @@
                 <table class="table table-sm table-bordered">
                     <thead class="bg-light">
                         <tr>
-                            <th>Spj Nomor</th>
+                            <th>Spj No</th>
                             <th>Field</th>
                             <th>Pesan</th>
                             <th>Role</th>
@@ -208,69 +202,16 @@
     </div>
 </div>
 
+<!-- ✅ Scripts -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
 <script>
-$(document).ready(function () {
-
-    // ====================================================
-    //  FIELD GROUP MAPPING — dibuat satu kali saja
-    // ====================================================
-    const fieldGroups = {
-        'Bagian Kwitansi': {
-            'uang_terbilang': 'Uang Terbilang',
-            'jumlah_nominal': 'Jumlah Nominal',
-            'pembayaran': 'Pembayaran',
-            'no_rekening': 'Nomor Rekening',
-            'no_rekening_tujuan': 'Nomor Rekening Tujuan',
-            'nama_bank': 'Nama Bank',
-            'npwp': 'NPWP',
-            'telah_diterima_dari': 'Telah Diterima Dari',
-            'penerima_kwitansi': 'Penerima Kwitansi',
-            'jabatan_penerima': 'Jabatan Penerima',
-        },
-        'Bagian Pesanan': {
-            'no_surat': 'Nomor Surat',
-            'nama_pt': 'Nama PT',
-            'alamat_pt': 'Alamat PT',
-            'nomor_tlp_pt': 'Nomor Telepon PT',
-            'tanggal_diterima': 'Tanggal Diterima',
-            'surat_dibuat': 'Tanggal Surat Dibuat',
-        },
-        'Bagian Pemeriksaan': {
-            'nama_pihak_kedua': 'Nama Pihak Kedua',
-            'jabatan_pihak_kedua': 'Jabatan Pihak Kedua',
-            'alamat_pihak_kedua': 'Alamat Pihak Kedua',
-            'nama_pihak_pertama': 'Nama Pihak Pertama (PLT)',
-            'nip_pihak_pertama': 'NIP Pihak Pertama (PLT)',
-            'gol_pertama': 'Golongan Pihak Pertama',
-            'jab_pertama': 'Jabatan Pihak Pertama',
-        },
-        'Bagian Penerimaan': {
-            'subtotal': 'Subtotal',
-            'ppn': 'PPN',
-            'grandtotal': 'Grand Total',
-            'dibulatkan': 'Dibulatkan',
-            'terbilang': 'Terbilang',
-        },
-        'Bagian Daftar Barang': {
-            'nama_barang': 'Nama Barang',
-            'jumlah': 'Jumlah',
-            'satuan': 'Satuan',
-            'harga_satuan': 'Harga Satuan',
-            'total': 'Total',
-        }
-    };
-
-
-    // ====================================================
-    //  DELETE CONFIRMATION
-    // ====================================================
-    $('.form-delete').off('submit').on('submit', function (e) {
+$(document).ready(function() {
+    $('.form-delete').on('submit', function(e) {
         e.preventDefault();
         const form = this;
 
+        // Aktifkan mode "disable loader" dan flag SweetAlert
         isSweetAlertActive = true;
         isLoaderDisabled = true;
         hideLoader();
@@ -287,7 +228,7 @@ $(document).ready(function () {
             allowOutsideClick: false,
             allowEscapeKey: false,
         }).then(result => {
-
+            // Reset flag setelah SweetAlert ditutup
             isSweetAlertActive = false;
             isLoaderDisabled = false;
 
@@ -300,34 +241,66 @@ $(document).ready(function () {
         });
     });
 
-
-    // ====================================================
-    //  MODAL – TAMPILKAN FEEDBACK SPJ
-    // ====================================================
-    $('.alasan-btn').off('click').on('click', function () {
-
+    // 🔔 Modal alasan
+    $('.alasan-btn').on('click', function() {
         const feedbacks = $(this).data('feedback');
         const tbody = $('#feedbackTableBody');
-
         tbody.empty();
 
-        if (Array.isArray(feedbacks) && feedbacks.length > 0) {
+        const fieldGroups = {
+            'Bagian Kwitansi': {
+                'uang_terbilang': 'Uang Terbilang',
+                'jumlah_nominal': 'Jumlah Nominal',
+                'pembayaran': 'Pembayaran',
+                'no_rekening': 'Nomor Rekening',
+                'no_rekening_tujuan': 'Nomor Rekening Tujuan',
+                'nama_bank': 'Nama Bank',
+                'npwp': 'NPWP',
+                'telah_diterima_dari': 'Telah Diterima Dari',
+                'penerima_kwitansi': 'Penerima Kwitansi',
+                'jabatan_penerima': 'Jabatan Penerima',
+            },
+            'Bagian Pesanan': {
+                'no_surat': 'Nomor Surat',
+                'nama_pt': 'Nama PT',
+                'alamat_pt': 'Alamat PT',
+                'nomor_tlp_pt': 'Nomor Telepon PT',
+                'tanggal_diterima': 'Tanggal Diterima',
+                'surat_dibuat': 'Tanggal Surat Dibuat',
+            },
+            'Bagian Pemeriksaan': {
+                'nama_pihak_kedua': 'Nama Pihak Kedua',
+                'jabatan_pihak_kedua': 'Jabatan Pihak Kedua',
+                'alamat_pihak_kedua': 'Alamat Pihak Kedua',
+                'nama_pihak_pertama': 'Nama Pihak Pertama (PLT)',
+                'nip_pihak_pertama': 'NIP Pihak Pertama (PLT)',
+                'gol_pertama': 'Golongan Pihak Pertama',
+                'jab_pertama': 'Jabatan Pihak Pertama',
+            },
+            'Bagian Penerimaan': {
+                'subtotal': 'Subtotal',
+                'ppn': 'PPN',
+                'grandtotal': 'Grand Total',
+                'dibulatkan': 'Dibulatkan',
+                'terbilang': 'Terbilang',
+            },
+            'Bagian Daftar Barang': {
+                'nama_barang': 'Nama Barang',
+                'jumlah': 'Jumlah',
+                'satuan': 'Satuan',
+                'harga_satuan': 'Harga Satuan',
+                'total': 'Total',
+            }
+        };
 
+        if (Array.isArray(feedbacks) && feedbacks.length > 0) {
             feedbacks.forEach(f => {
 
-                // ===========================
-                // Nomor SPJ (prioritas)
-                // ===========================
-                const nomorSpj =
-                    f?.pesanan?.no_surat ||
-                    f?.pemeriksaan?.no_surat ||
-                    "-";
+                // 🔎 Ambil nomor SPJ dari relasi
+                const nomorSpj = f.spj?.no_surat ?? f.spj?.nomor_spj ?? f.spj_id ?? "-";
 
-                // ===========================
-                // Tentukan group & label
-                // ===========================
-                let groupName = "-";
-                let fieldLabel = f.field ?? "-";
+                let groupName = '-';
+                let fieldLabel = f.field || '-';
 
                 for (const [group, fields] of Object.entries(fieldGroups)) {
                     if (fields[f.field]) {
@@ -339,35 +312,30 @@ $(document).ready(function () {
 
                 tbody.append(`
                     <tr>
-                        <td><strong>${nomorSpj}</strong></td>
                         <td>
                             <strong>${fieldLabel}</strong><br>
                             <small class="text-muted">${groupName}</small>
                         </td>
-                        <td>${f.message ?? "-"}</td>
-                        <td>${f.role ?? "-"}</td>
-                        <td>${f.created_at}</td>
+
+                        <td>${f.message || '-'}</td>
+                        <td>${f.role || '-'}</td>
+
+                        <td>
+                            <strong>${nomorSpj}</strong><br>
+                            <small class="text-muted">${f.created_at}</small>
+                        </td>
                     </tr>
                 `);
-
             });
-
         } else {
-
-            tbody.append(`
-                <tr>
-                    <td colspan="5" class="text-center text-muted">
-                        Tidak ada alasan penolakan.
-                    </td>
-                </tr>
-            `);
+            tbody.append('<tr><td colspan="4" class="text-center text-muted">Tidak ada alasan penolakan.</td></tr>');
         }
 
         $('#modalAlasan').modal('show');
     });
 
+
 });
 </script>
-
 
 @endsection

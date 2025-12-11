@@ -13,44 +13,43 @@ class spj_feedbacks extends Model
 
     protected $fillable = [
         'spj_id',
-        'user_id',
-        'field_name',
+        'section',
+        'record_id',
+        'field',
         'message',
         'role',
     ];
 
-    /**
-     * Relasi ke SPJ.
-     * Setiap feedback milik satu SPJ.
-     */
     public function spj()
     {
-        return $this->belongsTo(Spj::class, 'spj_id');
+        return $this->belongsTo(Spj::class);
     }
 
-    /**
-     * Relasi ke User (yang memberikan feedback).
-     */
-    public function user()
+    // Relationship dinamis (polymorphic hand-made)
+    public function relatedRecord()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        $section = strtolower($this->section);
+
+        return match ($section) {
+
+            // pesanan
+            'pesanan' => $this->belongsTo(Pesanan::class, 'record_id'),
+
+            // kwitansi
+            'kwitansi' => $this->belongsTo(Kwitansi::class, 'record_id'),
+
+            // pemeriksaan
+            'pemeriksaan' => $this->belongsTo(Pemeriksaan::class, 'record_id'),
+
+            // penerimaan
+            'penerimaan' => $this->belongsTo(Penerimaan::class, 'record_id'),
+
+            // serah barang
+            'serahbarang', 
+            'serah_barang' => $this->belongsTo(Serahbarang::class, 'record_id'),
+
+            default => null,
+        };
     }
 
-    /**
-     * Scope filter berdasarkan role.
-     */
-    public function scopeByRole($query, $role)
-    {
-        return $query->where('role', $role);
-    }
-
-    public function pesanan()
-    {
-        return $this->belongsTo(Pesanan::class, 'pesanan_id');
-    }
-
-    public function pemeriksaan()
-    {
-        return $this->belongsTo(Pemeriksaan::class, 'pemeriksaan_id');
-    }
 }

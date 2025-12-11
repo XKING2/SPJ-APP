@@ -101,155 +101,205 @@
     </div>
 
 
-    <div class="modal fade" id="feedbackModal" tabindex="-1" aria-labelledby="feedbackModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <form id="feedbackForm">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="feedbackModalLabel">Masukkan Alasan Penolakan</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                            <span aria-hidden="true">&times;</span>
-                        </button>
-                    </div>
+    <div class="modal fade" id="feedbackModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form id="feedbackForm">
+                <div class="modal-header">
+                    <h5 class="modal-title">Masukkan Alasan Penolakan</h5>
+                    <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+                </div>
 
-                    <div class="modal-body">
-                        <input type="hidden" id="feedback_spj_id" name="spj_id">
-                        <div id="feedback-list">
-                            <div class="feedback-item border rounded p-3 mb-2">
-                                <div class="form-group mb-2">
-                                    <label><strong>Bagian yang Salah</strong></label>
-                                    <select name="field_name[]" class="form-control" required>
-                                    <option value="">-- Pilih Bagian yang Salah --</option>
+                <div class="modal-body">
 
-                                    <optgroup label="Bagian Kwitansi">
-                                        <option value="uang_terbilang">Uang Terbilang</option>
-                                        <option value="jumlah_nominal">Jumlah Nominal</option>
-                                        <option value="pembayaran">Pembayaran</option>
-                                        <option value="no_rekening">Nomor Rekening</option>
-                                        <option value="no_rekening_tujuan">Nomor Rekening Tujuan</option>
-                                        <option value="nama_bank">Nama Bank</option>
-                                        <option value="npwp">NPWP</option>
-                                        <option value="telah_diterima_dari">Telah Diterima Dari</option>
-                                        <option value="penerima_kwitansi">Penerima Kwitansi</option>
-                                        <option value="jabatan_penerima">Jabatan Penerima</option>
-                                    </optgroup>
+                    <input type="hidden" id="feedback_spj_id" name="spj_id">
 
-                                    <optgroup label="Bagian Pesanan">
-                                        <option value="no_surat">Nomor Surat</option>
-                                        <option value="nama_pt">Nama PT</option>
-                                        <option value="alamat_pt">Alamat PT</option>
-                                        <option value="nomor_tlp_pt">Nomor Telepon PT</option>
-                                        <option value="tanggal_diterima">Tanggal Diterima</option>
-                                        <option value="surat_dibuat">Tanggal Surat Dibuat</option>
-                                    </optgroup>
+                    <div id="feedback-list">
 
-                                    <optgroup label="Bagian Pemeriksaan">
-                                        <option value="nama_pihak_kedua">Nama Pihak Kedua</option>
-                                        <option value="jabatan_pihak_kedua">Jabatan Pihak Kedua</option>
-                                        <option value="alamat_pihak_kedua">Alamat Pihak Kedua</option>
-                                        <option value="nama_pihak_pertama">Nama Pihak Pertama (PLT)</option>
-                                        <option value="nip_pihak_pertama">NIP Pihak Pertama (PLT)</option>
-                                        <option value="gol_pertama">Golongan Pihak Pertama</option>
-                                        <option value="jab_pertama">Jabatan Pihak Pertama</option>
-                                    </optgroup>
+                        <div class="feedback-item border rounded p-3 mb-2">
 
-                                    <optgroup label="Bagian Penerimaan">
-                                        <option value="subtotal">Subtotal</option>
-                                        <option value="ppn">PPN</option>
-                                        <option value="grandtotal">Grand Total</option>
-                                        <option value="dibulatkan">Dibulatkan</option>
-                                        <option value="terbilang">Terbilang</option>
-                                    </optgroup>
+                            <!-- auto-filled by JS -->
+                            <input type="hidden" name="section[]" class="section-field">
+                            <input type="hidden" name="record_id[]" class="record-id-field">
 
-                                    <optgroup label="Bagian Daftar Barang">
-                                        <option value="nama_barang">Nama Barang</option>
-                                        <option value="jumlah">Jumlah</option>
-                                        <option value="satuan">Satuan</option>
-                                        <option value="harga_satuan">Harga Satuan</option>
-                                        <option value="total">Total</option>
-                                    </optgroup>
-                                    </select>
-                                </div>
+                            <label><strong>Bagian yang Salah</strong></label>
 
-                            <div class="form-group mb-2">
-                                <label><strong>Catatan / Alasan:</strong></label>
-                                <textarea name="message[]" class="form-control" rows="2" placeholder="Tuliskan alasan..." required></textarea>
+                            <select name="field[]" class="form-control field-selector" required>
+                                <option value="">-- Pilih Bagian yang Salah --</option>
+
+                                <!-- KWITANSI -->
+                                <optgroup label="Bagian Kwitansi">
+                                    <option data-section="kwitansi" value="uang_terbilang">Uang Terbilang</option>
+                                    <option data-section="kwitansi" value="jumlah_nominal">Jumlah Nominal</option>
+                                    <option data-section="kwitansi" value="pembayaran">Pembayaran</option>
+                                    <option data-section="kwitansi" value="no_rekening">Nomor Rekening</option>
+                                    <option data-section="kwitansi" value="no_rekening_tujuan">Nomor Rekening Tujuan</option>
+                                    <option data-section="kwitansi" value="nama_bank">Nama Bank</option>
+                                    <option data-section="kwitansi" value="npwp">NPWP</option>
+                                    <option data-section="kwitansi" value="telah_diterima_dari">Telah Diterima Dari</option>
+                                    <option data-section="kwitansi" value="penerima_kwitansi">Penerima Kwitansi</option>
+                                    <option data-section="kwitansi" value="jabatan_penerima">Jabatan Penerima</option>
+                                </optgroup>
+
+                                <!-- PESANAN -->
+                                <optgroup label="Bagian Pesanan">
+                                    <option data-section="pesanan" value="no_surat">Nomor Surat</option>
+                                    <option data-section="pesanan" value="nama_pt">Nama PT</option>
+                                    <option data-section="pesanan" value="alamat_pt">Alamat PT</option>
+                                    <option data-section="pesanan" value="nomor_tlp_pt">Nomor Telepon PT</option>
+                                    <option data-section="pesanan" value="tanggal_diterima">Tanggal Diterima</option>
+                                    <option data-section="pesanan" value="surat_dibuat">Tanggal Surat Dibuat</option>
+                                </optgroup>
+
+                                <!-- PEMERIKSAAN -->
+                                <optgroup label="Bagian Pemeriksaan">
+                                    <option data-section="pemeriksaan" value="nama_pihak_kedua">Nama Pihak Kedua</option>
+                                    <option data-section="pemeriksaan" value="jabatan_pihak_kedua">Jabatan Pihak Kedua</option>
+                                    <option data-section="pemeriksaan" value="alamat_pihak_kedua">Alamat Pihak Kedua</option>
+                                    <option data-section="pemeriksaan" value="pekerjaan">Pekerjaan</option>
+                                </optgroup>
+
+                                <!-- PENERIMAAN -->
+                                <optgroup label="Bagian Penerimaan">
+                                    <option data-section="penerimaan" value="subtotal">Subtotal</option>
+                                    <option data-section="penerimaan" value="ppn">PPN</option>
+                                    <option data-section="penerimaan" value="grandtotal">Grand Total</option>
+                                    <option data-section="penerimaan" value="dibulatkan">Dibulatkan</option>
+                                    <option data-section="penerimaan" value="terbilang">Terbilang</option>
+                                    <option data-section="penerimaan" value="pph">PPH</option>
+                                </optgroup>
+
+                                <!-- DETAIL BARANG -->
+                                <optgroup label="Bagian Daftar Barang">
+                                    <option data-section="detail_barang" value="nama_barang">Nama Barang</option>
+                                    <option data-section="detail_barang" value="jumlah">Jumlah</option>
+                                    <option data-section="detail_barang" value="satuan">Satuan</option>
+                                    <option data-section="detail_barang" value="harga_satuan">Harga Satuan</option>
+                                    <option data-section="detail_barang" value="total">Total</option>
+                                </optgroup>
+
+                            </select>
+
+                            <div class="form-group mb-2 mt-3">
+                                <label><strong>Catatan:</strong></label>
+                                <textarea name="message[]" class="form-control" rows="2" required></textarea>
                             </div>
 
                             <button type="button" class="btn btn-sm btn-outline-danger remove-item">Hapus</button>
-                            </div>
                         </div>
 
-                            <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="add-feedback">
-                                + Tambah Alasan
-                            </button>
-                        </div>
-
-                        <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-                        <button type="submit" class="btn btn-danger">Kirim Penolakan</button>
                     </div>
-                </form>
-            </div>
+
+                    <button type="button" class="btn btn-sm btn-outline-primary mt-2" id="add-feedback">
+                        + Tambah Alasan
+                    </button>
+
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-danger">Kirim Penolakan</button>
+                </div>
+
+            </form>
         </div>
     </div>
-@endsection
+</div>
+
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
-        if (!csrfToken) console.warn('CSRF token meta tag not found! add <meta name="csrf-token" content="{{ csrf_token() }}"> in your layout.');
+document.addEventListener('DOMContentLoaded', function () {
 
-        let selectedId = null;
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
-        document.querySelectorAll('.status-option').forEach(option => {
-            option.addEventListener('click', function(e) {
-                e.preventDefault();
-                const id = this.dataset.id;
-                const status = this.dataset.status;
-                document.getElementById(`status_${id}`).value = status;
+    // ============================
+    // 🔓 BUKA MODAL FEEDBACK
+    // ============================
+    document.querySelectorAll('.status-option').forEach(btn => {
+        btn.addEventListener('click', e => {
+            e.preventDefault();
 
-                if (status === 'belum_valid') {
-                    selectedId = id;
-                    document.getElementById('feedback_spj_id').value = id;
-                    $('#feedbackModal').modal('show');
-                } else {
-                    document.getElementById(`form-${id}`).submit();
-                }
-            });
+            let id = btn.dataset.id;
+            document.getElementById('feedback_spj_id').value = id;
+
+            $('#feedbackModal').modal('show');
         });
+    });
 
-        document.getElementById('add-feedback').addEventListener('click', function() {
+    // ============================
+    // ➕ TAMBAH ITEM FEEDBACK
+    // ============================
+    document.getElementById('add-feedback').addEventListener('click', function () {
         const container = document.getElementById('feedback-list');
         const clone = container.firstElementChild.cloneNode(true);
-        clone.querySelectorAll('select, textarea').forEach(el => el.value = '');
+
+        // reset nilai
+        clone.querySelectorAll('textarea').forEach(e => e.value = '');
+        clone.querySelectorAll('select').forEach(e => e.value = '');
+
+        clone.querySelector('.section-field').value = '';
+        clone.querySelector('.record-id-field').value = '';
+
         container.appendChild(clone);
     });
 
-    document.addEventListener('click', function(e) {
+    // ============================
+    // ❌ HAPUS ITEM FEEDBACK
+    // ============================
+    document.addEventListener('click', e => {
         if (e.target.classList.contains('remove-item')) {
             const container = document.getElementById('feedback-list');
             if (container.children.length > 1) {
                 e.target.closest('.feedback-item').remove();
-            } else {
-                Swal.fire('Minimal satu alasan harus ada', '', 'warning');
             }
         }
     });
 
-    document.getElementById('feedbackForm').addEventListener('submit', async function(e) {
+    // ============================
+    // 🔥 AUTO SET SECTION + RECORD_ID
+    // ============================
+    document.addEventListener('change', e => {
+        if (e.target.classList.contains('field-selector')) {
+
+            const fieldEl = e.target;
+
+            // Ambil section dari <option>
+            const section = fieldEl.options[fieldEl.selectedIndex].dataset.section;
+
+            // Cari elemen wrapper
+            const wrapper = fieldEl.closest('.feedback-item');
+
+            // Set value section
+            wrapper.querySelector('.section-field').value = section;
+
+            // Ambil SPJ ID
+            let spjId = document.getElementById('feedback_spj_id').value;
+
+            // Query ke server: /spj/{id}/record/{section}
+            fetch(`/spj/${spjId}/record/${section}`)
+                .then(res => res.json())
+                .then(data => {
+
+                    if (Array.isArray(data.record_id)) {
+                        // Jika detail_barang (multiple record)
+                        wrapper.querySelector('.record-id-field').value = data.record_id.join(',');
+                    } else {
+                        wrapper.querySelector('.record-id-field').value = data.record_id ?? null;
+                    }
+                })
+                .catch(err => console.error('Fetch record_id error:', err));
+        }
+    });
+
+    // ============================
+    // 📤 SUBMIT FEEDBACK FORM
+    // ============================
+    document.getElementById('feedbackForm').addEventListener('submit', async e => {
         e.preventDefault();
 
-        const spj_id = document.getElementById('feedback_spj_id').value;
-        const formData = new FormData(this);
-
-        const fieldNames = formData.getAll('field_name[]').filter(v => v);
-        const messages = formData.getAll('message[]').filter(v => v);
-        if (fieldNames.length === 0 || messages.length === 0) {
-            Swal.fire('Lengkapi Form', 'Minimal satu alasan harus diisi lengkap.', 'warning');
-            return;
-        }
+        let spj_id = document.getElementById('feedback_spj_id').value;
+        let formData = new FormData(e.target);
 
         try {
             const res = await fetch(`/spj/${spj_id}/revisi`, {
@@ -261,36 +311,27 @@
             const data = await res.json();
             $('#feedbackModal').modal('hide');
 
-            if (data.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Feedback Dikirim',
-                    text: data.message,
-                    timer: 1800,
-                    showConfirmButton: false
-                });
+            Swal.fire({
+                icon: data.success ? 'success' : 'error',
+                title: data.message,
+                timer: 1800
+            });
 
-                const badge = document.querySelector(`#dropdownMenuButton${spj_id}`);
-                if (badge) {
-                    badge.className = "badge bg-danger text-white dropdown-toggle border-0";
-                    badge.textContent = "Tidak Disetujui";
-                }
-
-                document.getElementById(`komentar_${spj_id}`).value = messages.join('; ');
-                document.getElementById(`form-${spj_id}`).submit();
-            } else {
-                Swal.fire('Gagal', data.message || 'Terjadi kesalahan server', 'error');
-            }
+            if (data.success) location.reload();
 
         } catch (error) {
-            console.error('Fetch error:', error);
-            $('#feedbackModal').modal('hide');
-            Swal.fire('Terjadi Kesalahan', 'Tidak dapat mengirim feedback ke server.', 'error');
+            console.error(error);
+            Swal.fire('Error', 'Gagal mengirim feedback.', 'error');
         }
     });
 
 });
 </script>
+
+
+
+@endsection
+
 
 
 

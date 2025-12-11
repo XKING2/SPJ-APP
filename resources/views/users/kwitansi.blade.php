@@ -18,20 +18,30 @@
 <!-- Bagian Card SPJ -->
     <div class="dashboard-grid mt-3">
 
-        <form action="{{ route('kwitansils') }}" method="GET" class="dashboard-card">
-            <button type="submit" class="btn w-100 d-flex p-0" style="background:none;border:none;">
+        <form action="{{ route('kwitansigu') }}" method="GET" class="dashboard-card">
+            <button type="submit" class="btn w-100 d-flex p-0" style="background:none;border:none; position:relative;">
+
+                @if($notifGU == 1)
+                    <span class="badge-notif-dashboard">1</span>
+                @endif
+
                 <div class="icon bg-primary">
                     <i class="fas fa-file-invoice-dollar fa-2x"></i>
                 </div>
                 <div class="info">
-                    <div class="label">Lihat Data Kwitansi Gu</div>
+                    <div class="label">Lihat Data Kwitansi GU</div>
                     <div class="value">General Umum</div>
                 </div>
             </button>
         </form>
 
-        <form action="{{ route('kwitansigu') }}" method="GET" class="dashboard-card">
-            <button type="submit" class="btn w-100 d-flex p-0" style="background:none;border:none;">
+        <form action="{{ route('kwitansils') }}" method="GET" class="dashboard-card">
+            <button type="submit" class="btn w-100 d-flex p-0" style="background:none;border:none; position:relative;">
+
+                @if($notifLS == 1)
+                    <span class="badge-notif-dashboard">1</span>
+                @endif
+
                 <div class="icon bg-success">
                     <i class="fas fa-file-contract fa-2x"></i>
                 </div>
