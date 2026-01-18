@@ -10,7 +10,9 @@ class RoleMiddleware
     public function handle($request, Closure $next, $role)
     {
         if (!Auth::check()) {
-            return redirect()->route('login');
+            return redirect()
+                ->route('login')
+                ->with('auth_error', 'Anda belum login. Silakan login terlebih dahulu.');
         }
 
         if (Auth::user()->role !== $role) {

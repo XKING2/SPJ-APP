@@ -26,7 +26,7 @@ class PenerimaanControl extends Controller
 
         $pesananItems = $pemeriksaan->pesanan->items ?? [];
 
-        return view('users.create.createpenerimaan', compact('spj', 'pemeriksaan', 'ppn_rate', 'pesananItems','serahbarang','nosurat','pph_list'));
+        return view('users.SpjLs.create.createpenerimaan', compact('spj', 'pemeriksaan', 'ppn_rate', 'pesananItems','serahbarang','nosurat','pph_list'));
     }
 
     public function store(Request $request)
@@ -93,13 +93,13 @@ class PenerimaanControl extends Controller
             })->toArray()
         );
 
-        if ($penerimaan->spj) {
-            app(SPJController::class)->generateSPJDocument($penerimaan->spj->id);
-        }
+         return redirect()
+            ->route('kwitansils.create', [
+                'spj_id' => $validated['spj_id'],
+            ])
+        ->with('success', 'Penerimaan berhasil disimpan dan kegiatan berhasil dihubungkan ke SPJ.');
 
-        return redirect()
-            ->route('reviewSPJ')
-            ->with('success', 'Data penerimaan berhasil disimpan dan SPJ telah digenerate otomatis.');
+        
     }
 
 
@@ -209,19 +209,33 @@ class PenerimaanControl extends Controller
             return redirect()->back()->with('error', 'Data SPJ tidak ditemukan.');
         }
 
-        if ($spj->status === 'belum_valid') {
-            $spj->status = 'draft';
+         // 🔹 Reset feedback
+        $spj->feedbacks()->delete();
+
+        // 🔹 Status 1
+        if ($spj->status !== 'valid') {
+            // hanya ubah jika BUKAN valid
+            if ($spj->status === 'belum_valid') {
+                $spj->status = 'draft';
+            }
         }
-        if ($spj->status2 === 'belum_valid') {
-            $spj->status2 = 'draft';
+
+        // 🔹 Status 2
+        if ($spj->status2 !== 'valid') {
+            // hanya ubah jika BUKAN valid
+            if ($spj->status2 === 'belum_valid') {
+                $spj->status2 = 'draft';
+            }
         }
+        // 🔹 Reset semua notification flag
+        $spj->resetNotifications();
 
         $spj->save();
 
         Log::info("✅ SPJ #{$spj->id} berhasil diubah ke status: {$spj->status} / {$spj->status2}");
 
         if ($penerimaan->spj) {
-            app(\App\Http\Controllers\SPJController::class)->generateSPJDocument($penerimaan->spj->id);
+            app(\App\Http\Controllers\SPJController::class)->generateSPJDocumentLs($penerimaan->spj->id);
         }
 
         return redirect()

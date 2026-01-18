@@ -37,15 +37,20 @@
                     <tbody>
                         @forelse($spjs as $spj)
                         @php
-                            $feedbackArray = [];
-                            foreach ($spj->feedbacks as $f) {
-                                $feedbackArray[] = [
-                                    'field' => $f->field_name,
-                                    'message' => $f->message,
-                                    'role' => $f->role,
-                                    'created_at' => $f->created_at->format('d-m-Y H:i'),
+                            // Pastikan relation feedbacks sudah eager loaded di controller:
+                            // $spjs = Spj::with('feedbacks','pesanan','user')->paginate(...);
+
+                            // Build feedback array yang benar (gunakan nama kolom DB)
+                            $feedbackArray = $spj->feedbacks->map(function($f) {
+                                return [
+                                    'section'    => $f->section,
+                                    'field'      => $f->field,
+                                    'message'    => $f->message,
+                                    'role'       => $f->role,
+                                    // format created_at ke string agar JS dapat tampil langsung
+                                    'created_at' => optional($f->created_at)->format('d-m-Y H:i'),
                                 ];
-                            }
+                            })->toArray();
 
                             $status1 = $spj->status;
                             $status2 = $spj->status2;
@@ -62,13 +67,16 @@
                                     <span class="badge badge-success">Disetujui</span>
                                 @elseif($status1 === 'belum_valid')
                                     <span class="badge badge-danger">Tidak Disetujui</span>
+
                                     @if(count($feedbackArray) > 0)
                                         <button type="button"
                                             class="btn btn-link p-0 ml-1 alasan-btn position-relative"
                                             data-feedback='@json($feedbackArray)'
+                                            data-role="bendahara"
                                             title="Lihat alasan penolakan (Bendahara)">
                                             <i class="fas fa-bell text-warning"></i>
-                                            <span class="notif-badge position-absolute badge badge-danger">
+                                            <span class="notif-badge position-absolute badge badge-danger"
+                                                  style="top:-8px; right:-8px; font-size:10px; padding:3px 6px;">
                                                 {{ count($feedbackArray) }}
                                             </span>
                                         </button>
@@ -86,13 +94,16 @@
                                     <span class="badge badge-success">Disetujui</span>
                                 @elseif($status2 === 'belum_valid')
                                     <span class="badge badge-danger">Tidak Disetujui</span>
+
                                     @if(count($feedbackArray) > 0)
                                         <button type="button"
                                             class="btn btn-link p-0 ml-1 alasan-btn position-relative"
                                             data-feedback='@json($feedbackArray)'
+                                            data-role="kasubag"
                                             title="Lihat alasan penolakan (Kasubag)">
                                             <i class="fas fa-bell text-warning"></i>
-                                            <span class="notif-badge position-absolute badge badge-danger">
+                                            <span class="notif-badge position-absolute badge badge-danger"
+                                                  style="top:-8px; right:-8px; font-size:10px; padding:3px 6px;">
                                                 {{ count($feedbackArray) }}
                                             </span>
                                         </button>
@@ -103,6 +114,7 @@
                                     <span class="badge badge-warning">Menunggu</span>
                                 @endif
                             </td>
+
                             <!-- Aksi -->
                             <td>
                                 <div class="d-flex flex-column align-items-center justify-content-center gap-5">
@@ -184,158 +196,67 @@
                     <span>&times;</span>
                 </button>
             </div>
+
             <div class="modal-body">
                 <table class="table table-sm table-bordered">
                     <thead class="bg-light">
                         <tr>
-                            <th>Spj No</th>
-                            <th>Field</th>
-                            <th>Pesan</th>
-                            <th>Role</th>
+                            <th>Section</th>
+                            <th>Bagian</th>
+                            <th>Catatan</th>
+                            <th>Pengoreksi</th>
                             <th>Waktu</th>
                         </tr>
                     </thead>
                     <tbody id="feedbackTableBody"></tbody>
                 </table>
+                <div id="feedback-debug" class="small text-muted mt-2" style="display:none;">
+                    <strong>Debug payload (lihat console)</strong>
+                </div>
             </div>
+
         </div>
     </div>
 </div>
 
-<!-- ✅ Scripts -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-$(document).ready(function() {
-    $('.form-delete').on('submit', function(e) {
-        e.preventDefault();
-        const form = this;
-
-        // Aktifkan mode "disable loader" dan flag SweetAlert
-        isSweetAlertActive = true;
-        isLoaderDisabled = true;
-        hideLoader();
-
-        Swal.fire({
-            title: "Yakin ingin menghapus SPJ ini?",
-            text: "Data yang dihapus tidak dapat dikembalikan.",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonText: "Ya, hapus",
-            cancelButtonText: "Batal",
-            confirmButtonColor: "#d33",
-            cancelButtonColor: "#3085d6",
-            allowOutsideClick: false,
-            allowEscapeKey: false,
-        }).then(result => {
-            // Reset flag setelah SweetAlert ditutup
-            isSweetAlertActive = false;
-            isLoaderDisabled = false;
-
-            if (result.isConfirmed) {
-                showLoader();
-                setTimeout(() => form.submit(), 400);
-            } else {
-                hideLoader();
-            }
-        });
-    });
-
-    // 🔔 Modal alasan
-    $('.alasan-btn').on('click', function() {
+    // delegated handler supaya aman kalau tombol dibuat dinamis
+    $(document).on('click', '.alasan-btn', function () {
         const feedbacks = $(this).data('feedback');
+        console.log("=== RAW FEEDBACK RECEIVED ===");
+        console.log(feedbacks);
+
         const tbody = $('#feedbackTableBody');
         tbody.empty();
 
-        const fieldGroups = {
-            'Bagian Kwitansi': {
-                'uang_terbilang': 'Uang Terbilang',
-                'jumlah_nominal': 'Jumlah Nominal',
-                'pembayaran': 'Pembayaran',
-                'no_rekening': 'Nomor Rekening',
-                'no_rekening_tujuan': 'Nomor Rekening Tujuan',
-                'nama_bank': 'Nama Bank',
-                'npwp': 'NPWP',
-                'telah_diterima_dari': 'Telah Diterima Dari',
-                'penerima_kwitansi': 'Penerima Kwitansi',
-                'jabatan_penerima': 'Jabatan Penerima',
-            },
-            'Bagian Pesanan': {
-                'no_surat': 'Nomor Surat',
-                'nama_pt': 'Nama PT',
-                'alamat_pt': 'Alamat PT',
-                'nomor_tlp_pt': 'Nomor Telepon PT',
-                'tanggal_diterima': 'Tanggal Diterima',
-                'surat_dibuat': 'Tanggal Surat Dibuat',
-            },
-            'Bagian Pemeriksaan': {
-                'nama_pihak_kedua': 'Nama Pihak Kedua',
-                'jabatan_pihak_kedua': 'Jabatan Pihak Kedua',
-                'alamat_pihak_kedua': 'Alamat Pihak Kedua',
-                'nama_pihak_pertama': 'Nama Pihak Pertama (PLT)',
-                'nip_pihak_pertama': 'NIP Pihak Pertama (PLT)',
-                'gol_pertama': 'Golongan Pihak Pertama',
-                'jab_pertama': 'Jabatan Pihak Pertama',
-            },
-            'Bagian Penerimaan': {
-                'subtotal': 'Subtotal',
-                'ppn': 'PPN',
-                'grandtotal': 'Grand Total',
-                'dibulatkan': 'Dibulatkan',
-                'terbilang': 'Terbilang',
-            },
-            'Bagian Daftar Barang': {
-                'nama_barang': 'Nama Barang',
-                'jumlah': 'Jumlah',
-                'satuan': 'Satuan',
-                'harga_satuan': 'Harga Satuan',
-                'total': 'Total',
-            }
-        };
-
-        if (Array.isArray(feedbacks) && feedbacks.length > 0) {
-            feedbacks.forEach(f => {
-
-                // 🔎 Ambil nomor SPJ dari relasi
-                const nomorSpj = f.spj?.no_surat ?? f.spj?.nomor_spj ?? f.spj_id ?? "-";
-
-                let groupName = '-';
-                let fieldLabel = f.field || '-';
-
-                for (const [group, fields] of Object.entries(fieldGroups)) {
-                    if (fields[f.field]) {
-                        groupName = group;
-                        fieldLabel = fields[f.field];
-                        break;
-                    }
-                }
-
-                tbody.append(`
-                    <tr>
-                        <td>
-                            <strong>${fieldLabel}</strong><br>
-                            <small class="text-muted">${groupName}</small>
-                        </td>
-
-                        <td>${f.message || '-'}</td>
-                        <td>${f.role || '-'}</td>
-
-                        <td>
-                            <strong>${nomorSpj}</strong><br>
-                            <small class="text-muted">${f.created_at}</small>
-                        </td>
-                    </tr>
-                `);
-            });
-        } else {
-            tbody.append('<tr><td colspan="4" class="text-center text-muted">Tidak ada alasan penolakan.</td></tr>');
+        if (!Array.isArray(feedbacks) || feedbacks.length === 0) {
+            tbody.append(`<tr><td colspan="5" class="text-center text-muted">Tidak ada alasan penolakan.</td></tr>`);
+            $('#modalAlasan').modal('show');
+            return;
         }
+
+        feedbacks.forEach(f => {
+            // safe read
+            const section = f.section ?? '-';
+            const field = f.field ?? '-';
+            const message = f.message ?? '-';
+            const role = f.role ?? '-';
+            const waktu = f.created_at ?? '-';
+
+            tbody.append(`
+                <tr>
+                    <td>${section}</td>
+                    <td>${field}</td>
+                    <td>${message}</td>
+                    <td>${role}</td>
+                    <td>${waktu}</td>
+                </tr>
+            `);
+        });
 
         $('#modalAlasan').modal('show');
     });
-
-
-});
 </script>
 
 @endsection

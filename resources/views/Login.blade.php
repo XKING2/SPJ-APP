@@ -9,7 +9,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 </head>
 
-<body>
+<body data-auth-error="{{ session('auth_error') }}">
     <div class="login-box text-center">
         <img src="{{ asset('images/Logo1.png') }}" class="logo" alt="Logo">
         <h4 class="fw-bold">E-SPJ</h4>
@@ -36,17 +36,21 @@
     </div>
 </body>
 
-{{-- Flash message untuk login sukses --}}
-@if(session('success'))
-    <div data-swal-success="{{ session('success') }}"></div>
-@endif
-
-{{-- Flash message untuk login gagal --}}
-@if($errors->any())
-    <div data-swal-errors="{{ implode('|', $errors->all()) }}"></div>
-@endif
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+@if(session('auth_error'))
+<script>
+    const msg = document.body.dataset.authError;
+    if (msg) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Akses Ditolak',
+            text: msg
+        });
+    }
+</script>
+@endif
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {

@@ -10,6 +10,7 @@ use App\Models\Pesanan;
 use App\Models\pihakkedua;
 use App\Models\Plt;
 use App\Models\nosurat;
+use App\Models\pekerjaans;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
@@ -47,7 +48,7 @@ class PemeriksaanControl extends Controller
 
         $tanggalLengkap = "$hari, $tglTeks $bulan $tahunTeks";
 
-        return view('users.create.createpemeriksaan', compact(
+        return view('users.SpjLs.create.createpemeriksaan', compact(
             'spj',
             'pesanan',
             'plts',
@@ -76,7 +77,7 @@ class PemeriksaanControl extends Controller
 
 
 
-    public function store(Request $request)
+   public function store(Request $request)
     {
         $validated = $request->validate([
             'spj_id' => 'required|exists:spjs,id',
@@ -89,12 +90,35 @@ class PemeriksaanControl extends Controller
             'nama_pihak_kedua' => 'required|string|max:255',
             'jabatan_pihak_kedua' => 'required|string|max:255',
             'alamat_pihak_kedua' => 'required|string',
-            'pekerjaan' => 'required|string',
+            'pekerjaan' => 'required|string|max:255',
         ]);
 
-        $pemeriksaan = Pemeriksaan::create($validated);
+        $pekerjaan = pekerjaans::firstOrCreate(
+            [
+                'pekerjaan' => trim($validated['pekerjaan']),
+                'spj_id' => $validated['spj_id'],
+            ],
+            [
+                // default lain jika perlu
+                'kegiatan_id' => null,
+            ]
+        );
 
-        
+
+        $pemeriksaan = Pemeriksaan::create([
+            'spj_id' => $validated['spj_id'],
+            'pesanan_id' => $validated['pesanan_id'],
+            'no_suratssss' => $validated['no_suratssss'],
+            'hari_diterima' => $validated['hari_diterima'],
+            'tanggals_diterima' => $validated['tanggals_diterima'],
+            'bulan_diterima' => $validated['bulan_diterima'],
+            'tahun_diterima' => $validated['tahun_diterima'],
+            'nama_pihak_kedua' => $validated['nama_pihak_kedua'],
+            'jabatan_pihak_kedua' => $validated['jabatan_pihak_kedua'],
+            'alamat_pihak_kedua' => $validated['alamat_pihak_kedua'],
+            'id_pekerjaan' => $pekerjaan->id, // ⬅️ KUNCI UTAMA
+        ]);
+
         $spj = SPJ::findOrFail($validated['spj_id']);
         $spj->update(['pemeriksaan_id' => $pemeriksaan->id]);
 
@@ -118,7 +142,6 @@ class PemeriksaanControl extends Controller
         $plts = Plt::all();
         $keduas = pihakkedua::all();
         $nosurat = nosurat::latest()->first();
-        $kwitansi = Kwitansi::latest()->first();
 
         // Tangani tanggal dari pesanan
         $tanggalPesanan = $pesanan->tanggal_diterima ?? null;
@@ -179,18 +202,32 @@ class PemeriksaanControl extends Controller
             return redirect()->back()->with('error', 'Data SPJ tidak ditemukan.');
         }
 
-        if ($spj->status === 'belum_valid') {
-            $spj->status = 'draft';
+         // 🔹 Reset feedback
+        $spj->feedbacks()->delete();
+
+        // 🔹 Status 1
+        if ($spj->status !== 'valid') {
+            // hanya ubah jika BUKAN valid
+            if ($spj->status === 'belum_valid') {
+                $spj->status = 'draft';
+            }
         }
-        if ($spj->status2 === 'belum_valid') {
-            $spj->status2 = 'draft';
+
+        // 🔹 Status 2
+        if ($spj->status2 !== 'valid') {
+            // hanya ubah jika BUKAN valid
+            if ($spj->status2 === 'belum_valid') {
+                $spj->status2 = 'draft';
+            }
         }
+        // 🔹 Reset semua notification flag
+        $spj->resetNotifications();
 
         $spj->save();
 
         Log::info("✅ SPJ #{$spj->id} berhasil diubah ke status: {$spj->status} / {$spj->status2}");
         if ($spj) {
-            app(\App\Http\Controllers\SPJController::class)->generateSPJDocument($spj->id);
+            app(\App\Http\Controllers\SPJController::class)->generateSPJDocumentLs($spj->id);
         }
 
         return redirect()

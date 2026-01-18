@@ -16,7 +16,9 @@ class Pesanan extends Model
         'surat_dibuat',
         'nomor_tlp_pt',
         'jumlah_nominal',
-        'uang_terbilang'
+        'uang_terbilang',
+        'bulan_diterima',
+        'tahun_diterima'
     ];
 
 

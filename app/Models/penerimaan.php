@@ -8,7 +8,7 @@ class Penerimaan extends Model
 {
     protected $table = 'penerimaans';
     protected $fillable = [
-        'spj_id', 'pesanan_id', 'id_serahbarang', 'pekerjaan', 'no_surat', 'surat_dibuat',
+        'spj_id', 'pesanan_id', 'id_serahbarang', 'no_surat', 'surat_dibuat',
         'nama_pihak_kedua', 'jabatan_pihak_kedua',
         'subtotal', 'ppn','pph', 'grandtotal', 'dibulatkan', 'terbilang'
     ];

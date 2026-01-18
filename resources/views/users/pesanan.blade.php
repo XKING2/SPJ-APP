@@ -11,59 +11,49 @@
 @endsection
 
 @section('content')
+        <div class="action-cards-grid">
+                    <!-- Baris Atas: 2 Card -->
+                    <div class="action-cards-row-top">
+                        <form action="{{ route('pesanangu') }}" method="GET" class="action-card">
+                            @if($notifGU == 1)
+                                <span class="badge-notif-dashboard">1</span>
+                            @endif
+                            <button type="submit" class="action-card-button">
+                                <div class="action-icon-wrapper gu">
+                                    <i class="fas fa-file-contract"></i>
+                                </div>
+                                <div class="action-content">
+                                    <div class="action-title">Pesanan SPJ GU</div>
+                                    <div class="action-description">
+                                        <i class="fas fa-circle"></i>
+                                        <span>Ganti Uang</span>
+                                    </div>
+                                </div>
+                            </button>
+                        </form>
+
+                        <form action="{{ route('pesananls') }}" method="GET" class="action-card">
+                            @if($notifLS == 1)
+                                <span class="badge-notif-dashboard">1</span>
+                            @endif
+                            <button type="submit" class="action-card-button">
+                                <div class="action-icon-wrapper ls">
+                                    <i class="fas fa-file-invoice-dollar"></i>
+                                </div>
+                                <div class="action-content">
+                                    <div class="action-title">Pesanan SPJ LS</div>
+                                    <div class="action-description">
+                                        <i class="fas fa-circle"></i>
+                                        <span>Langsung</span>
+                                    </div>
+                                </div>
+                            </button>
+                        </form>
+                    </div>
+            </div>
 
 
-<div class="dashboard-grid mt-3">
 
-        <form action="{{ route('pesanangu') }}" method="GET" class="dashboard-card">
-            <button type="submit" class="btn w-100 d-flex p-0" style="background:none;border:none; position:relative;">
-
-                @if($notifGU == 1)
-                    <span class="badge-notif-dashboard">1</span>
-                @endif
-
-                <div class="icon bg-primary">
-                    <i class="fas fa-file-invoice-dollar fa-2x"></i>
-                </div>
-                <div class="info">
-                    <div class="label">Lihat Data Pesanan GU</div>
-                    <div class="value">General Umum</div>
-                </div>
-            </button>
-        </form>
-
-        <form action="{{ route('pesananls') }}" method="GET" class="dashboard-card">
-            <button type="submit" class="btn w-100 d-flex p-0" style="background:none;border:none; position:relative;">
-
-                @if($notifLS == 1)
-                    <span class="badge-notif-dashboard">1</span>
-                @endif
-
-                <div class="icon bg-success">
-                    <i class="fas fa-file-contract fa-2x"></i>
-                </div>
-                <div class="info">
-                    <div class="label">Lihat Data Pesanan LS</div>
-                    <div class="value">Langsung</div>
-                </div>
-            </button>
-        </form>
-
-
-
-    </div>
-
-
-
-<script>
-    let currentUserId = JSON.parse('@json(auth()->id())');
-    window.currentUserId = currentUserId;
-</script>
-
-@include('chats.chat_widget')
 
 @endsection
 
-@section('scripts')
-    <script src="{{ asset('js/chats.js') }}"></script>
-@endsection

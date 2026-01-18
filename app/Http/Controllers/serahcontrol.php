@@ -21,7 +21,7 @@ class serahcontrol extends Controller
         $keduas = pihakkedua::all();
         $pemeriksaan = Pemeriksaan::findOrFail($request->pemeriksaan_id);
 
-        return view('users.create.createserahbarang', compact(
+        return view('users.SpjLs.create.createserahbarang', compact(
             'spj',
             'plts',
             'keduas',
@@ -97,7 +97,7 @@ class serahcontrol extends Controller
 
         Log::info("✅ SPJ #{$spj->id} berhasil diubah ke status: {$spj->status} / {$spj->status2}");
         if ($spj) {
-            app(\App\Http\Controllers\SPJController::class)->generateSPJDocument($spj->id);
+            app(\App\Http\Controllers\SPJController::class)->generateSPJDocumentLs($spj->id);
         }
 
         return redirect()

@@ -36,12 +36,12 @@ class sidebarcontrol extends Controller
         $laporan = \App\Models\Pemeriksaan::count() ?? 0;
 
         // 🔥 Ambil semua feedback untuk semua SPJ user ini
-        $feedbackCount = spj_feedbacks::whereIn('spj_id', function ($q) use ($user) {
-                $q->select('id')->from('spjs')->where('user_id', $user->id);
-            })
-            ->select('section', DB::raw('COUNT(*) as total'))
+        $feedbackCount = spj_feedbacks::select('section')
             ->groupBy('section')
-            ->pluck('total', 'section');
+            ->pluck('section')
+            ->mapWithKeys(function ($section) {
+                return [$section => 1];
+        });
 
         return view('users.dashboarduser', compact(
             'user_SPJ',
@@ -85,6 +85,7 @@ class sidebarcontrol extends Controller
         // Default notif
         $notifGU = 0;
         $notifLS = 0;
+        $notifPO = 0;
 
         if ($feedbackKwitansi->isNotEmpty()) {
 
@@ -101,8 +102,13 @@ class sidebarcontrol extends Controller
             if ($spjTypes->contains('ls')) {
                 $notifLS = 1;
             }
+
+            // Jika ada SPJ type LS yang salah → notifLS = 1
+            if ($spjTypes->contains('po')) {
+                $notifPO = 1;
+            }
         }
-        return view('users.kwitansi', compact('kwitansis', 'search','feedbackCount','feedbackKwitansi','notifGU','notifLS'));
+        return view('users.kwitansi', compact('kwitansis', 'search','feedbackCount','feedbackKwitansi','notifGU','notifLS','notifPO'));
     
     }
 
@@ -276,7 +282,14 @@ class sidebarcontrol extends Controller
 
         $spjs = $query->orderBy('created_at', 'desc')->paginate(10);
 
-        return view('users.reviewSPJ', compact('spjs','search'));
+        $feedbackCount = spj_feedbacks::select('section')
+            ->groupBy('section')
+            ->pluck('section')
+            ->mapWithKeys(function ($section) {
+                return [$section => 1];
+        });
+
+        return view('users.reviewSPJ', compact('spjs','search','feedbackCount'));
     }
 
 
@@ -302,7 +315,14 @@ class sidebarcontrol extends Controller
         }
         $spjs = $query->orderBy('created_at', 'desc')->paginate(10); 
 
-        return view('users.cetakSPJ', compact('spjs','search'));
+        $feedbackCount = spj_feedbacks::select('section')
+            ->groupBy('section')
+            ->pluck('section')
+            ->mapWithKeys(function ($section) {
+                return [$section => 1];
+        });
+
+        return view('users.cetakSPJ', compact('spjs','search','feedbackCount'));
     }
 
 }

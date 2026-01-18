@@ -15,52 +15,72 @@
 @section('content')
 
 
-<!-- Bagian Card SPJ -->
-    <div class="dashboard-grid mt-3">
+<div class="action-cards-wrapper">
+                <div class="action-cards-grid">
+                    <!-- Baris Atas: 2 Card -->
+                    <div class="action-cards-row-top">
+                        <form action="{{ route('Kwitansigu') }}" method="GET" class="action-card">
+                            @if($notifGU == 1)
+                                <span class="badge-notif-dashboard">1</span>
+                            @endif
+                            <button type="submit" class="action-card-button">
+                                <div class="action-icon-wrapper gu">
+                                    <i class="fas fa-file-contract"></i>
+                                </div>
+                                <div class="action-content">
+                                    <div class="action-title">Kwitansi SPJ GU</div>
+                                    <div class="action-description">
+                                        <i class="fas fa-circle"></i>
+                                        <span>Ganti Uang</span>
+                                    </div>
+                                </div>
+                            </button>
+                        </form>
 
-        <form action="{{ route('kwitansigu') }}" method="GET" class="dashboard-card">
-            <button type="submit" class="btn w-100 d-flex p-0" style="background:none;border:none; position:relative;">
+                        <form action="{{ route('kwitansils') }}" method="GET" class="action-card">
+                            @if($notifLS == 1)
+                                <span class="badge-notif-dashboard">1</span>
+                            @endif
+                            <button type="submit" class="action-card-button">
+                                <div class="action-icon-wrapper ls">
+                                    <i class="fas fa-file-invoice-dollar"></i>
+                                </div>
+                                <div class="action-content">
+                                    <div class="action-title">Kwitansi SPJ LS</div>
+                                    <div class="action-description">
+                                        <i class="fas fa-circle"></i>
+                                        <span>Langsung</span>
+                                    </div>
+                                </div>
+                            </button>
+                        </form>
+                    </div>
 
-                @if($notifGU == 1)
-                    <span class="badge-notif-dashboard">1</span>
-                @endif
-
-                <div class="icon bg-primary">
-                    <i class="fas fa-file-invoice-dollar fa-2x"></i>
+                    <!-- Baris Bawah: 1 Card di Tengah -->
+                    <div class="action-cards-row-bottom">
+                        <form action="{{ route('kwitansipo') }}" method="GET" class="action-card">
+                            @if($notifPO == 1)
+                                <span class="badge-notif-dashboard">1</span>
+                            @endif
+                            <button type="submit" class="action-card-button">
+                                <div class="action-icon-wrapper po">
+                                    <i class="fas fa-shopping-cart"></i>
+                                </div>
+                                <div class="action-content">
+                                    <div class="action-title">Kwitansi SPJ PO</div>
+                                    <div class="action-description">
+                                        <i class="fas fa-circle"></i>
+                                        <span>Preorder</span>
+                                    </div>
+                                </div>
+                            </button>
+                        </form>
+                    </div>
                 </div>
-                <div class="info">
-                    <div class="label">Lihat Data Kwitansi GU</div>
-                    <div class="value">General Umum</div>
-                </div>
-            </button>
-        </form>
-
-        <form action="{{ route('kwitansils') }}" method="GET" class="dashboard-card">
-            <button type="submit" class="btn w-100 d-flex p-0" style="background:none;border:none; position:relative;">
-
-                @if($notifLS == 1)
-                    <span class="badge-notif-dashboard">1</span>
-                @endif
-
-                <div class="icon bg-success">
-                    <i class="fas fa-file-contract fa-2x"></i>
-                </div>
-                <div class="info">
-                    <div class="label">Lihat Data Kwitansi LS</div>
-                    <div class="value">Langsung</div>
-                </div>
-            </button>
-        </form>
+            </div>
 
 
 
-    </div>
-<script>
-    let currentUserId = JSON.parse('@json(auth()->id())');
-    window.currentUserId = currentUserId;
-</script>
-
-@include('chats.chat_widget')
 
 @endsection
 

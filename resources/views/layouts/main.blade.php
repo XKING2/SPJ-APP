@@ -2,7 +2,6 @@
 <html lang="en">
 
 <head>
-
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -10,67 +9,42 @@
     <meta name="author" content="">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="user-id" content="{{ auth()->id() }}">
+    
     <title>SPJ Dashboard</title>
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="{{ asset('vendor/fontawesome-free/css/all.min.css') }}" rel="stylesheet" type="text/css">
-    <link
-        href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
-        rel="stylesheet">
+    
+    <!-- Stylesheets -->
     <link href="{{ asset('css/sb-admin-2.min.css') }}" rel="stylesheet">
     <link href="{{ asset('css/dashboard.css') }}" rel="stylesheet">
     <link href="{{ asset('css/aksi.css') }}" rel="stylesheet">
     <link href="{{ asset('css/chats.css') }}" rel="stylesheet">
     <link href="{{ asset('css/dropdown.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/userui.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/mainuserui.css') }}" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <style>
-        .badge-notif {
-            background: #ff3b30;
-            color: white;
-            font-size: 10px;
-            font-weight: bold;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-left: 8px;
-        }
-        .badge-notif-dashboard {
-            position: absolute;
-            top: -5px;
-            right: -5px;
-            background: red;
-            color: white;
-            font-size: 12px;
-            padding: 3px 7px;
-            border-radius: 50%;
-            font-weight: bold;
-        }
-    </style>
-
-
-
+    
 
 </head>
 
 <body id="page-top">
     <div id="wrapper">
-       {{-- Sidebar --}}
-        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion d-flex flex-column" id="accordionSidebar">             
-        <!-- Brand -->
-        <a class="sidebar-brand d-flex align-items-center px-3" 
-            href="{{ route('userdashboard') }}" style="gap: 12px;">
-            <div class="sidebar-brand-icon d-flex align-items-center justify-content-center"
-                style="width: 40px; height: 40px; border-radius: 12px; overflow: hidden;">
-                <img src="{{ asset('images/logo1.png') }}" alt="Logo E-SPJ" style="width:100%; height:100%; object-fit:cover;">
-            </div>
+        <!-- Sidebar -->
+        <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion d-flex flex-column" id="accordionSidebar">
+            <!-- Brand -->
+            <a class="sidebar-brand d-flex align-items-center px-3" href="{{ route('userdashboard') }}" style="gap: 12px;">
+                <div class="sidebar-brand-icon d-flex align-items-center justify-content-center"
+                    style="width: 40px; height: 40px; border-radius: 12px; overflow: hidden;">
+                    <img src="{{ asset('images/logo1.png') }}" alt="Logo E-SPJ" style="width:100%; height:100%; object-fit:cover;">
+                </div>
+                <div class="sidebar-brand-text text-white fw-bold" style="font-size: 1.1rem;">
+                    E-SPJ
+                </div>
+            </a>
 
-            <div class="sidebar-brand-text text-white fw-bold" style="font-size: 1.1rem;">
-                E-SPJ
-            </div>
-        </a>
-
-        <hr class="sidebar-divider my-0">
+            <hr class="sidebar-divider my-0">
 
             <!-- Dashboard -->
             <li class="nav-item {{ Request::routeIs('userdashboard') ? 'active' : '' }}">
@@ -80,34 +54,31 @@
                 </a>
             </li>
 
-            <li class="nav-item {{ Request::routeIs('kwitansi') ? 'active' : '' }}">
-                <a class="nav-link d-flex justify-content-between align-items-center" 
-                href="{{ route('kwitansi') }}">
+            <!-- Kwitansi -->
+            <li class="nav-item {{ Request::routeIs('kwitansi') || Request::routeIs('Kwitansigu') || Request::routeIs('kwitansils') || Request::routeIs('kwitansipo') ? 'active' : '' }}">
+                <a class="nav-link d-flex justify-content-between align-items-center" href="{{ route('kwitansi') }}">
                     <div>
                         <i class="fas fa-fw fa-receipt"></i>
                         <span>Kwitansi</span>
                     </div>
-
                     @if(!empty($feedbackCount['kwitansi']))
                         <span class="badge-notif">{{ $feedbackCount['kwitansi'] }}</span>
                     @endif
                 </a>
             </li>
 
-            <li class="nav-item {{ Request::routeIs('pesanan') ? 'active' : '' }}">
-                <a class="nav-link d-flex justify-content-between align-items-center" 
-                href="{{ route('pesanan') }}">
+            <!-- Pesanan -->
+            <li class="nav-item {{ Request::routeIs('pesanan') || Request::routeIs('pesanangu') || Request::routeIs('pesananls') ? 'active' : '' }}">
+                <a class="nav-link d-flex justify-content-between align-items-center" href="{{ route('pesanan') }}">
                     <div>
-                        <i class="fas fa-fw fa-wrench"></i>
+                        <i class="fas fa-fw fa-shopping-cart"></i>
                         <span>Pesanan</span>
                     </div>
-
                     @if(!empty($feedbackCount['pesanan']))
                         <span class="badge-notif">{{ $feedbackCount['pesanan'] }}</span>
                     @endif
                 </a>
             </li>
-
 
             <!-- Berita Acara -->
             <li class="nav-item {{ Request::routeIs('pemeriksaan') || Request::routeIs('serahbarang') || Request::routeIs('penerimaan') ? 'active' : '' }}">
@@ -115,52 +86,31 @@
                     <i class="fas fa-fw fa-file-alt"></i>
                     <span>Berita Acara</span>
                 </a>
-
-                <div id="collapseBeritaAcara" 
-                    class="collapse {{ Request::routeIs('pemeriksaan') || Request::routeIs('serahbarang') || Request::routeIs('penerimaan') ? 'show' : '' }}">
-                    
+                <div id="collapseBeritaAcara" class="collapse {{ Request::routeIs('pemeriksaan') || Request::routeIs('serahbarang') || Request::routeIs('penerimaan') ? 'show' : '' }}">
                     <div class="bg-white py-2 collapse-inner rounded">
-
-                        <a class="collapse-item d-flex justify-content-between 
-                            {{ Request::routeIs('pemeriksaan') ? 'active' : '' }}"
-                            href="{{ route('pemeriksaan') }}">
-
+                        <a class="collapse-item d-flex justify-content-between {{ Request::routeIs('pemeriksaan') ? 'active' : '' }}" href="{{ route('pemeriksaan') }}">
                             <span>Pemeriksaan</span>
-
                             @if(!empty($feedbackCount['pemeriksaan']))
                                 <span class="badge-notif">{{ $feedbackCount['pemeriksaan'] }}</span>
                             @endif
                         </a>
-
-                        <a class="collapse-item d-flex justify-content-between 
-                            {{ Request::routeIs('serahbarang') ? 'active' : '' }}"
-                            href="{{ route('serahbarang') }}">
-
-                                <span>Serah Barang</span>
-
-                                @if(!empty($feedbackCount['serah_barang']))
-                                    <span class="badge-notif">{{ $feedbackCount['serah_barang'] }}</span>
-                                @endif
-                            </a>
-
-
-                        <a class="collapse-item d-flex justify-content-between 
-                            {{ Request::routeIs('penerimaan') ? 'active' : '' }}"
-                            href="{{ route('penerimaan') }}">
-
-                                <span>Penerimaan</span>
-
-                                @if(!empty($feedbackCount['penerimaan']))
-                                    <span class="badge-notif">{{ $feedbackCount['penerimaan'] }}</span>
-                                @endif
-                            </a>
-
-
-
+                        <a class="collapse-item d-flex justify-content-between {{ Request::routeIs('serahbarang') ? 'active' : '' }}" href="{{ route('serahbarang') }}">
+                            <span>Serah Barang</span>
+                            @if(!empty($feedbackCount['serah_barang']))
+                                <span class="badge-notif">{{ $feedbackCount['serah_barang'] }}</span>
+                            @endif
+                        </a>
+                        <a class="collapse-item d-flex justify-content-between {{ Request::routeIs('penerimaan') ? 'active' : '' }}" href="{{ route('penerimaan') }}">
+                            <span>Penerimaan</span>
+                            @if(!empty($feedbackCount['penerimaan']))
+                                <span class="badge-notif">{{ $feedbackCount['penerimaan'] }}</span>
+                            @endif
+                        </a>
                     </div>
                 </div>
             </li>
 
+            <!-- Review Data SPJ -->
             <li class="nav-item {{ Request::routeIs('reviewSPJ') ? 'active' : '' }}">
                 <a class="nav-link" href="{{ route('reviewSPJ') }}">
                     <i class="fas fa-fw fa-chart-area"></i>
@@ -168,6 +118,7 @@
                 </a>
             </li>
 
+            <!-- Cetak Data SPJ -->
             <li class="nav-item {{ Request::routeIs('cetakSPJ') ? 'active' : '' }}">
                 <a class="nav-link" href="{{ route('cetakSPJ') }}">
                     <i class="fas fa-fw fa-print"></i>
@@ -181,28 +132,25 @@
                 <button class="rounded-circle border-0" id="sidebarToggle"></button>
             </div>
 
-           <div class="mt-auto pb-10 px-2 mx-auto text-center">
-                <div class="sidebar-brand-icon d-flex align-items-center justify-content-center"
-                    style="width: 200px; height: 200px;">
-                    <img src="{{ asset('images/berahlak.png') }}" 
-                        alt="Logo E-SPJ"
-                        style="width: 100%; height: 100%; object-fit: contain;">
-           </div>
-        
+            <!-- Berahlak Logo - Bersih Tanpa Background dan Border -->
+            <div class="berahlak-logo-container">
+                <img src="{{ asset('images/berahlak.png') }}" alt="Berahlak Logo">
+            </div>
         </ul>
 
-
+        <!-- Content Wrapper -->
         <div id="content-wrapper" class="d-flex flex-column min-vh-100">
             <div id="content">
+                <!-- Topbar -->
                 <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
                     <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
                         <i class="fa fa-bars"></i>
                     </button>
-                    <form
-                        class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
+
+                    <!-- Searchbar -->
+                    <form class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
                         <div class="input-group">
-                            <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..."
-                                aria-label="Search" aria-describedby="basic-addon2">
+                            <input type="text" class="form-control bg-light border-0 small" placeholder="Cari..." aria-label="Search">
                             <div class="input-group-append">
                                 <button class="btn btn-primary" type="button">
                                     <i class="fas fa-search fa-sm"></i>
@@ -210,19 +158,17 @@
                             </div>
                         </div>
                     </form>
+
                     <ul class="navbar-nav ml-auto">
+                        <!-- Mobile Search -->
                         <li class="nav-item dropdown no-arrow d-sm-none">
-                            <a class="nav-link dropdown-toggle" href="#" id="searchDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <a class="nav-link dropdown-toggle" href="#" id="searchDropdown" role="button" data-toggle="dropdown">
                                 <i class="fas fa-search fa-fw"></i>
                             </a>
-                            <div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in"
-                                aria-labelledby="searchDropdown">
+                            <div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in">
                                 <form class="form-inline mr-auto w-100 navbar-search">
                                     <div class="input-group">
-                                        <input type="text" class="form-control bg-light border-0 small"
-                                            placeholder="Search for..." aria-label="Search"
-                                            aria-describedby="basic-addon2">
+                                        <input type="text" class="form-control bg-light border-0 small" placeholder="Cari...">
                                         <div class="input-group-append">
                                             <button class="btn btn-primary" type="button">
                                                 <i class="fas fa-search fa-sm"></i>
@@ -232,38 +178,30 @@
                                 </form>
                             </div>
                         </li>
+
+                        <!-- Notifications -->
                         <li class="nav-item dropdown no-arrow mx-1">
-                            <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button" data-toggle="dropdown">
                                 <i class="fas fa-bell fa-fw"></i>
                                 <span class="badge badge-danger badge-counter">3+</span>
                             </a>
-    
-                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                aria-labelledby="alertsDropdown">
-                                <h6 class="dropdown-header">
-                                    Alerts Center
-                                </h6>
-                               
-                            
+                            <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in">
+                                <h6 class="dropdown-header">Alerts Center</h6>
                                 <a class="dropdown-item text-center small text-gray-500" href="#">Show All Alerts</a>
                             </div>
                         </li>
-                      
+
                         <div class="topbar-divider d-none d-sm-block"></div>
 
+                        <!-- User Info -->
                         <li class="nav-item dropdown no-arrow">
-                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown">
                                 <span class="mr-2 d-none d-lg-inline text-gray-600 small">
                                     {{ Auth::user()->nama ?? 'User' }}
                                 </span>
-                                <img class="img-profile rounded-circle"
-                                    src="{{asset('img/undraw_profile.svg') }}">
+                                <img class="img-profile rounded-circle" src="{{ asset('img/undraw_profile.svg') }}">
                             </a>
-
-                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
-                                aria-labelledby="userDropdown">
+                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in">
                                 <a class="dropdown-item" href="#">
                                     <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>
                                     Profile
@@ -283,53 +221,40 @@
                                 </a>
                             </div>
                         </li>
-
                     </ul>
-
                 </nav>
-                <div class="container-fluid">
 
-                   <div id="loading-screen" 
-                        style="display: none; position: fixed;  top: 0; left: 0; right: 0; bottom: 0; 
-                         background-color: rgba(255, 255, 255, 0.7); z-index: 9999; align-items: center; 
-                         justify-content: center; opacity: 0; transition: opacity 0.4s ease;">
-                        
-                        <div id="loader-box" 
-                            style="position: relative; background: white;  border-radius: 20px;  
-                            box-shadow: 0 4px 10px rgba(0,0,0,0.2);  padding: 10px; width: 80px;  
-                            height: 80px; display: flex;  align-items: center; justify-content: center;overflow: hidden;">
-                            
-                            <div id="lottie-container" 
-                                style="position: absolute; width: 70; height: 70px;  transform: scale(1.5); 
-                                top: 50%; left: 50%;  transform: translate(-50%, -50%) scale(1.5);">
-                            </div>
-                        </div>
+                <!-- Loading Screen -->
+                <div id="loading-screen" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.4s ease;">
+                    <div id="loader-box" style="position: relative; background: white; border-radius: 20px; padding: 10px; width: 80px; height: 80px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                        <div id="lottie-container" style="position: absolute; width: 70px; height: 70px; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(1.5);"></div>
                     </div>
-
                 </div>
-               <div class="container-fluid mt-4">
+
+                <!-- Page Content -->
+                <div class="container-fluid mt-4">
                     <div class="d-sm-flex align-items-center justify-content-between mb-4">
                         @yield('pageheads')
                     </div>
-
-                    
                     @yield('content')
-
                 </div>
+            </div>
         </div>
     </div>
 
+    <!-- Scroll to Top -->
     <a class="scroll-to-top rounded" href="#page-top">
         <i class="fas fa-angle-up"></i>
     </a>
-    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-        aria-hidden="true">
+
+    <!-- Logout Modal -->
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">Ready to Leave?</h5>
-                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">×</span>
+                    <h5 class="modal-title">Ready to Leave?</h5>
+                    <button class="close" type="button" data-dismiss="modal">
+                        <span>×</span>
                     </button>
                 </div>
                 <div class="modal-body">Select "Logout" below if you are ready to end your current session.</div>
@@ -341,43 +266,46 @@
         </div>
     </div>
 
+    <!-- Scripts -->
     <script src="{{ asset('vendor/jquery/jquery.min.js') }}"></script>
     <script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('vendor/jquery-easing/jquery.easing.min.js') }}"></script>
+    
+    @yield('scripts')
+    
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        function isSweetAlertOpen() {
+            return document.querySelector('.swal2-container') !== null;
+        }
 
-            function isSweetAlertOpen() {
-                return document.querySelector('.swal2-container') !== null;
+        const originalShowLoader = window.showLoader;
+        const originalHideLoader = window.hideLoader;
+
+        window.showLoader = function() {
+            if (isSweetAlertOpen()) {
+                console.log('⚠️ Loader diblokir karena SweetAlert aktif');
+                return;
             }
+            originalShowLoader && originalShowLoader();
+        };
 
-            const originalShowLoader = window.showLoader;
-            const originalHideLoader = window.hideLoader;
+        window.hideLoader = function() {
+            if (isSweetAlertOpen()) {
+                document.getElementById('loading-screen').style.display = 'none';
+                return;
+            }
+            originalHideLoader && originalHideLoader();
+        };
 
-            window.showLoader = function() {
-            
-                if (isSweetAlertOpen()) {
-                    console.log('⚠️ Loader diblokir karena SweetAlert aktif');
-                    return;
-                }
-                originalShowLoader && originalShowLoader();
-            };
-
-            window.hideLoader = function() {
-                if (isSweetAlertOpen()) {
-                    document.getElementById('loading-screen').style.display = 'none';
-                    return;
-                }
-                originalHideLoader && originalHideLoader();
-            };
-            const observer = new MutationObserver(() => {
-                if (isSweetAlertOpen()) {
-                    document.getElementById('loading-screen').style.display = 'none';
-                    document.getElementById('loading-screen').style.opacity = '0';
-                }
-            });
-            observer.observe(document.body, { childList: true, subtree: true });
-            </script>
+        const observer = new MutationObserver(() => {
+            if (isSweetAlertOpen()) {
+                document.getElementById('loading-screen').style.display = 'none';
+                document.getElementById('loading-screen').style.opacity = '0';
+            }
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+    </script>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
     <script>
@@ -389,7 +317,6 @@
             autoplay: true,
             path: "{{ asset('lottie/blue_loading.json') }}"
         });
-
 
         function showLoader() {
             if (window._loaderDisabled) return; 
@@ -418,43 +345,40 @@
                 });
             });
         });
+
         window.addEventListener('beforeunload', (e) => {
             if (window._loaderDisabled || document.querySelector('.swal2-container')) return;
             showLoader();
         });
     </script>
+    
     <script src="{{ asset('js/sb-admin-2.min.js') }}"></script>
+    <script src="https://js.pusher.com/8.0/pusher.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/laravel-echo@1/dist/echo.iife.js"></script>
 
-<script src="https://js.pusher.com/8.0/pusher.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/laravel-echo@1/dist/echo.iife.js"></script>
+    <script>
+        window.Pusher = Pusher;
 
-<script>
-    window.Pusher = Pusher;
-
-    window.Echo = new Echo({
-        broadcaster: 'pusher',
-        key: '{{ env("PUSHER_APP_KEY") }}',
-        cluster: '{{ env("PUSHER_APP_CLUSTER") }}',
-        forceTLS: true,
-        authEndpoint: '/broadcasting/auth', // default Laravel
-        auth: {
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        window.Echo = new Echo({
+            broadcaster: 'pusher',
+            key: '{{ env("PUSHER_APP_KEY") }}',
+            cluster: '{{ env("PUSHER_APP_CLUSTER") }}',
+            forceTLS: true,
+            authEndpoint: '/broadcasting/auth',
+            auth: {
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
             }
-        }
-    });
-
-    const userId = document.querySelector('meta[name="user-id"]').getAttribute('content');
-
-    Echo.private(`chat.${userId}`)
-        .listen('.MessageSent', (e) => {
-            console.log('Pesan diterima:', e);
-            // update UI chat
         });
-</script>
 
-    @yield('scripts')
+        const userId = document.querySelector('meta[name="user-id"]').getAttribute('content');
 
+        Echo.private(`chat.${userId}`)
+            .listen('.MessageSent', (e) => {
+                console.log('Pesan diterima:', e);
+            });
+    </script>
 </body>
 
 </html>

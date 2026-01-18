@@ -61,6 +61,15 @@ class SPJ extends Model
         return $this->hasOne(Serahbarang::class, 'spj_id');
     }
 
+    public function buktis()
+    {
+        return $this->hasMany(spj_bukti::class,'spj_id');
+    }
+
+    public function pekerjaans() {
+        return $this->hasOne(pekerjaans::class, 'spj_id');
+    }
+
     protected static function boot()
     {
         parent::boot();
@@ -71,6 +80,16 @@ class SPJ extends Model
             $spj->penerimaan()->delete();
             $spj->kwitansi()->delete();
         });
+    }
+
+    public function resetNotifications()
+    {
+        $this->notified = 0;
+        $this->notified_bendahara = 0;
+        $this->notified_kasubag = 0;
+        $this->notifiedby_kasubag = 0;
+
+        return $this; // agar bisa chaining
     }
 
 }

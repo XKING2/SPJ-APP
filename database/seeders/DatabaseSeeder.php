@@ -2,6 +2,9 @@
 
 namespace Database\Seeders;
 
+use App\Models\pihakkedua;
+use App\Models\plt;
+use App\Models\setting;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -51,6 +54,42 @@ class DatabaseSeeder extends Seeder
             'jabatan_atasan' => 'Staff IT',
             'role'      => 'users',
             'status'      => 'PNS',
+        ]);
+
+
+
+        plt::create([
+            'nama_pihak_pertama'     => 'I Gede Daging, SSTP.,M.Si',
+            'jabatan_pihak_pertama'  => 'Kepala Dinas Pemberdayaan Masyarakat dan Desa Kabupaten Gianyar',
+            'nip_pihak_pertama'      => '197709021997111001',
+            'gol_pihak_pertama'      => 'Pembina Tingkat I (IV/b)',
+
+        ]);
+
+        pihakkedua::create([
+            'nama_pihak_kedua'     => 'I Dewa Gede Putra,S.sos',
+            'jabatan_pihak_kedua'  => 'Pengurus Barang Pengguna pada Dinas Pemberdayaan Masyarakat dan Desa Kabupaten Gianyar',
+            'nip_pihak_kedua'      => '-',
+            'gol_pihak_kedua'      => '-',
+
+        ]);
+
+        setting::create([
+            'key'                  => 'ppn_rate',
+            'value'                => '11',
+
+        ]);
+
+        setting::create([
+            'key'                  => 'pph_22',
+            'value'                => '1.5',
+
+        ]);
+
+        setting::create([
+            'key'                  => 'pph_23',
+            'value'                => '2',
+
         ]);
     }
 

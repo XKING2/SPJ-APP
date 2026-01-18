@@ -11,56 +11,61 @@
 @endsection
 
 @section('content')
-<div class="container-fluid d-flex justify-content-center align-items-center" style="min-height: 70vh;">
-    <div class="dashboard-grid">
-        <div class="dashboard-card">
-            <div class="icon bg-primary">
-                <i class="fas fa-landmark fa-2x"></i>
+<div class="modern-dashboard-wrapper">
+    <div class="dashboard-container">
+        <div class="container-fluid px-4">
+            <!-- Header -->
+            <div class="dashboard-header">
+                <h1 class="dashboard-title">Dashboard SPJ</h1>
+                <p class="dashboard-subtitle">Kelola Surat Pertanggungjawaban dengan Mudah</p>
             </div>
-            <div class="info">
-                <div class="label">Data SPJ</div>
-                <div class="value">{{ $totalSPJs }}</div>
-            </div>
-        </div>
 
-        <div class="dashboard-card">
-            <div class="icon bg-primary">
-                <i class="fas fa-money-bill-wave fa-2x"></i>
-            </div>
-            <div class="info">
-                <div class="label">Data SPJ Tervalidasi</div>
-                <div class="value">{{ $spjTervalidasis }}</div>
-            </div>
-        </div>
+            <!-- Stats Section - Sekarang di Atas -->
+            <div class="stats-wrapper">
+                <div class="stats-header">
+                    <h2 class="stats-title">Statistik Data SPJ</h2>
+                    <p class="stats-subtitle">Ringkasan data dan status SPJ Anda</p>
+                </div>
 
-        <div class="dashboard-card">
-            <div class="icon bg-primary">
-                <i class="fas fa-chart-bar fa-2x"></i>
-            </div>
-            <div class="info">
-                <div class="label">Data SPJ Ditolak</div>
-                <div class="value">{{ $ditolak }}</div>
-            </div>
-        </div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon-container">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <div class="stat-label">Total Data SPJ</div>
+                        <div class="stat-value">{{ $totalSPJs }}</div>
+                    </div>
 
-        <div class="dashboard-card">
-            <div class="icon bg-primary">
-                <i class="fas fa-clock fa-2x"></i>
-            </div>
-            <div class="info">
-                <div class="label">Data SPJ Perlu Divalidasi</div>
-                <div class="value">{{ $spjperludivalidasi }}</div>
+                    <div class="stat-card">
+                        <div class="stat-icon-container">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="stat-label">Total Perlu Di Validasi</div>
+                        <div class="stat-value">{{ $spjperludivalidasi }}</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon-container">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-label">SPJ Tervalidasi Bendahara</div>
+                        <div class="stat-value">{{ $spjTervalidasis }}</div>
+                    </div>
+
+                    
+
+                    <div class="stat-card">
+                        <div class="stat-icon-container">
+                            <i class="fas fa-clipboard-check"></i>
+                        </div>
+                        <div class="stat-label">SPJ Ditolak Bendahara</div>
+                        <div class="stat-value">{{ $ditolak }}</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
-
-<script>
-    let currentUserId = JSON.parse('@json(auth()->id())');
-    window.currentUserId = currentUserId;
-</script>
-
-@include('chats.chat_widget')
 
 @endsection
 

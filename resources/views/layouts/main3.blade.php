@@ -17,9 +17,11 @@
         rel="stylesheet">
     <link href="{{ asset('css/sb-admin-2.min.css') }}" rel="stylesheet">
     <link href="{{ asset('css/dashboard.css') }}" rel="stylesheet">
-    
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/glightbox/dist/css/glightbox.min.css" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <link href="{{ asset('css/chats.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/userui.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/mainuserui.css') }}" rel="stylesheet">
 
 </head>
 
@@ -27,7 +29,7 @@
     <div id="wrapper">
         <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
             <a class="sidebar-brand d-flex align-items-center px-3" 
-                href="{{ route('userdashboard') }}" style="gap: 12px;">
+                href="{{ route('superdashboard') }}" style="gap: 12px;">
 
                     <div class="sidebar-brand-icon d-flex align-items-center justify-content-center"
                         style="
@@ -269,6 +271,9 @@
     <script src="{{asset('vendor/jquery-easing/jquery.easing.min.js') }}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/lottie-web/5.12.2/lottie.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <!-- GLightbox JS -->
+    <script src="https://cdn.jsdelivr.net/npm/glightbox/dist/js/glightbox.min.js"></script>
+    @yield('scripts')
 
     <script>
         const animation = lottie.loadAnimation({

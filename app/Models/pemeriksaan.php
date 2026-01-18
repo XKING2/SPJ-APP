@@ -8,7 +8,7 @@ class Pemeriksaan extends Model
 {
 
     protected $fillable = [
-        'pesanan_id', 'spj_id','no_suratssss',
+        'pesanan_id', 'spj_id','no_suratssss','id_pekerjaan',
         'hari_diterima', 'tanggals_diterima', 'bulan_diterima',
         'tahun_diterima', 'nama_pihak_kedua', 'jabatan_pihak_kedua',
         'alamat_pihak_kedua', 'pekerjaan'
@@ -37,6 +37,11 @@ class Pemeriksaan extends Model
     public function pihak_kedua()
     {
         return $this->belongsTo(Pihakkedua::class, 'id_pihak_kedua');
+    }
+
+    public function pekerjaans()
+    {
+        return $this->belongsTo(pekerjaans::class, 'id_pekerjaan');
     }
 
 

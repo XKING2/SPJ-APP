@@ -20,9 +20,6 @@ return Application::configure(basePath: dirname(__DIR__))
             SessionTimeout::class,
         ]);
 
-        // Middleware global — CORS aktif di seluruh aplikasi
-        $middleware->append(\App\Http\Middleware\CorsMiddleware::class);
-
         // Alias middleware
         $middleware->alias([
             'auth' => \Illuminate\Auth\Middleware\Authenticate::class,

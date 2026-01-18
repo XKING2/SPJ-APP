@@ -75,9 +75,16 @@
                                 <td>{{ $spj->user->nama ?? '-' }}</td>
                                 <td>
                                     <a href="{{ route('previewadmin', ['id' => $spj->id]) }}"
-                                        class="btn btn-sm btn-info">
-                                            <i class="fas fa-eye"></i> Preview
+                                    class="btn btn-sm btn-info">
+                                        <i class="fas fa-eye"></i> Preview
                                     </a>
+
+                                    <button
+                                        class="btn btn-sm btn-secondary btn-preview-bukti"
+                                        data-spj-id="{{ $spj->id }}">
+                                        <i class="fas fa-file-alt"></i> Bukti
+                                    </button>
+
                                     @if ($spj->status === 'valid' && $spj->status2 !== 'valid' && $spj->status2 !== 'diajukan')
                                         <form action="{{ route('ajukanKasubag', $spj->id) }}" method="POST" class="d-inline">
                                             @csrf
@@ -207,46 +214,99 @@
 </div>
 
 
+<div class="modal fade" id="modalPreviewBuktiSPJ" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Preview Bukti SPJ</h5>
+                <button type="button" class="btn-close" data-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <div id="preview-bukti-content" class="row g-3">
+                    <div class="text-center text-muted w-100">
+                        Memuat data...
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
     const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
 
-    // ============================
-    // 🔓 BUKA MODAL FEEDBACK
-    // ============================
+    // ==========================================================
+    // 🔓 KLIK STATUS → CEK STATUS, TENTUKAN BUKA MODAL ATAU LANGSUNG UPDATE
+    // ==========================================================
     document.querySelectorAll('.status-option').forEach(btn => {
-        btn.addEventListener('click', e => {
+        btn.addEventListener('click', async e => {
             e.preventDefault();
 
             let id = btn.dataset.id;
-            document.getElementById('feedback_spj_id').value = id;
+            let status = btn.dataset.status;
 
-            $('#feedbackModal').modal('show');
+            // Set hidden input status
+            document.getElementById(`status_${id}`).value = status;
+
+            // Jika status = "belum_valid", buka modal feedback
+            if (status === 'belum_valid') {
+
+                // Set SPJ ID untuk modal
+                document.getElementById('feedback_spj_id').value = id;
+                $('#feedbackModal').modal('show');
+                return;
+            }
+
+            // =======================
+            // Jika Valid atau Draft → UPDATE langsung tanpa modal
+            // =======================
+            let formUpdateStatus = document.getElementById(`form-${id}`);
+            let formData = new FormData(formUpdateStatus);
+
+            try {
+                const res = await fetch(formUpdateStatus.action, {
+                    method: 'POST',
+                    headers: { 'X-CSRF-TOKEN': csrfToken },
+                    body: formData
+                });
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Status berhasil diperbarui!',
+                    timer: 1500
+                });
+
+                setTimeout(() => location.reload(), 700);
+
+            } catch (error) {
+                console.error(error);
+                Swal.fire('Error', 'Gagal memperbarui status.', 'error');
+            }
         });
     });
 
-    // ============================
-    // ➕ TAMBAH ITEM FEEDBACK
-    // ============================
     document.getElementById('add-feedback').addEventListener('click', function () {
         const container = document.getElementById('feedback-list');
         const clone = container.firstElementChild.cloneNode(true);
 
-        // reset nilai
         clone.querySelectorAll('textarea').forEach(e => e.value = '');
         clone.querySelectorAll('select').forEach(e => e.value = '');
-
         clone.querySelector('.section-field').value = '';
         clone.querySelector('.record-id-field').value = '';
 
         container.appendChild(clone);
     });
 
-    // ============================
+    // ==========================================================
     // ❌ HAPUS ITEM FEEDBACK
-    // ============================
+    // ==========================================================
     document.addEventListener('click', e => {
         if (e.target.classList.contains('remove-item')) {
             const container = document.getElementById('feedback-list');
@@ -256,77 +316,188 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // ============================
-    // 🔥 AUTO SET SECTION + RECORD_ID
-    // ============================
+    // ==========================================================
+    // 🔥 AUTO SET RECORD_ID & SECTION
+    // ==========================================================
     document.addEventListener('change', e => {
         if (e.target.classList.contains('field-selector')) {
 
             const fieldEl = e.target;
-
-            // Ambil section dari <option>
             const section = fieldEl.options[fieldEl.selectedIndex].dataset.section;
-
-            // Cari elemen wrapper
             const wrapper = fieldEl.closest('.feedback-item');
 
-            // Set value section
             wrapper.querySelector('.section-field').value = section;
 
-            // Ambil SPJ ID
             let spjId = document.getElementById('feedback_spj_id').value;
 
-            // Query ke server: /spj/{id}/record/{section}
             fetch(`/spj/${spjId}/record/${section}`)
                 .then(res => res.json())
                 .then(data => {
-
                     if (Array.isArray(data.record_id)) {
-                        // Jika detail_barang (multiple record)
                         wrapper.querySelector('.record-id-field').value = data.record_id.join(',');
                     } else {
                         wrapper.querySelector('.record-id-field').value = data.record_id ?? null;
                     }
                 })
-                .catch(err => console.error('Fetch record_id error:', err));
+                .catch(err => console.error('Fetch error:', err));
         }
     });
 
-    // ============================
-    // 📤 SUBMIT FEEDBACK FORM
-    // ============================
+    // ==========================================================
+    // 📤 SUBMIT FEEDBACK MODAL (KHUSUS Tidak Disetujui)
+    // ==========================================================
     document.getElementById('feedbackForm').addEventListener('submit', async e => {
         e.preventDefault();
 
         let spj_id = document.getElementById('feedback_spj_id').value;
-        let formData = new FormData(e.target);
+        let formUpdateStatus = document.getElementById(`form-${spj_id}`);
+        let formDataFeedback = new FormData(e.target);
 
         try {
+            // Kirim feedback
             const res = await fetch(`/spj/${spj_id}/revisi`, {
                 method: 'POST',
                 headers: { 'X-CSRF-TOKEN': csrfToken },
-                body: formData
+                body: formDataFeedback
             });
 
             const data = await res.json();
+            if (!data.success) {
+                Swal.fire('Error', data.message, 'error');
+                return;
+            }
+
+            // Update status setelah feedback
+            let statusData = new FormData(formUpdateStatus);
+
+            await fetch(formUpdateStatus.action, {
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': csrfToken },
+                body: statusData
+            });
+
             $('#feedbackModal').modal('hide');
 
             Swal.fire({
-                icon: data.success ? 'success' : 'error',
-                title: data.message,
-                timer: 1800
+                icon: 'success',
+                title: 'Status berhasil diperbarui!',
+                timer: 1500
             });
 
-            if (data.success) location.reload();
+            setTimeout(() => location.reload(), 800);
 
-        } catch (error) {
-            console.error(error);
-            Swal.fire('Error', 'Gagal mengirim feedback.', 'error');
+        } catch (err) {
+            console.error(err);
+            Swal.fire('Error', 'Gagal memproses data.', 'error');
         }
     });
 
 });
 </script>
+
+@section('scripts')
+<script>
+$(document).on('click', '.btn-preview-bukti', async function () {
+
+    const spjId = $(this).data('spj-id');
+    const $modal = $('#modalPreviewBuktiSPJ');
+    const $content = $('#preview-bukti-content');
+
+    // Loading state
+    $content.html('<div class="text-center text-muted w-100 py-5">Memuat data...</div>');
+    $modal.modal('show');
+
+    try {
+        const res = await fetch(`/spj/${spjId}/bukti`, {
+            headers: { 'Accept': 'application/json' }
+        });
+
+        if (!res.ok) throw new Error('Gagal memuat data');
+
+        const data = await res.json();
+
+        if (!data || data.length === 0) {
+            $content.html('<div class="text-center text-muted w-100 py-5">Belum ada bukti</div>');
+            return;
+        }
+
+        // Fungsi bantu render file
+        function renderFile(b, isSingle=false) {
+            const ext = b.file_url.split('.').pop().toLowerCase();
+
+            if (['jpg','jpeg','png','gif','webp'].includes(ext)) {
+                if (isSingle) {
+                    // Single image → center full modal
+                    return `
+                        <div style="display:flex; justify-content:center; align-items:center; width:100%; min-height:60vh; ">
+                            <img src="${b.file_url}" class="img-fluid rounded shadow" style="max-height:80vh; object-fit:contain;">
+                        </div>
+                        ${b.keterangan ? `<p class="mt-2 mb-0 text-center text-muted">${b.keterangan}</p>` : ''}
+                    `;
+                } else {
+                    // Grid thumbnail
+                    return `
+                        <a href="${b.file_url}" class="glightbox" data-glightbox="title:${b.jenis}; description:${b.keterangan ?? '-'}">
+                            <img src="${b.file_url}" class="img-fluid rounded shadow" style="height:200px; object-fit:cover;">
+                            ${b.keterangan ? `<p class="mt-2 mb-0 text-center text-muted">${b.keterangan}</p>` : ''}
+                        </a>
+                    `;
+                }
+            } else if (ext === 'pdf') {
+                if (isSingle) {
+                    return `
+                        <iframe src="${b.file_url}" style="width:100%; height:80vh;" frameborder="0"></iframe>
+                        ${b.keterangan ? `<p class="mt-3 text-center mb-0"><a href="${b.file_url}" target="_blank" class="btn btn-primary btn-sm">Buka PDF</a></p>` : ''}
+                    `;
+                } else {
+                    return `
+                        <a href="${b.file_url}" class="glightbox" data-glightbox="type:iframe; title:${b.jenis}; description:${b.keterangan ?? '-'}">
+                            <div class="border rounded p-3 text-center" style="height:200px; display:flex; align-items:center; justify-content:center; flex-direction:column;">
+                                <i class="fas fa-file-pdf fa-3x text-danger"></i>
+                                <p class="mt-2 mb-0">${b.jenis}</p>
+                            </div>
+                        </a>
+                    `;
+                }
+            } else {
+                return `
+                    <div class="border rounded p-3 text-center" style="height:200px; display:flex; align-items:center; justify-content:center;">
+                        File tidak bisa ditampilkan. <a href="${b.file_url}" target="_blank">Download</a>
+                    </div>
+                `;
+            }
+        }
+
+        // Bersihkan konten
+        $content.empty();
+
+        if (data.length === 1) {
+            const b = data[0];
+            $content.html(renderFile(b, true));
+        } else {
+            // Banyak file → grid
+            let html = '';
+            data.forEach(b => {
+                html += `<div class="col-md-4 mb-3">${renderFile(b)}</div>`;
+            });
+            $content.html(`<div class="row g-3">${html}</div>`);
+
+            // Inisialisasi GLightbox untuk grid
+            GLightbox({ selector: '.glightbox' });
+        }
+
+    } catch (err) {
+        console.error(err);
+        $content.html('<div class="text-danger text-center w-100 py-5">Gagal memuat bukti</div>');
+    }
+});
+</script>
+@endsection
+
+
+
+
+
 
 
 
