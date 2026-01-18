@@ -29,9 +29,11 @@
                             <th>No</th>
                             <th>Nomor SPJ</th>
                             <th>Tanggal Dibuat</th>
+                            <th>Type SPJ</th>
                             <th>Status Bendahara</th>
                             <th>Status Kasubag</th>
                             <th style="width: 240px;">Aksi</th>
+                            <th style="width: 240px;">Bukti</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -60,6 +62,7 @@
                             <td>{{ $loop->iteration + ($spjs->currentPage() - 1) * $spjs->perPage() }}</td>
                             <td>{{ $spj->pesanan->no_surat ?? '-' }}</td>
                             <td>{{ \Carbon\Carbon::parse($spj->pesanan->surat_dibuat ?? now())->translatedFormat('d F Y') }}</td>
+                            <td>{{ $spj->types ?? '-' }}</td>
 
                             <!-- Status Bendahara -->
                             <td>
@@ -167,6 +170,13 @@
                                     </div>
                                 </div>
                             </td>
+                            <td>
+                                <button 
+                                    class="btn btn-sm btn-outline-primary btn-preview-bukti"
+                                    data-spj-id="{{ $spj->id }}">
+                                    <i class="fas fa-eye"></i> Bukti
+                                </button>
+                            </td>
                         </tr>
                         @empty
                         <tr>
@@ -219,6 +229,56 @@
     </div>
 </div>
 
+<div class="modal fade" id="modalPreviewBuktiSPJ" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Bukti SPJ</h5>
+                <button type="button" class="btn-close" data-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+
+                {{-- FORM UPLOAD --}}
+                <form id="formUploadBukti" class="border rounded p-3 mb-3">
+                    <input type="hidden" id="upload_spj_id">
+
+                    <div id="upload-wrapper">
+                        <div class="row g-2 mb-2 upload-row">
+                            <div class="col-md-4">
+                                <input type="file" name="bukti_spj[]" class="form-control form-control-sm" required>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="text" name="jenis_bukti[]" class="form-control form-control-sm" placeholder="Jenis bukti" required>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="text" name="keterangan[]" class="form-control form-control-sm" placeholder="Keterangan">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <button type="button" id="btnTambahInput" class="btn btn-sm btn-secondary">
+                            + Tambah File
+                        </button>
+                        <button class="btn btn-sm btn-primary">
+                            Upload
+                        </button>
+                    </div>
+                </form>
+
+                {{-- PREVIEW --}}
+                <div id="preview-bukti-content" class="row g-3">
+                    <div class="text-center text-muted w-100">Memuat data...</div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     // delegated handler supaya aman kalau tombol dibuat dinamis
@@ -258,5 +318,205 @@
         $('#modalAlasan').modal('show');
     });
 </script>
+
+<script>
+function notifySuccess(title = 'Berhasil', text = '') {
+    Swal.fire({
+        icon: 'success',
+        title: title,
+        text: text,
+        timer: 1800,
+        showConfirmButton: false,
+        toast: true,
+        position: 'top-end'
+    });
+}
+
+function notifyError(title = 'Gagal', text = '') {
+    Swal.fire({
+        icon: 'error',
+        title: title,
+        text: text,
+        timer: 2200,
+        showConfirmButton: false,
+        toast: true,
+        position: 'top-end'
+    });
+}
+</script>
+
+@section('scripts')
+<script>
+let activeSpjId = null;
+
+/* OPEN MODAL */
+$(document).on('click', '.btn-preview-bukti', async function () {
+
+    activeSpjId = $(this).data('spj-id');
+
+    const $modal = $('#modalPreviewBuktiSPJ');
+    const $content = $('#preview-bukti-content');
+
+    $content.html('<div class="text-center text-muted py-5">Memuat data...</div>');
+    $modal.modal('show');
+
+    loadBukti();
+});
+
+/* LOAD BUKTI */
+async function loadBukti() {
+    const $content = $('#preview-bukti-content');
+
+    const res = await fetch(`/spj/${activeSpjId}/bukti`);
+    const data = await res.json();
+
+    if (!data.length) {
+        $content.html('<div class="text-center text-muted py-5">Belum ada bukti</div>');
+        return;
+    }
+
+    let html = '';
+
+    data.forEach(b => {
+        const isImage = ['jpg','jpeg','png','webp'].includes(b.file_url.split('.').pop());
+
+        html += `
+        <div class="col-md-6">
+            <div class="border rounded p-2 h-100">
+                ${isImage
+                    ? `<a href="${b.file_url}" class="glightbox">
+                        <img src="${b.file_url}" class="img-fluid rounded mb-2" style="cursor:zoom-in">
+                       </a>`
+                    : `<iframe src="${b.file_url}" style="width:100%; height:220px;"></iframe>`
+                }
+
+                <textarea class="form-control form-control-sm mb-2 keterangan">${b.keterangan ?? ''}</textarea>
+
+                <div class="d-flex justify-content-between">
+                    <button class="btn btn-sm btn-success btn-update" data-id="${b.id}">
+                        Simpan
+                    </button>
+                    <button class="btn btn-sm btn-danger btn-delete" data-id="${b.id}">
+                        Hapus
+                    </button>
+                </div>
+            </div>
+        </div>`;
+    });
+
+    $content.html(html);
+    GLightbox({ selector: '.glightbox' });
+}
+
+/* UPDATE */
+$(document).on('click', '.btn-update', async function () {
+    const id = Number($(this).data('id'));
+    const ket = $(this).closest('.border').find('.keterangan').val();
+
+    const res = await fetch(`/spj/bukti/${id}/update`, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ keterangan: ket })
+    });
+
+    if (!res.ok) {
+        notifyError('Gagal', 'Keterangan tidak tersimpan');
+        return;
+    }
+
+    notifySuccess('Tersimpan', 'Keterangan diperbarui');
+});
+
+/* DELETE */
+$(document).on('click', '.btn-delete', async function () {
+
+    const id = Number($(this).data('id'));
+
+    if (!Number.isInteger(id)) {
+        notifyError('Error', 'ID bukti tidak valid');
+        return;
+    }
+
+    const confirm = await Swal.fire({
+        title: 'Hapus bukti?',
+        text: 'Data tidak dapat dikembalikan',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Ya, hapus',
+        cancelButtonText: 'Batal'
+    });
+
+    if (!confirm.isConfirmed) return;
+
+    const res = await fetch(`/spj/bukti/${id}`, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        }
+    });
+
+    if (!res.ok) {
+        notifyError('Gagal', 'Bukti tidak terhapus');
+        return;
+    }
+
+    notifySuccess('Terhapus', 'Bukti berhasil dihapus');
+    loadBukti();
+});
+
+/* TAMBAH INPUT */
+$('#btnTambahInput').on('click', function () {
+    $('#upload-wrapper').append(`
+        <div class="row g-2 mb-2 upload-row">
+            <div class="col-md-4">
+                <input type="file" name="bukti_spj[]" class="form-control form-control-sm" required>
+            </div>
+            <div class="col-md-4">
+                <input type="text" name="jenis_bukti[]" class="form-control form-control-sm" required>
+            </div>
+            <div class="col-md-4">
+                <input type="text" name="keterangan[]" class="form-control form-control-sm">
+            </div>
+        </div>
+    `);
+});
+
+/* UPLOAD */
+$('#formUploadBukti').on('submit', async function (e) {
+    e.preventDefault();
+
+    if (!activeSpjId) {
+        notifyError('Error', 'SPJ tidak valid');
+        return;
+    }
+
+    const formData = new FormData(this);
+
+    const res = await fetch(`/spj/upload-bukti/${activeSpjId}`, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        },
+        body: formData
+    });
+
+    if (!res.ok) {
+        notifyError('Gagal', 'Upload bukti gagal');
+        return;
+    }
+
+    this.reset();
+    $('#upload-wrapper').html('');
+    notifySuccess('Berhasil', 'Bukti berhasil diupload');
+    loadBukti();
+});
+</script>
+@endsection
+
 
 @endsection

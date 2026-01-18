@@ -69,7 +69,7 @@
                         @forelse ($kwitansis as $index => $kwitansi)
                             <tr>
                                 <td>{{ $loop->iteration + ($kwitansis->currentPage() - 1) * $kwitansis->perPage() }}</td>
-                                <td>{{ $kwitansi->pembayaran ?? '-' }}</td>
+                                <td>{{ $kwitansi->spj->pekerjaans->pekerjaan ?? '-' }}</td>
                                 <td>{{ $kwitansi->no_rekening ?? '-' }}</td>
                                 <td>{{ $kwitansi->penerima_kwitansi ?? '-' }}</td>
                                 <td>{{ $kwitansi->spj->types ?? '-' }}</td>
@@ -95,7 +95,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="text-center">Data tidak tersedia</td>
+                                <td colspan="6" class="text-center">Data tidak tersedia</td>
                             </tr>
                         @endforelse
                     </tbody>

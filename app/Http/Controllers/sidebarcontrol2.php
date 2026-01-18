@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\SPJ;
 use App\Models\pemeriksaan;
+use Illuminate\Support\Carbon;
 
 class sidebarcontrol2 extends Controller
 {
@@ -27,28 +28,49 @@ class sidebarcontrol2 extends Controller
 
 
 
-    public function showverivikasi(Request $request)
+    public function Verivymain(Request $request)
     {
-        $search = $request->input('search');
-        $query = Spj::with(['user', 'pesanan'])
-                    ->whereIn('status', ['diajukan', 'valid','belum_valid']);
+        $tahunSekarang = Carbon::now()->year;
 
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('status', 'like', "%{$search}%")
-                ->orWhereHas('pesanan', function ($pesananQuery) use ($search) {
-                    $pesananQuery->where('no_surat', 'like', "%{$search}%")
-                                ->orWhere('surat_dibuat', 'like', "%{$search}%");
-                })
-                ->orWhereHas('user', function ($userQuery) use ($search) {
-                    $userQuery->where('nama', 'like', "%{$search}%");
-                });
-            });
+        $maxTahunDb = Spj::max('tahun'); // contoh: 2027
+        $minTahunDb = Spj::min('tahun');
+
+        // Default tahun
+        $tahunDipilih = $request->input('tahun', $tahunSekarang);
+
+        // HARD LIMIT (anti manipulasi URL)
+        if ($maxTahunDb && $tahunDipilih > $maxTahunDb) {
+            $tahunDipilih = $maxTahunDb;
         }
 
-        $spjs = $query->orderBy('created_at', 'desc')->paginate(10);
+        if ($minTahunDb && $tahunDipilih < $minTahunDb) {
+            $tahunDipilih = $minTahunDb;
+        }
 
-        return view('admins.verivikasi', compact('spjs'));
+        $notifGU = Spj::where('types', 'GU')
+            ->where('tahun', $tahunDipilih)
+            ->whereIn('status', ['diajukan'])
+            ->count();
+
+        $notifLS = Spj::where('types', 'LS')
+            ->where('tahun', $tahunDipilih)
+            ->whereIn('status', ['diajukan'])
+            ->count();
+
+        $notifPO = Spj::where('types', 'PO')
+            ->where('tahun', $tahunDipilih)
+            ->whereIn('status', ['diajukan'])
+            ->count();
+
+        return view('admins.verivmain', compact(
+            'tahunDipilih',
+            'tahunSekarang',
+            'minTahunDb',
+            'maxTahunDb',
+            'notifGU',
+            'notifLS',
+            'notifPO'
+        ));
     }
 
 

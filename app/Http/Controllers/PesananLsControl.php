@@ -7,7 +7,9 @@ use App\Models\Penerimaan;
 use App\Models\Pesanan;
 use App\Models\setting;
 use App\Models\SPJ;
+
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 
 class PesananLsControl extends Controller
 {
@@ -43,8 +45,15 @@ class PesananLsControl extends Controller
             'surat_dibuat'    => $validated['surat_dibuat'],
         ]);
 
+        // UPDATE SPJ DENGAN PESANAN ID + TAHUN
         $spj = SPJ::findOrFail($validated['spj_id']);
-        $spj->update(['pesanan_id' => $pesanan->id]);
+
+        $tahun = Carbon::parse($validated['tanggal_diterima'])->year;
+
+        $spj->update([
+            'pesanan_id' => $pesanan->id,
+            'tahun'      => $tahun,
+        ]);
 
         foreach ($validated['items'] as $item) {
             $pesanan->items()->create([
@@ -67,7 +76,7 @@ class PesananLsControl extends Controller
         $nosurat = nosurat::orderBy('id', 'desc')->get();
         $pesanan = Pesanan::with(['items', 'spj'])->findOrFail($id);
 
-        return view('users.update.updatepesananls', [
+        return view('users.SpjLs.update.updatepesananls', [
             'pesanan' => $pesanan,
             'spj'     => $pesanan->spj,
         ]);

@@ -26,6 +26,7 @@ return new class extends Migration
             $table->boolean('notified_bendahara')->default(false);
             $table->boolean('notified_kasubag')->default(false);
             $table->boolean('notifiedby_kasubag')->default(false);
+            $table->string('tahun')->nullable();
 
             $table->timestamps();
 

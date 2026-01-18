@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\SPJ;
 use App\Models\User;
 use App\Models\Kasubag;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 
 
@@ -44,28 +45,49 @@ class sidebarcontrol3 extends Controller
         return view('superadmins.anggota', compact('anggotas', 'search'));
     }
 
-     public function showvalidasi(Request $request)
+    public function showvalidasi(Request $request)
     {
-        $search = $request->input('search');
-        $query = Spj::with(['user', 'pesanan'])
-                    ->whereIn('status2', ['diajukan', 'valid','belum_valid']);
+        $tahunSekarang = Carbon::now()->year;
 
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('status', 'like', "%{$search}%")
-                ->orWhereHas('pesanan', function ($pesananQuery) use ($search) {
-                    $pesananQuery->where('no_surat', 'like', "%{$search}%")
-                                ->orWhere('surat_dibuat', 'like', "%{$search}%");
-                })
-                ->orWhereHas('user', function ($userQuery) use ($search) {
-                    $userQuery->where('nama', 'like', "%{$search}%");
-                });
-            });
+        $maxTahunDb = Spj::max('tahun'); // contoh: 2027
+        $minTahunDb = Spj::min('tahun');
+
+        // Default tahun
+        $tahunDipilih = $request->input('tahun', $tahunSekarang);
+
+        // HARD LIMIT (anti manipulasi URL)
+        if ($maxTahunDb && $tahunDipilih > $maxTahunDb) {
+            $tahunDipilih = $maxTahunDb;
         }
 
-        $spjs = $query->orderBy('created_at', 'desc')->paginate(10);
+        if ($minTahunDb && $tahunDipilih < $minTahunDb) {
+            $tahunDipilih = $minTahunDb;
+        }
 
-        return view('superadmins.validasi', compact('spjs'));
+        $notifGU = Spj::where('types', 'GU')
+            ->where('tahun', $tahunDipilih)
+            ->whereIn('status2', ['diajukan'])
+            ->count();
+
+        $notifLS = Spj::where('types', 'LS')
+            ->where('tahun', $tahunDipilih)
+            ->whereIn('status2', ['diajukan'])
+            ->count();
+
+        $notifPO = Spj::where('types', 'PO')
+            ->where('tahun', $tahunDipilih)
+            ->whereIn('status2', ['diajukan'])
+            ->count();
+
+        return view('superadmins.validasi.validasi', compact(
+            'tahunDipilih',
+            'tahunSekarang',
+            'minTahunDb',
+            'maxTahunDb',
+            'notifGU',
+            'notifLS',
+            'notifPO'
+        ));
     }
 
 

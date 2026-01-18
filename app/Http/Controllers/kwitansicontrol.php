@@ -16,7 +16,7 @@ class KwitansiControl extends Controller
 {
 
 
-        public function showKwitansiLS(Request $request)
+    public function showKwitansiLS(Request $request)
     {
         $search = $request->input('search');
         $userId = Auth::id();

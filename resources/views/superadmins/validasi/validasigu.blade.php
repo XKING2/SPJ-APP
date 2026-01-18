@@ -29,6 +29,7 @@
                             <th>No</th>
                             <th>Nomor SPJ</th>
                             <th>Tanggal Surat Dibuat</th>
+                            <th>Type</th>
                             <th>Status Validasi Kasubag</th>
                             <th>Dibuat Oleh</th>
                             <th>Aksi</th>
@@ -40,6 +41,7 @@
                             <td>{{ $loop->iteration + ($spjs->currentPage() - 1) * $spjs->perPage() }}</td>
                             <td>{{ $spj->pesanan->no_surat ?? '-' }}</td>
                             <td>{{ \Carbon\Carbon::parse($spj->pesanan->surat_dibuat ?? now())->translatedFormat('d F Y') }}</td>
+                            <td>{{ $spj->types ?? '-' }}</td>
                             <td>
                                 <div class="d-flex justify-content-center align-items-center">
                                     <form action="{{ route('updateStatusKasubag', $spj->id) }}" method="POST" class="d-inline" id="form-{{ $spj->id }}">

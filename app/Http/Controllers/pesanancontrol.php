@@ -24,7 +24,7 @@ class PesananControl extends Controller
 
         $pesanans = Pesanan::with('spj')
              ->whereHas('spj', function ($q) use ($userId) {
-                $q->where('types', 'gu')
+                $q->where('types', 'GU')
                 ->where('user_id', $userId); // filter hanya milik user
             })
             ->when($search, function ($q) use ($search) {
@@ -49,7 +49,7 @@ class PesananControl extends Controller
 
         $pesanans = Pesanan::with('spj')
              ->whereHas('spj', function ($q) use ($userId) {
-                $q->where('types', 'ls')
+                $q->where('types', 'LS')
                 ->where('user_id', $userId); // filter hanya milik user
             })
             ->when($search, function ($q) use ($search) {

@@ -21,7 +21,8 @@ use App\Http\Controllers\PesananLsControl;
 use App\Http\Controllers\serahcontrol;
 use App\Http\Controllers\settingcontrol;
 use App\Http\Controllers\spjresponcontrol;
-
+use App\Http\Controllers\validasicontrol;
+use App\Http\Controllers\verivycontrol;
 
 Route::get('/', function () {
     return redirect()->route('login');
@@ -66,8 +67,12 @@ Route::middleware(['auth', 'session.timeout', 'role:Kasubag'])->group(function (
     Route::get('/nosurat/{id}/edit', [settingcontrol::class, 'editnosurat'])->name('nosurat.edit');
     Route::put('/nosurat/{id}', [settingcontrol::class, 'updatenosurat'])->name('nosurat.update');
     Route::DELETE('/nosurat/{id}', [settingcontrol::class, 'destroynosurat'])->name('nosurat.destroy');
+
     Route::post('/Superadmin/validasi/{id}/update-status', [sidebarcontrol3::class, 'updateStatusKasubag'])->name('updateStatusKasubag');
     Route::get('/Superadmin/Validasi', [sidebarcontrol3::class, 'showvalidasi'])->name('Validasi');
+    Route::get('Validasi/SpjGu/Show/Gu', [validasicontrol::class, 'showvalidasiGU'])->name('validasigu');
+    Route::get('Validasi/SpjPo/Show/Po', [validasicontrol::class, 'showvalidasiPO'])->name('validasipo');
+    Route::get('Validasi/SpjLs/Show/Ls', [validasicontrol::class, 'showvalidasiLS'])->name('validasils');
 });
 
 
@@ -75,7 +80,10 @@ Route::middleware(['auth', 'session.timeout', 'role:Kasubag'])->group(function (
 Route::middleware(['auth', 'session.timeout', 'role:Bendahara'])->group(function () {
     Route::get('/admin/Dashboard', [sidebarcontrol2::class, 'showdashboard2'])->name('admindashboard');
     Route::get('/admin/preview/{id}', [sidebarcontrol2::class, 'previewadmin'])->name('previewadmin');
-    Route::get('/admin/verivikasi', [sidebarcontrol2::class, 'showverivikasi'])->name('verivikasi');
+    Route::get('/admin/verivikasi', [sidebarcontrol2::class, 'Verivymain'])->name('verivikasi');
+    Route::get('/SpjGu/Show/Gu', [verivycontrol::class, 'showverivikasiGU'])->name('verivygu');
+    Route::get('/SpjPo/Show/Po', [verivycontrol::class, 'showverivikasiPO'])->name('verivypo');
+    Route::get('/SpjLs/Show/Ls', [verivycontrol::class, 'showverivikasiLS'])->name('verivyls');
     Route::post('/admin/verivikasi/{id}/update-status', [sidebarcontrol2::class, 'updateStatusbendahara'])->name('updateStatusbendahara');
 
     Route::post('/spj/{id}/ajukan-kasubag', [SPJController::class, 'ajukanKasubag'])->name('ajukanKasubag');
@@ -85,6 +93,12 @@ Route::middleware(['auth', 'session.timeout', 'role:Bendahara'])->group(function
     Route::post('/kegiatan-kwitansi/store-ajax',[KwitansiLsControl::class, 'storeAjax'])->name('kegiatan-kwitansi.store-ajax');
     Route::post('/spj/upload-bukti/{spj}',[bukticontrol::class, 'store'])->name('spj.bukti.store');
     Route::get('/spj/{spj}/bukti', [BuktiControl::class, 'list'])->name('spj.bukti.list');
+    Route::get('/spj/{spj}/bukti', [BuktiControl::class, 'index']);
+    Route::post('/spj/bukti/{id}/update', [BuktiControl::class, 'update']);
+    Route::delete('/spj/bukti/{id}', [BuktiControl::class, 'destroy']);
+
+
+
 
 Route::middleware(['auth', 'session.timeout', 'role:users'])->group(function () {
     Route::get('/User/Dashboard', [sidebarcontrol::class, 'showdashboard1'])->name('userdashboard');
@@ -116,9 +130,9 @@ Route::middleware(['auth', 'session.timeout', 'role:users'])->group(function () 
 
     Route::get('/kwitansi/Show/Po', [KwitansiControl::class, 'showKwitansiPO'])->name('kwitansipo');
     Route::get('/kwitansiPo/create/{spj_id}', [KwitansiPoControl::class, 'createkwitansipo'])->name('kwitansipo.create');
-    Route::post('/kwitansiPo/store', [KwitansiPoControl::class, 'storekwitansigu'])->name('kwitansipo.store');
-    Route::get('/kwitansiPo/{id}/edit', [KwitansiPoControl::class, 'editkwitansigu'])->name('kwitansipo.edit');
-    Route::put('/kwitansiPo/{id}', [KwitansiPoControl::class, 'updatekwitansigu'])->name('kwitansipo.update');
+    Route::post('/kwitansiPo/store', [KwitansiPoControl::class, 'storekwitansipo'])->name('kwitansipo.store');
+    Route::get('/kwitansiPo/{id}/edit', [KwitansiPoControl::class, 'editkwitansipo'])->name('kwitansipo.edit');
+    Route::put('/kwitansiPo/{id}', [KwitansiPoControl::class, 'updatekwitansipo'])->name('kwitansipo.update');
 
 
     Route::get('/get-norek-sub/{id}', [kwitansicontrol::class, 'getNoRekSub']);

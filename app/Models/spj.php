@@ -26,6 +26,7 @@ class SPJ extends Model
         'notified_bendahara',
         'notified_kasubag',
         'notifiedby_kasubag',
+        'tahun',
     ];
 
     public function pesanan() 

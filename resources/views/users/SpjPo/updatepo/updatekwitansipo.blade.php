@@ -2,7 +2,7 @@
 
 @section('pageheads')
 <div class="container">
-    <h4 class="mb-1">Edit Data Kwitansi GU</h4>
+    <h4 class="mb-1">Edit Data Kwitansi PO</h4>
 </div>
 @endsection
 
@@ -10,7 +10,7 @@
 <div class="container">
     <div class="card shadow-sm rounded-3">
         <div class="card-body">
-            <form action="{{ route('kwitansiGu.update',$kwitansi->id) }}" method="POST" novalidate>
+            <form action="{{ route('kwitansipo.update',$kwitansi->id) }}" method="POST" novalidate>
                 @csrf
                 <input type="hidden" name="no_rekening" id="no_rekening">
                 <input type="hidden" name="spj_id" value="{{ $kwitansi->spj_id }}">
@@ -140,7 +140,7 @@
 
                 <div class="mb-3">
                     <label class="form-label fw-bold">Pekerjaan yang Dilakukan</label>
-                    <textarea name="pekerjaan" class="form-control" rows="3" required>{{ old('pekerjaan',$kwitansi->spj->pekerjaans->pekerjaan) }}</textarea>
+                    <textarea name="pekerjaan" class="form-control" rows="3" required>{{ old('pembayaran',$kwitansi->spj->pekerjaans->pekerjaan) }}</textarea>
                 </div>
 
 

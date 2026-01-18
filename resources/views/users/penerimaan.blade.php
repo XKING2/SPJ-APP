@@ -40,7 +40,7 @@
                                 <td>{{ $loop->iteration + ($penerimaans->currentPage() - 1) * $penerimaans->perPage() }}</td>
                                 <td>{{ $penerimaan->pesanan->no_surat ?? '-' }}</td>
                                 <td>{{ $penerimaan->nama_pihak_kedua ?? '-' }}</td>
-                                <td>{{ $penerimaan->pekerjaan ?? '-' }}</td>
+                                <td>{{ $penerimaan->spj->pekerjaans->pekerjaan ?? '-' }}</td>
                                 <td>
                                     <a href="{{ route('penerimaan.edit', $penerimaan->id) }}" 
                                        class="btn btn-sm btn-success btn-edit"

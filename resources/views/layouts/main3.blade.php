@@ -22,6 +22,7 @@
     <link href="{{ asset('css/chats.css') }}" rel="stylesheet">
     <link href="{{ asset('css/userui.css') }}" rel="stylesheet">
     <link href="{{ asset('css/mainuserui.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/verivy.css') }}" rel="stylesheet">
 
 </head>
 

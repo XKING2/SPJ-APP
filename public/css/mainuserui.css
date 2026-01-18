@@ -140,7 +140,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 0 6px;
+            padding: 0 9px;
             box-shadow: 0 2px 8px rgba(255, 59, 48, 0.4);
             animation: pulse 2s infinite;
         }

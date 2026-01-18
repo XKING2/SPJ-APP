@@ -11,8 +11,10 @@ use App\Models\pptk;
 use App\Models\SPJ;
 use App\Models\spj_bukti;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class KwitansiGuControl extends Controller
@@ -57,10 +59,13 @@ class KwitansiGuControl extends Controller
                 'telah_diterima_dari' => $validated['telah_diterima_dari'],
                 'jabatan_penerima' => $validated['jabatan_penerima'],
             ]);
+
+            
             
             SPJ::where('id', $validated['spj_id'])
                 ->update([
                     'kegiatan_id' => $validated['id_kegiatan'],
+                    
                 ]);
 
             pekerjaans::create([
@@ -84,38 +89,42 @@ class KwitansiGuControl extends Controller
         $pptks = pptk::all();
         $kegiatans = kegiatan::all();
         $kwitansi = Kwitansi::findOrFail($id);
+        $kegiatanKwitansis = kwitansi_kegiatan::all();
         $spj = $kwitansi->spj;
         $plts = Plt::all();
+        $kwitansi->load('spj.buktis');
 
-        return view('users.updategu.updatekwitansigu', compact('kwitansi','pptks','kegiatans','spj','plts'));
+        return view('users.SpjGu.updategu.updatekwitansigu', compact('kwitansi','pptks','kegiatans','spj','plts','kegiatanKwitansis'));
     }
 
     
 
     public function updatekwitansigu(Request $request, $id)
     {
+
         $validated = $request->validate([
             'spj_id' => 'required|exists:spjs,id',
             'id_pptk' => 'required|exists:pptk,id',
             'id_kegiatan' => 'required|exists:kegiatan,id',
+            'kwitansi_keg_id' => 'required|exists:kegiatan_kwitansis,id',
             'id_plt' => 'required|exists:plt,id',
-            'no_rekening' => 'required|string|max:255',
-            'no_rekening_tujuan' => 'required|string|max:255',
-            'nama_bank' => 'required|string|max:255',
-            'penerima_kwitansi' => 'required|string|max:255',
-            'telah_diterima_dari' => 'required|string|max:255',
-            'jabatan_penerima' => 'required|string|max:255',
-            'npwp' => 'required|string|max:255',
-            'pembayaran' => 'required|string',
+            'no_rekening' => 'required|string',
+            'penerima_kwitansi' => 'required|string',
+            'telah_diterima_dari' => 'required|string',
+            'jabatan_penerima' => 'required|string',
+            'pekerjaan' => 'required|string'
         ]);
 
-
         $kwitansi = Kwitansi::findOrFail($id);
+
+
         $kwitansi->update($validated);
 
-        $kegiatan = Kegiatan::findOrFail($validated['id_kegiatan']);
 
+        $kegiatan = Kegiatan::findOrFail($validated['id_kegiatan']);
         $spj = Spj::findOrFail($validated['spj_id']);
+
+
 
         $spj->update([
             'kegiatan_id' => $kegiatan->id,
@@ -123,28 +132,32 @@ class KwitansiGuControl extends Controller
         ]);
 
 
+        pekerjaans::where('spj_id', $validated['spj_id'])
+            ->where('kegiatan_id', $validated['kwitansi_keg_id'])
+            ->update(['pekerjaan' => trim($validated['pekerjaan'])
+        ]);
+
+
+
         $spj->feedbacks()->delete();
 
-        if ($spj->status !== 'valid') {
-            if ($spj->status === 'belum_valid') {
-                $spj->status = 'draft';
-            }
+        if ($spj->status !== 'valid' && $spj->status === 'belum_valid') {
+            $spj->status = 'draft';
         }
-
-        if ($spj->status2 !== 'valid') {
-            if ($spj->status2 === 'belum_valid') {
-                $spj->status2 = 'draft';
-            }
+        if ($spj->status2 !== 'valid' && $spj->status2 === 'belum_valid') {
+            $spj->status2 = 'draft';
         }
 
         $spj->resetNotifications();
 
         $spj->save();
 
-        app(\App\Http\Controllers\SPJController::class)->generateSPJDocumentGu($spj->id);
+        app(SPJController::class)->generateSPJDocumentGu($spj->id);
+
 
         return redirect()
-            ->route('kwitansigu', ['id' => $spj->id])
+            ->route('Kwitansigu', ['id' => $spj->id])
             ->with('success', 'Kwitansi dan data SPJ berhasil diperbarui serta dokumen SPJ diperbaharui.');
     }
+
 }

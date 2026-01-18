@@ -160,7 +160,7 @@ class PemeriksaanControl extends Controller
             $tanggalLengkap = "$hari, $tglTeks $bulan $tahunTeks";
         }
 
-        return view('users.update.updatepemeriksaan', compact(
+        return view('users.SpjLs.update.updatepemeriksaan', compact(
             'pemeriksaan',
             'spj',
             'pesanan',
@@ -170,7 +170,6 @@ class PemeriksaanControl extends Controller
             'bulan',
             'tahunTeks',
             'tanggalLengkap',
-            'kwitansi',
             'keduas',
             'nosurat'
         ));
@@ -181,6 +180,7 @@ class PemeriksaanControl extends Controller
     public function update(Request $request, $id)
     {
         $validated = $request->validate([
+            'spj_id' => 'required|exists:spjs,id',
             'no_suratssss' => 'required|string|max:255',
             'hari_diterima' => 'required|string|max:50',
             'tanggals_diterima' => 'required|string|max:100',
@@ -188,14 +188,27 @@ class PemeriksaanControl extends Controller
             'tahun_diterima' => 'required|string|max:255',
             'nama_pihak_kedua' => 'required|string|max:255',
             'jabatan_pihak_kedua' => 'required|string|max:255',
-            'alamat_pihak_kedua' => 'required|string',
             'pekerjaan' => 'required|string',
         ]);
 
         $pemeriksaan = Pemeriksaan::findOrFail($id);
-        $pemeriksaan->update($validated);
+        $validatedPemeriksaan = $request->except('pekerjaan'); // ambil semua kecuali pekerjaan
+        $pemeriksaan->update($validatedPemeriksaan);
 
         $spj = SPJ::find($pemeriksaan->spj_id);
+
+        $kegiatanId = $request->input('kwitansi_keg_id'); // bisa null jika user tidak pilih
+
+        pekerjaans::where('spj_id', $validated['spj_id'])
+            ->when($kegiatanId, function ($query, $kegiatanId) {
+                
+                return $query->where('kegiatan_id', $kegiatanId);
+            })
+            ->update([
+                'pekerjaan' => trim($request->input('pekerjaan')),
+                
+                'kegiatan_id' => $kegiatanId
+            ]);
 
         if (!$spj) {
             Log::error("SPJ dengan ID {$pemeriksaan->spj_id} tidak ditemukan saat update Kwitansi.");

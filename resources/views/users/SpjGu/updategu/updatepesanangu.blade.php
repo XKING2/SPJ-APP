@@ -10,7 +10,7 @@
 <div class="container">
     <div class="card shadow-sm rounded-3">
         <div class="card-body">
-            <form action="{{ route('pesanangu.edit', $pesanan->id) }}" method="POST" id="pesananForm" novalidate>
+            <form action="{{ route('pesanangu.update', $pesanan->id) }}" method="POST" id="pesananForm" novalidate>
                 @csrf
                 @method('PUT')
 

@@ -65,13 +65,7 @@
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">Pekerjaan yang Dilakukan</label>
-                            <textarea name="pekerjaan" class="form-control" rows="3" required>{{ old('pekerjaan', $pemeriksaan->pekerjaan) }}</textarea>
-                        </div>
-
-                        {{-- Alamat Pihak Kedua --}}
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Alamat Pihak Kedua</label>
-                            <input name="alamat_pihak_kedua" class="form-control" required>{{ old('alamat_pihak_kedua',$pemeriksaan->alamat_pihak_kedua) }}</input>
+                            <textarea name="pekerjaan" class="form-control" rows="3" required>{{ old('pekerjaan', $pemeriksaan->spj->pekerjaans->pekerjaan) }}</textarea>
                         </div>
 
                         
